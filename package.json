@@ -1,0 +1,83 @@
+{
+  "name": "azion-framework-adapter",
+  "version": "0.2.0",
+  "description": "",
+  "main": "dist/main.js",
+  "bin": "dist/main.js",
+  "scripts": {
+    "build": "tsc --build --verbose && copyfiles --up 1 src/bootstrap.js ./dist",
+    "build:all": "npm i && npm run build && npm i --package-lock",
+    "build:tests": "tsc -p test",
+    "clean": "rimraf dist coverage .nyc_output test-results",
+    "cover": "nyc --reporter=lcov --reporter=text npm t",
+    "exec": "node dist/main.js",
+    "lint": "npx eslint --fix src && npx eslint --fix test",
+    "test": "rimraf ./test/out && npm run build && npm run build:tests && mocha",
+    "rebuild:all": "npm run clean && npm run build:all"
+  },
+  "files": [
+    "dist/**/*.js",
+    "dist/**/*.d.ts",
+    "README.md",
+    "LICENSE"
+  ],
+  "author": "Azion Technologies",
+  "license": "MIT",
+  "dependencies": {
+    "aws-sdk": "^2.1031.0",
+    "aws4fetch": "1.0.13",
+    "axios": "^0.24.0",
+    "commander": "^8.3.0",
+    "filemanager-webpack-plugin": "^7.0.0-beta.0",
+    "jsonpolice": "^8.2.2",
+    "simple-git": "^2.47.0",
+    "ts-results": "^3.3.0",
+    "webpack": "^4.46.0",
+    "webpack-merge": "^5.8.0",
+    "webpack-virtual-modules": "^0.4.3",
+    "xxhashjs": "^0.2.2"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.2.22",
+    "@types/chai-as-promised": "^7.1.4",
+    "@types/chai-spies": "^1.0.3",
+    "@types/mocha": "^9.0.0",
+    "@types/node": "^16.11.9",
+    "@types/rewire": "^2.5.28",
+    "@types/webpack": "^4.41.32",
+    "@types/xxhashjs": "^0.2.2",
+    "@typescript-eslint/eslint-plugin": "^5.26.0",
+    "@typescript-eslint/parser": "^5.26.0",
+    "axios-mock-adapter": "^1.20.0",
+    "chai": "^4.3.4",
+    "chai-as-promised": "^7.1.1",
+    "chai-spies": "^1.0.0",
+    "copyfiles": "^2.4.1",
+    "eslint": "^8.16.0",
+    "mocha": "^9.1.3",
+    "mochawesome": "^7.0.1",
+    "nyc": "^15.1.0",
+    "recursive-copy": "^2.0.13",
+    "rewire": "^3.0.2",
+    "rimraf": "^3.0.2",
+    "source-map-support": "^0.5.21",
+    "typescript": "^4.7.2"
+  },
+  "nyc": {
+    "extension": [
+      ".ts",
+      ".tsx"
+    ],
+    "sourceMap": true,
+    "produce-source-map": true,
+    "exclude": [
+      "**/*.d.ts",
+      "src/bootstrap.js",
+      "dist/bootstrap.js",
+      "coverage",
+      "test-results",
+      "test"
+    ],
+    "all": true
+  }
+}

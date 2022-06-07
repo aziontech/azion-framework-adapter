@@ -1,0 +1,18 @@
+{
+  "root": true,
+  "parser": "@typescript-eslint/parser",
+  "ignorePatterns": ["test/out/**", "test/project-examples/**"],
+  "plugins": [
+    "@typescript-eslint"
+  ],
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended"
+  ],
+  "rules": {
+    "indent": [2, 4, {
+      "SwitchCase": 1
+    }],
+    "@typescript-eslint/no-explicit-any": "off"
+  }
+}

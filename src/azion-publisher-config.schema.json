@@ -1,0 +1,29 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$comment": "Id versioning: <YEAR>-<MONTH>.<SEQUENTIAL>",
+    "$id": "https://azion.com/azion-framework-adapter/2022-05.1/azion-publisher.schema.json",
+    "title": "Azion Edge Function Publisher",
+    "description": "Configuration for Azion Edge Function Publisher",
+    "type": "object",
+    "required": [
+        "azion"
+    ],
+    "additionalProperties": true,
+    "properties": {
+        "azion": {
+            "description": "Required configuration to upload the Edge Function.",
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "function_name"
+            ],
+            "$comment": "id and secrete aren't required if user sets environment variables AZION_ID and AZION_SECRET.",
+            "properties": {
+                "id": "string",
+                "secret": "string",
+                "function_name": "string",
+                "end_point": "string"
+            }
+        }
+    }
+}

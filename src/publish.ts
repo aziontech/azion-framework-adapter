@@ -1,0 +1,37 @@
+import { cwd } from 'process';
+
+import S3 from 'aws-sdk/clients/s3';
+import { AssetPublisher, Config as AssetPublisherConfig} from './asset-publisher';
+import { AzionApi } from './azion-api';
+import { AzionPublisher, Config as AzionPublisherConfig } from './azion-publisher';
+import { read_config } from './config';
+import { displayError, ErrorCode, errorCode } from './errors';
+
+export async function publish(options: any): Promise<ErrorCode> {
+
+    try {
+        const rawCfg = read_config(options);
+
+        if (!options.onlyFunction) {
+            const cfg: AssetPublisherConfig = await AssetPublisher.getConfig(rawCfg, process.env);
+            const s3 = new S3({
+                accessKeyId: cfg.kv.accessKeyId,
+                secretAccessKey: cfg.kv.secretAccessKey
+            });
+            const publisher = new AssetPublisher(cwd(), s3, cfg);
+            await publisher.deployStaticAssets(options.assetsDir);
+        }
+
+        if (!options.onlyAssets) {
+            const cfg: AzionPublisherConfig = await AzionPublisher.getConfig(rawCfg, process.env);
+            const azion = await AzionApi.init(cfg.azion.end_point, cfg.azion.id, cfg.azion.secret);
+            const publisher = new AzionPublisher(azion, cwd(), cfg);
+            await publisher.deployEdgeFunction();
+        }
+
+        return ErrorCode.Ok;
+    } catch (err: any) {
+        displayError(err);
+        return errorCode(err);
+    }
+}
