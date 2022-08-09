@@ -13,6 +13,7 @@ export enum ErrorCode {
     NotAValidFile = 1090,
     FileNotFound = 2000,
     CannotSaveFunction = 2010,
+    BuildFilesNotFound = 2042
 }
 
 export abstract class BaseError extends Error {
@@ -103,6 +104,15 @@ export class FileNotFound extends BaseError {
     }
     constructor(filename: string) {
         super(`File not found '${filename}'`);
+    }
+}
+
+export class BuildFilesNotFound extends BaseError {
+    get errorCode(): ErrorCode {
+        return ErrorCode.BuildFilesNotFound;
+    }
+    constructor(directory: string) {
+        super(`Build files no found at '${directory}'. Please, do the build of your project before this step.`);
     }
 }
 

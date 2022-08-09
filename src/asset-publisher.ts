@@ -6,7 +6,7 @@ import { validate } from './config';
 import ManifestBuilder from './manifest';
 
 import AssetPublisherConfigSchema from './asset-publisher-config.schema.json';
-import { S3CredentialsNotSet } from './errors';
+import { S3CredentialsNotSet, BuildFilesNotFound } from './errors';
 
 export interface KVConfig {
     accessKeyId: string,
@@ -46,6 +46,9 @@ export class AssetPublisher {
     public async deployStaticAssets(subdir = 'out') {
         const waitList = [];
         const manifest = new ManifestBuilder(this.rootPath).loadManifest();
+
+        if( Object.keys(manifest).length === 0) throw new BuildFilesNotFound('out');
+
         for (const localPath of Object.keys(manifest)) {
             const fullPath = path.join(this.rootPath, subdir, localPath);
             const content = fs.readFileSync(fullPath);
