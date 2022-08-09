@@ -112,7 +112,7 @@ export class BuildFilesNotFound extends BaseError {
         return ErrorCode.BuildFilesNotFound;
     }
     constructor(directory: string) {
-        super(`Build files no found at '${directory}'. Please, do the build of your project before this step.`);
+        super(`Build files no found at '${directory}' directory. Please, do the build of your project before this step.`);
     }
 }
 
