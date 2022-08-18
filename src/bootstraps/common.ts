@@ -137,7 +137,9 @@ class KV {
         const response = await this.aws.fetch(url);
 
         if (response.status !== 200) {
-            return undefined;
+            console.log(`The AWS Access Key Id you provided does not exist in our records. Please check your S3 credentials. Erro: ${response.status}`);
+
+            return null;
         }
 
         if (type === "arrayBuffer") {
