@@ -32,7 +32,9 @@ export async function publish(options: any): Promise<ErrorCode> {
         return ErrorCode.Ok;
     } catch (err: any) {
         displayError(err);
-        displayError("Please check yours S3 credentials.");
+        if (err.statusCode === 403){
+            displayError("Please check yours S3 credentials.");
+        }
         return errorCode(err);
     }
 }
