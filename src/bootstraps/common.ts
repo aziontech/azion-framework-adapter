@@ -28,7 +28,11 @@ class KV {
             const xmlContent = await response.text();
             const codeMatch = xmlContent.match(/<Code>(.+?)<\/Code>/);
             const messageMatch = xmlContent.match(/<Message>(.+?)<\/Message>/);
-            console.log("Erro:", response.status,",", codeMatch[1],",", messageMatch[1]);
+
+            codeMatch && messageMatch ?
+                console.log("Erro:", response.status, ",", codeMatch[1],
+                    ",", messageMatch[1]) :
+                console.log("Erro:", xmlContent);
 
             return null;
         }

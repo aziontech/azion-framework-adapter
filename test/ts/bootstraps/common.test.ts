@@ -57,7 +57,7 @@ describe('common bootstrap', () => {
             });
         });
 
-        describe('when AWS S3 response http status is NOT 200', () => {
+        describe('when AWS S3 response http status is NOT 200 (WITH code and message)', () => {
             before(() => {
                 chai.spy.restore();
                 chai.spy.on(kv['aws'], 'fetch', () => {
@@ -82,6 +82,27 @@ describe('common bootstrap', () => {
                 expect(console.log).to.have.been.called.with.exactly(
                     'Erro:', 403, ',', 'NoSuchKey', ',',
                     'The resource you requested does not exist');
+                expect(result).to.be.null;
+            });
+        });
+
+        describe('when AWS S3 response http status is NOT 200 (WITHOUT code and message)', () => {
+            let awsS3Return: string;
+            before(() => {
+                awsS3Return = `<?xml version="1.0" encoding="UTF-8"?><Error>Unknown</Error>`;
+                chai.spy.restore();
+                chai.spy.on(kv['aws'], 'fetch', () => {
+                    return {
+                        status: 403,
+                        text: async () => awsS3Return
+                    }
+                })
+            })
+
+            it('should log an error and return null', async () => {
+                const result = await kv.get('/azion-test/kombi/index.html', 'text/html');
+
+                expect(console.log).to.have.been.called.with.exactly('Erro:', awsS3Return);
                 expect(result).to.be.null;
             });
         });
