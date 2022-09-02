@@ -39,7 +39,7 @@ git clone https://github.com/aziontech/cells-site-template
 ## Build
 
 You will need a bucket in AWS S3, its access key and its secret access key. You can set the credentials at the `azion.json` file inside the project or define the environment variables `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`. The access credentials to the bucket will be stored in the code sent to Azion and the Edge Function will use them to retrieve the necessary pages stored during the publish step.
-Similarly, you will need credentials to deploy your project at Azion and you can either set those in the `azion.json` file or define the environment variables `AZION_ID` and `AZION_SECRET`. The Azion credentials are not stored in the built code.
+Similarly, you will need credentials to deploy your project at Azion and you can either set those in the `azion.json` file or define the environment variable `AZION_TOKEN`. The Azion credentials are not stored in the built code.
 
 ### Build steps
 ```
@@ -56,8 +56,7 @@ Similarly, you will need credentials to deploy your project at Azion and you can
       "path": "__static_content"
     },
     "azion": {
-      "id": "<AZION_ID>",
-      "secret": "<AZION_SECRET>",
+      "token": "<AZION_TOKEN>",
       "function_name": "my-function-name"
     }
   }
