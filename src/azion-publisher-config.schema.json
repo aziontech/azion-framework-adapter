@@ -17,10 +17,9 @@
             "required": [
                 "function_name"
             ],
-            "$comment": "id and secrete aren't required if user sets environment variables AZION_ID and AZION_SECRET.",
+            "$comment": "token is not required if user sets environment variable AZION_TOKEN.",
             "properties": {
-                "id": "string",
-                "secret": "string",
+                "token": "string",
                 "function_name": "string",
                 "end_point": "string"
             }
