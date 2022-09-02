@@ -48,7 +48,7 @@ export class AzionApi {
             const response: AxiosResponse<ObjectAPIResult> = await axios({
                 url: `${this.url}/edge_functions`,
                 method: 'POST',
-                headers: apiBaseHeaders(await this.token),
+                headers: apiBaseHeaders(this.token),
                 data: edgeFunction,
             });
             return response.data.results;
