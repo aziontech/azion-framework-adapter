@@ -19,35 +19,13 @@ function getEdgeFunctionData(): EdgeFunction {
 describe('azion-api', async () => {
     const axiosMock = new MockAdapter(axios);
     const azionApiUrl = "http://azion.api.domain";
-    const user = 'user.name@domain.com';
-    const password = 'password';
+    const token = 'azion-personal-token'
 
     afterEach(() => axiosMock.reset());
-
-    it('should fetch token api', async () => {
-        axiosMock.onPost(`${azionApiUrl}/tokens`)
-            .reply((config) => {
-                expect(config.headers).to.have.property('Authorization');
-                expect(config.headers).to.own.include({ 'Accept': 'application/json; version=3' });
-                return [201, { token: '#token#' }];
-            });
-
-        const azionApi = AzionApi.init(azionApiUrl, user, password);
-        return azionApi.should.be.fulfilled;
-    });
-
-    it('should fail on fetching token', async () => {
-        axiosMock.onPost(`${azionApiUrl}/tokens`)
-            .reply(401);
-
-        const azionApi = AzionApi.init(azionApiUrl, user, password);
-        return azionApi.should.be.rejected;
-    });
 
     it('should save an edge function', async () => {
         const edgeFunction = getEdgeFunctionData();
 
-        axiosMock.onPost(`${azionApiUrl}/tokens`).reply(201, { token: '#token#' });
         axiosMock.onPost(`${azionApiUrl}/edge_functions`)
             .reply((config) => {
                 expect(config.headers).to.have.property('Authorization');
@@ -60,7 +38,7 @@ describe('azion-api', async () => {
                 }];
             });
 
-        const azionApi = await AzionApi.init(azionApiUrl, user, password);
+        const azionApi = await AzionApi.init(azionApiUrl, token);
         const savedEdgeFunction = azionApi.saveFunction(edgeFunction);
 
         return savedEdgeFunction.should.eventually.to.include({ id: 1 })
@@ -71,7 +49,6 @@ describe('azion-api', async () => {
         const edgeFunction = getEdgeFunctionData();
         edgeFunction.id = 1;
 
-        axiosMock.onPost(`${azionApiUrl}/tokens`).reply(201, { token: '#token#' });
         axiosMock.onPost(`${azionApiUrl}/edge_functions`).reply(400);
         axiosMock.onGet(`${azionApiUrl}/edge_functions`)
             .reply(200, {
@@ -81,7 +58,7 @@ describe('azion-api', async () => {
         axiosMock.onPatch(`${azionApiUrl}/edge_functions/${edgeFunction.id}`)
             .reply(200, { results: { edgeFunction } });
 
-        const azionApi = await AzionApi.init(azionApiUrl, user, password);
+        const azionApi = await AzionApi.init(azionApiUrl, token);
         const savedEdgeFunction = azionApi.saveFunction(edgeFunction);
 
         return savedEdgeFunction.should.be.fulfilled
@@ -91,11 +68,10 @@ describe('azion-api', async () => {
     it('should fail on saving edge function', async () => {
         const edgeFunction = getEdgeFunctionData();
 
-        axiosMock.onPost(`${azionApiUrl}/tokens`).reply(201, { token: '#token#' });
         axiosMock.onAny(`${azionApiUrl}/edge_functions`)
             .reply(400);
 
-        const azionApi = await AzionApi.init(azionApiUrl, user, password);
+        const azionApi = await AzionApi.init(azionApiUrl, token);
         const createdEdgeFunction = azionApi.saveFunction(edgeFunction);
         return createdEdgeFunction.should.be.rejected;
     });

@@ -112,8 +112,7 @@ describe('Asset Publisher', () => {
     it('should accept additional config parameters', async () => {
         const rawCfg: any = {
             azion: {
-                id: "6",
-                secret: "7",
+                token: "azion-personal-token",
                 function_name: "MyFunctionName"
             },
             kv: {
