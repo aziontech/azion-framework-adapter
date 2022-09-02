@@ -7,8 +7,7 @@ import { validate } from './config';
 import { AzionCredentialsNotSet } from './errors';
 
 export interface AzionConfig {
-    id: string,
-    secret: string,
+    token: string,
     function_name: string,
     end_point?: string
 }
