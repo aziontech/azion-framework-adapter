@@ -11,8 +11,7 @@ export interface KVConfig {
 }
 
 export interface AzionConfig {
-    id: string,
-    secret: string,
+    token: string,
     function_name: string,
     end_point?: string
 }
