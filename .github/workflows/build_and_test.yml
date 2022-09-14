@@ -18,5 +18,7 @@ jobs:
         run: npm ci
       - name: Building
         run: npm run build --if-present
+      - name: Running lint
+        run: npm run lint
       - name: Running tests
         run: npm test
