@@ -1,0 +1,27 @@
+name: Azion Framework adapter build and test
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  build-and-test:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - run: |
+          git config --global user.name github-actions
+          git config --global user.email github-actions@github.com
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '16.x'
+      - name: Installing dependencies
+        run: npm ci
+      - name: Building
+        run: npm run build --if-present
+      - name: Running lint
+        run: npm run lint
+      - name: Running tests
+        run: npm test
