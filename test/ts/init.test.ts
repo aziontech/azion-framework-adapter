@@ -19,7 +19,7 @@ chai.use(spies);
 chai.use(chaiAsPromised);
 
 
-describe('init', () => {
+describe.only('init', () => {
 
     let emptyDir: string;
     let notEmptyDir: string;
@@ -43,6 +43,8 @@ describe('init', () => {
 
         // add package.json
         fs.writeFileSync(path.join(template, 'package.json'), JSON.stringify({}));
+        child_process.execSync(`git config --global user.email "you@example.com"`, { encoding: 'utf-8' });
+        child_process.execSync(`git config --global user.name "Your Name"`, { encoding: 'utf-8' });
         child_process.execSync(`git -C ${template} add package.json`, { encoding: 'utf-8' });
         child_process.execSync(`git -C ${template} commit -m Begin`, { encoding: 'utf-8' });
     });
