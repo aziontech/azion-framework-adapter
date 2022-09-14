@@ -5,7 +5,7 @@ on:
     types: [opened, synchronize, reopened]
 
 jobs:
-  build:
+  build-and-test:
 
     runs-on: ubuntu-latest
 
