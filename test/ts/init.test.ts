@@ -168,8 +168,9 @@ describe('init', () => {
         });
         it('should fail when template is invalid', async () => {
 
-            const templateRepository = "https://github.com/aziontech/flareact4azion-template-does-not-exist";
-
+            // const templateRepository = "https://github.com/aziontech/flareact4azion-template-does-not-exist";
+            const templateName = 'flareact4azion-template-does-not-exist';
+            const templateRepository = path.join(templatePath, templateName);
             // reference to private member
             const initFunc = introspectedInit.__get__("init");
 
