@@ -19,7 +19,7 @@ chai.use(spies);
 chai.use(chaiAsPromised);
 
 
-describe.only('init', () => {
+describe('init', () => {
 
     let emptyDir: string;
     let notEmptyDir: string;
