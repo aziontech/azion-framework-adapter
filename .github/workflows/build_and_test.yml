@@ -9,7 +9,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [16.x, 18.x]
+        node-version: [16.x]
         os: [ubuntu-latest, macos-latest]
 
     name: Test - ${{ matrix.os }} - Node v${{ matrix.node-version }}
