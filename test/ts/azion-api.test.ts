@@ -42,7 +42,7 @@ describe('azion-api', async () => {
         const savedEdgeFunction = azionApi.saveFunction(edgeFunction);
 
         return savedEdgeFunction.should.eventually.to.include({ id: 1 })
-            .then(() => expect(axiosMock.history.post).to.have.lengthOf(2));
+            .then(() => expect(axiosMock.history.post).to.have.lengthOf(1));
     });
 
     it('should update an edge function if it exists', async () => {
