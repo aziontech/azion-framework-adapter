@@ -12,6 +12,11 @@ jobs:
     strategy:
       matrix:
         node-version: [16.x, 18.x]
+         os: [ubuntu-latest, macos-latest]
+
+    name: Test - ${{ matrix.os }} - Node v${{ matrix.node-version }}
+
+    runs-on: ${{ matrix.os }}
 
     steps:
       - uses: actions/checkout@v3
