@@ -1,0 +1,35 @@
+name: Azion Framework adapter build and test
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  build-and-test:
+
+    strategy:
+      matrix:
+        node-version: [16.x]
+        os: [ubuntu-latest, macos-latest]
+
+    name: Test - ${{ matrix.os }} - Node v${{ matrix.node-version }}
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v3
+      - run: |
+          git config --global user.name github-actions
+          git config --global user.email github-actions@github.com
+      - name: Setup Node ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Installing dependencies
+        run: npm ci
+      - name: Building
+        run: npm run build --if-present
+      - name: Running lint
+        run: npm run lint
+      - name: Running tests
+        run: npm test
