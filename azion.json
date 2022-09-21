@@ -7,8 +7,7 @@
     "path": "__static_content"
   },
   "azion": {
-    "id": "user@azion.com",
-    "secret": "password",
+    "token": "my-personal-token",
     "function_name": "my-function-name",
     "end_point": "https://stage-api.azion.net"
   },

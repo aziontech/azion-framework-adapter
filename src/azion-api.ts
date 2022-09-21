@@ -39,26 +39,8 @@ export class AzionApi {
         this.token = token;
     }
 
-    static async init(url: string = DEFAULT_API_URL, user: string, password: string): Promise<AzionApi> {
-        const token = await this.getToken(url, user, password);
+    static async init(url: string = DEFAULT_API_URL, token: string): Promise<AzionApi> {
         return new AzionApi( url, token );
-    }
-
-    private static async getToken(url: string, user: string, password: string): Promise<string> {
-        const credentialsBase64 = Buffer.from(`${user}:${password}`).toString('base64');
-        try {
-            const response = await axios({
-                url: `${url}/tokens`,
-                method: 'POST',
-                headers: {
-                    'Accept': 'application/json; version=3',
-                    'Authorization': 'Basic ' + credentialsBase64
-                }
-            });
-            return response.data.token;
-        } catch (err: any) {
-            throw new CannotSaveFunction(JSON.stringify(err.response?.data));
-        }
     }
 
     async saveFunction(edgeFunction: EdgeFunction): Promise<EdgeFunction> {
@@ -66,7 +48,7 @@ export class AzionApi {
             const response: AxiosResponse<ObjectAPIResult> = await axios({
                 url: `${this.url}/edge_functions`,
                 method: 'POST',
-                headers: apiBaseHeaders(await this.token),
+                headers: apiBaseHeaders(this.token),
                 data: edgeFunction,
             });
             return response.data.results;

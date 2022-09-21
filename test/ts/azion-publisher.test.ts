@@ -103,8 +103,7 @@ describe('Azion Publisher', () => {
     it('publish to Azion', async () => {
         const rawCfg: Config = {
             azion: {
-                id: "6",
-                secret: "7",
+                token: "azion-personal-token",
                 function_name: "MyFunctionName"
             }
         };
@@ -128,8 +127,7 @@ describe('Azion Publisher', () => {
     it('accepts additional config parameters', async () => {
         const rawCfg: any = {
             azion: {
-                id: "6",
-                secret: "7",
+                token: "azion-personal-token",
                 function_name: "MyFunctionName"
             },
             kv: {

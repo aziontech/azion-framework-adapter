@@ -38,8 +38,7 @@ describe('config', () => {
                     path: "val5"
                 },
                 azion: {
-                    id: 'val6',
-                    secret: 'val7',
+                    token: "azion-personal-token",
                     function_name: 'val8'
                 }
             };

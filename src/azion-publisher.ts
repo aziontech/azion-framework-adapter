@@ -7,8 +7,7 @@ import { validate } from './config';
 import { AzionCredentialsNotSet } from './errors';
 
 export interface AzionConfig {
-    id: string,
-    secret: string,
+    token: string,
     function_name: string,
     end_point?: string
 }
@@ -28,9 +27,8 @@ export class AzionPublisher {
         const config = await validate(cfg, AzionPublisherConfigSchema,
             'https://azion.com/azion-framework-adapter/2022-05.1/azion-publisher.schema.json');
         const azion = config.azion;
-        azion.id = azion.id ?? env.AZION_ID;
-        azion.secret = azion.secret ?? env.AZION_SECRET;
-        if (!azion.id || !azion.secret) {
+        azion.token = azion.token ?? env.AZION_TOKEN;
+        if (!azion.token) {
             throw new AzionCredentialsNotSet();
         }
         return config;
