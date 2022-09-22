@@ -99,6 +99,7 @@
   },
   "include": [
     "src/**/*.ts",
-    "src/**/*.json"
+    "src/**/*.json",
+    "global.d.ts"
   ]
 }
