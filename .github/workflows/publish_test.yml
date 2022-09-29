@@ -24,6 +24,8 @@ jobs:
       uses: actions/setup-node@v2
       with:
         node-version: ${{ matrix.node-version }}
+    - name: Build
+      run: npm run build
     - name: login
       run: npx npm-cli-login -u test -p 1234 -e test@domain.test -r http://localhost:4873
     - name: publish
