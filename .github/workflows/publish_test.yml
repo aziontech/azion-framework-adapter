@@ -35,4 +35,4 @@ jobs:
     - name: check
       run: npm info azion-framework-adapter --json --registry http://localhost:4873
     - name: install global
-      run: npm_config_registry=http://0.0.0.0:4873 npx azion-framework-adapter
+      run: npx azion-framework-adapter -r http://0.0.0.0:4873
