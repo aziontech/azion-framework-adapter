@@ -18,6 +18,7 @@
   "files": [
     "dist/**/*.js",
     "dist/**/*.d.ts",
+    "dist/*.json",
     "README.md",
     "LICENSE"
   ],
@@ -31,6 +32,7 @@
     "jsonpolice": "^8.2.2",
     "simple-git": "^2.47.0",
     "ts-results": "^3.3.0",
+    "tslib": "^2.4.0",
     "webpack": "^4.46.0",
     "webpack-merge": "^5.8.0",
     "webpack-virtual-modules": "^0.4.3",
