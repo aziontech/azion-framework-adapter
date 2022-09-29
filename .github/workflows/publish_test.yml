@@ -36,3 +36,5 @@ jobs:
       run: npm info azion-framework-adapter --json --registry http://localhost:4873
     - name: install global
       run: npm install -g azion-framework-adapter --registry http://localhost:4873
+    - name: test
+      run: node test.js
