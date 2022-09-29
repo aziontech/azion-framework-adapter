@@ -25,7 +25,6 @@ const generateWorkerStaticSiteConfig = (outputPath: string): Configuration  => {
                 },
             },
             runTasksInSeries: true,
-            runOnceInWatchMode: false,
         })
     );
 

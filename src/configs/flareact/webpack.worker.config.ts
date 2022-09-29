@@ -25,7 +25,6 @@ const generateWorkerFlareactConfig = (outputPath: string): Configuration  => {
                 },
             },
             runTasksInSeries: true,
-            runOnceInWatchMode: false,
         })
     );
 
