@@ -33,4 +33,4 @@ jobs:
         run: npm run lint
       - name: Publish with Verdaccio
         uses: verdaccio/github-actions/publish@master
-      - run: npx azion-framework-adapter
+      - run: npm_config_registry=http://0.0.0.0:4873 npx azion-framework-adapter
