@@ -31,12 +31,6 @@ jobs:
       uses: actions/setup-node@v2
       with:
         node-version: ${{ matrix.node-version }}
-    - name: Configure localstack
-      run: |
-        aws configure set aws_access_key_id localstack
-        aws configure set aws_secret_access_key localstack
-        aws configure set default.region us-east-1
-        aws mb s3://my-bucket --endpoint-url=http://localhost:4566
     - name: Set localstack env
       env:
         DEFAULT_REGION: us-east-1
