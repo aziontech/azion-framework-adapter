@@ -173,7 +173,7 @@ export class Builder {
             const cfg = await AssetPublisher.getConfig(rawCfg, process.env);
             const kvArgs: KVArgs = Object.assign({ retries: 0 }, cfg.kv);
 
-            const builder = await Builder.init();
+            const builder = Builder.init();
 
             let webpackConfigPath = BASIC_CFG_PATH;
             if (!options.staticSite) {
