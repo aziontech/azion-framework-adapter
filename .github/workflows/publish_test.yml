@@ -14,6 +14,13 @@ jobs:
         image: verdaccio/verdaccio:5
         ports:
           - 4873:4873
+      localstack:
+        image: localstack/localstack
+        env:
+          SERVICES: s3
+          DEFAULT_REGION: us-east-1
+          DATA_DIR: /tmp/localstack/data
+        ports: ["4566:4566"]
     strategy:
       matrix:
         node-version: [16.x]
@@ -24,6 +31,17 @@ jobs:
       uses: actions/setup-node@v2
       with:
         node-version: ${{ matrix.node-version }}
+    - name: Configure localstack
+        run: |
+          aws configure set aws_access_key_id localstack
+          aws configure set aws_secret_access_key localstack
+          aws configure set default.region us-east-1
+          aws mb s3://my-bucket --endpoint-url=http://localhost:4566
+    - name: Set localstack env
+      env:
+        DEFAULT_REGION: us-east-1
+        AWS_ACCESS_KEY_ID: localstack
+        AWS_SECRET_ACCESS_KEY: localstack
     - name: Installing dependencies
       run: npm ci
     - name: Building
