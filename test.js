@@ -2,7 +2,7 @@ async function run() {
     // const util =  await import('node:util');
     // eslint-disable-next-line @typescript-eslint/no-var-requires, no-undef
     // const exec = util.promisify(require('node:child_process').exec);
-     // const { stdout, stderr} = await exec('azion-framework-adapter --help');
+    // const { stdout, stderr} = await exec('azion-framework-adapter --help');
     // console.log(stdout);
 
     const { spawn } = await import('node:child_process');
