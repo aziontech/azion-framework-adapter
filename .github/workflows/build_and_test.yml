@@ -5,7 +5,7 @@ on:
     types: [opened, synchronize, reopened]
 
 jobs:
-  build-and-test:
+  build-and-unit-test:
 
     strategy:
       matrix:
@@ -35,8 +35,7 @@ jobs:
         run: npm test
   publish:
     needs: build-and-test
-    runs-on: ubuntu-latest
-    name: setup verdaccio
+
     services:
       verdaccio:
         image: verdaccio/verdaccio:5
@@ -49,9 +48,14 @@ jobs:
           DEFAULT_REGION: us-east-1
           DATA_DIR: /tmp/localstack/data
         ports: ["4566:4566"]
+
     strategy:
       matrix:
         node-version: [16.x]
+        os: [ubuntu-latest, macos-latest]
+
+    name: Test E2E - ${{ matrix.os }} - Node v${{ matrix.node-version }}
+    runs-on: ${{ matrix.os }}
 
     steps:
       - uses: actions/checkout@v2
