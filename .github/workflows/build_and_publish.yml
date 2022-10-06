@@ -78,4 +78,4 @@ jobs:
       - name: install global
         run: npm install -g azion-framework-adapter --registry http://localhost:4873
       - name: test
-        run: node test.js
+        run: node test/e2e-test/test.js
