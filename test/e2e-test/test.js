@@ -17,14 +17,6 @@ Commands:
     afa.stdout.on('data', (data) => {
         assert.equal(data, afaStdOutput);
     })
-
-    afa.stderr.on('data', (data) => {
-        console.log(`Saida padrão: ${data}`)
-    })
-
-    afa.on('close', (close) => {
-        console.log(`Close: ${close}`)
-    })
 }
 
 run();
