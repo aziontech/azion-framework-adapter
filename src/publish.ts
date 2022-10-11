@@ -31,7 +31,8 @@ export async function publish(options: any): Promise<ErrorCode> {
             const cfg: AzionPublisherConfig = await AzionPublisher.getConfig(rawCfg, process.env);
             const azion = await AzionApi.init(cfg.azion.end_point, cfg.azion.token);
             const publisher = new AzionPublisher(azion, cwd(), cfg);
-            await publisher.deployEdgeFunction();
+            const deployedEdgeFunction = await publisher.deployEdgeFunction();
+            console.log('Function id:', deployedEdgeFunction.id);
         }
 
         return ErrorCode.Ok;
