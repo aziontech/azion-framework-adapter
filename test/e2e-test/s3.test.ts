@@ -1,9 +1,9 @@
-// import util = require('node:util');
-import * as child_process from 'child_process';
-import { promisify } from 'util';
+import util = require('node:util');
+// import * as child_process from 'child_process';
+// import { promisify } from 'util';
 // eslint-disable-next-line @typescript-eslint/no-var-requires, no-undef
-// const exec = util.promisify(require('node:child_process').exec);
-const exec = promisify<string, any, { stdout: string, stderr: string }>(child_process.exec);
+const exec = util.promisify(require('node:child_process').exec);
+// const exec = promisify<string, any, { stdout: string, stderr: string }>(child_process.exec);
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
@@ -31,14 +31,14 @@ describe.only('Test S3', () => {
     });
 
     it('init template flareact"', async () => {
-        const { stdout, stderr} = await exec(`azion-framework-adapter init ${template} https://github.com/flareact/flareact-template`,{});
+        const { stdout} = await exec(`azion-framework-adapter init ${template} https://github.com/flareact/flareact-template`);
         expect(stdout).to.be.equal('Completed.\n');
     });
 
     // it('Try to build without the azion.json file', async () => {
     //     const { stdout, stderr} = exec('azion-framework-adapter build');
     //     console.log(stderr)
-    //     expect(stdout).to.be.equal("undefined")
+    //     // expect(stdout).to.be.equal("undefined")
     // });
 
     it('Copy azion.json file ', async () => {
@@ -48,7 +48,7 @@ describe.only('Test S3', () => {
     });
 
     it('Try to build', async () => {
-        const { stdout, stderr} = await exec('azion-framework-adapter publish',{});
+        const { stdout, stderr} = await exec('azion-framework-adapter build');
         console.log(stdout, stderr)
         // expect(stdout).to.be.equal("undefined")
     });
