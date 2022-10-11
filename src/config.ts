@@ -33,7 +33,6 @@ export function read_config(options: any): Config {
         config = fs.readFileSync(cfgPath, 'utf-8');
         return JSON.parse(config);
     } catch (err: any) {
-        console.log(cfgPath, err.message)
         throw new NotAValidFile(cfgPath, err.message);
     }
     return config;

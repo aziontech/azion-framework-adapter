@@ -48,7 +48,7 @@ describe.only('Test S3', () => {
     });
 
     it('Try to build', async () => {
-        const { stdout, stderr} = await exec('azion-framework-adapter build');
+        const { stdout, stderr} = exec('azion-framework-adapter build');
         console.log(stdout, stderr)
         // expect(stdout).to.be.equal("undefined")
     });
