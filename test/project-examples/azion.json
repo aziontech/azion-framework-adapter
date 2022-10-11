@@ -1,0 +1,13 @@
+{
+  "kv": {
+    "accessKeyId": "<AWS_ACCESS_KEY_ID>",
+    "secretAccessKey": "<AWS_SECRET_ACCESS_KEY>",
+    "bucket": "my-bucket-name",
+    "region": "us-east-1",
+    "path": "__static_content"
+  },
+  "azion": {
+    "token": "<AZION_TOKEN>",
+    "function_name": "my-function-name"
+  }
+}

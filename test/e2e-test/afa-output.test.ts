@@ -1,9 +1,9 @@
-//This file is temporary, is just to validate a call of azion-framework-adapter in finish of workflow.
-//The proper e2e test case will be written and this file will be removed.
-async function run() {
-    const assert = await import('node:assert');
-    const { spawn } = await import('node:child_process');
-    const afa =  spawn('azion-framework-adapter', ['--help']);
+import util = require('node:util');
+// eslint-disable-next-line @typescript-eslint/no-var-requires, no-undef
+const exec = util.promisify(require('node:child_process').exec);
+import { expect } from 'chai';
+
+describe('Azion Framework Adapter menu', () => {
     const afaStdOutput = `Usage: azion-framework-adapter [options] [command]\n
 Options:
   -V, --version                             output the version number
@@ -14,9 +14,9 @@ Commands:
   build [options]                           Build and upload.
   publish [options]                         Publish the application.
   help [command]                            display help for command\n`
-    afa.stdout.on('data', (data) => {
-        assert.equal(data, afaStdOutput);
-    })
-}
 
-run();
+    it('Option "Help"', async () => {
+        const { stdout} = await exec('azion-framework-adapter --help');
+        expect(stdout).to.be.equal(afaStdOutput)
+    })
+})

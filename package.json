@@ -12,8 +12,9 @@
     "cover": "nyc --reporter=lcov --reporter=text npm t",
     "exec": "node dist/main.js",
     "lint": "npx eslint --fix src && npx eslint --fix test",
-    "test": "rimraf ./test/out && npm run build && npm run build:tests && mocha",
-    "rebuild:all": "npm run clean && npm run build:all"
+    "test": "rimraf ./test/out && npm run build && npm run build:tests && mocha test/out/unit-test/*.js",
+    "rebuild:all": "npm run clean && npm run build:all",
+    "e2e": "rimraf ./test/out && npm run build && npm run build:tests && mocha test/out/e2e-test/*.js"
   },
   "files": [
     "dist/**/*.js",
@@ -42,7 +43,7 @@
     "@types/chai": "^4.2.22",
     "@types/chai-as-promised": "^7.1.4",
     "@types/chai-spies": "^1.0.3",
-    "@types/mocha": "^9.0.0",
+    "@types/mocha": "^9.1.1",
     "@types/node": "^16.11.9",
     "@types/rewire": "^2.5.28",
     "@types/webpack": "^4.41.32",
