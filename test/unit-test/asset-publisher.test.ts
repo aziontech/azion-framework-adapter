@@ -105,7 +105,7 @@ describe('Asset Publisher', () => {
         const cfg: Config = await AssetPublisher.getConfig(rawCfg, process.env);
         const publisher = new AssetPublisher(tempDir, s3Mockup, cfg);
         publisher.deployStaticAssets();
-        s3Data.length.should.be.equal(12);
+        s3Data.length.should.be.equal(11);
 
     });
 

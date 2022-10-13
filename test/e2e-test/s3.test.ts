@@ -51,30 +51,30 @@ describe.only('Test S3', () => {
 
     it('init template flareact"', async () => {
         const { stdout} = await execFile(`azion-framework-adapter init ${template} https://github.com/flareact/flareact-template`);
-        return expect(stdout).to.be.equal('Completed.\n');
+        expect(stdout).to.be.equal('Completed.\n');
     });
 
     it('Copy azion.json file ', async () => {
         await copy(path.join(process.cwd(), 'test', 'project-examples', 'azion.json'),path.join(template,'azion.json'))
         const azionConfigFile = fs.existsSync(path.join(template,'azion.json'));
-        return expect(azionConfigFile).to.be.true;
+        expect(azionConfigFile).to.be.true;
     });
 
     it('Install packages', async () => {
         process.chdir(template);
         await execFile('npm install', {});
         const packageLock = fs.existsSync(path.join(template,'package-lock.json'));
-        return expect(packageLock).to.be.true;
+        expect(packageLock).to.be.true;
     });
 
     it('Try to build', async () => {
         const expectOutput = `Finished client.
 Wrote manifest file to ${template}/worker/manifest.json
-Finished worker
+Finished worker.
 Completed.\n`
         const { stdout } = await execFile('azion-framework-adapter build');
         const flareactOutputDir = fs.existsSync(path.join(template,'out/_flareact'));
-        return expect(stdout).to.be.equal(expectOutput);
+        expect(stdout).to.be.equal(expectOutput);
         expect(flareactOutputDir).to.be.true;
     });
 
