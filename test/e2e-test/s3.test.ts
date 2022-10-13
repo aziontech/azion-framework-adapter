@@ -101,7 +101,7 @@ Completed.\n`
             if (err) {
                 console.log("Error", err);
             } else {
-                console.log("success", data.Name, data.Contents?.map(assets => assets.Key?.replace('__static_content_test/first-contact-jessandro/', '')));
+                console.log("success", data.Name, data.Contents?.map(assets => assets.Key?.replace('__static_content_test/first-contact-e2e/', '')));
             }
         })
 
