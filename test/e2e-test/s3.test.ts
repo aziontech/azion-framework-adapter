@@ -43,11 +43,11 @@ describe.only('Test S3', () => {
         })
     });
 
-    after(() => {
-        if (templatePath) {
-            fs.rmSync(templatePath, { recursive: true });
-        }
-    });
+    // after(() => {
+    //     if (templatePath) {
+    //         fs.rmSync(templatePath, { recursive: true });
+    //     }
+    // });
 
     it('init template flareact"', async () => {
         const { stdout} = await execFile(`azion-framework-adapter init ${template} https://github.com/flareact/flareact-template`);
