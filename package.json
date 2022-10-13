@@ -1,6 +1,6 @@
 {
   "name": "azion-framework-adapter",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "",
   "main": "dist/main.js",
   "bin": "dist/main.js",
@@ -12,9 +12,9 @@
     "cover": "nyc --reporter=lcov --reporter=text npm t",
     "exec": "node dist/main.js",
     "lint": "npx eslint --fix src && npx eslint --fix test",
-    "test": "rimraf ./test/out && npm run build && npm run build:tests && mocha test/out/unit-test/*.js",
+    "test": "npm run build && npm run build:tests && mocha out/unit-test/*.js && rimraf ./out",
     "rebuild:all": "npm run clean && npm run build:all",
-    "e2e": "rimraf ./test/out && npm run build && npm run build:tests && mocha test/out/e2e-test/*.js"
+    "e2e": "npm run build && npm run build:tests && mocha out/e2e-test/*.js && rimraf ./out"
   },
   "files": [
     "dist/**/*.js",

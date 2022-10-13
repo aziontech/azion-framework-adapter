@@ -1,13 +1,14 @@
 {
   "kv": {
-    "accessKeyId": "<AWS_ACCESS_KEY_ID>",
-    "secretAccessKey": "<AWS_SECRET_ACCESS_KEY>",
-    "bucket": "my-bucket-name",
+    "accessKeyId": "123456",
+    "secretAccessKey": "123456",
+    "bucket": "azion-test",
     "region": "us-east-1",
-    "path": "__static_content"
+    "path": "__static_content_test/first-contact-e2e",
+    "endpoint": "http://localhost:4566"
   },
   "azion": {
-    "token": "<AZION_TOKEN>",
-    "function_name": "my-function-name"
+    "token": "azion12345679",
+    "function_name": "flareact-first-contact"
   }
 }
