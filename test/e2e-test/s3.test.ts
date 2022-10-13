@@ -70,7 +70,7 @@ describe.only('Test S3', () => {
     it('Try to build', async () => {
         const expectOutput = `Finished client.
 Wrote manifest file to ${template}/worker/manifest.json
-Finished worker
+Finished worker.
 Completed.\n`
         const { stdout } = await execFile('azion-framework-adapter build');
         const flareactOutputDir = fs.existsSync(path.join(template,'out/_flareact'));
