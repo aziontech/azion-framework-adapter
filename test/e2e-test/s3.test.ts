@@ -69,7 +69,7 @@ describe.only('Test S3', () => {
 
     it('Try to build', async () => {
         const expectOutput = `Finished client.
-Wrote manifest file to /private${template}/worker/manifest.json
+Wrote manifest file to ${template}/worker/manifest.json
 Finished worker.
 Completed.\n`
         const { stdout } = await execFile('azion-framework-adapter build');
@@ -80,7 +80,7 @@ Completed.\n`
 
     it('Try to publish', async () => {
         const { stdout } =await execFile('azion-framework-adapter publish -s');
-        const publishOutputMessage = `Loading asset manifest from /private${template}/worker/manifest.json\n`;
+        const publishOutputMessage = `Loading asset manifest from ${template}/worker/manifest.json\n`;
         expect(stdout).to.be.equal(publishOutputMessage);
     });
 
@@ -105,7 +105,7 @@ Completed.\n`
             }
         })
 
-        const manifest = fs.readFileSync(`/private${template}/worker/manifest.json`);
+        const manifest = fs.readFileSync(`${template}/worker/manifest.json`);
         console.log("manifest", JSON.parse(manifest.toString()));
     });
 })
