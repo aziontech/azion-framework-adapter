@@ -77,7 +77,7 @@ describe('Create Flareact application', () => {
     it('Build the Flareact project', async () => {
         const expectOutput = `Finished client.
 Wrote manifest file to ${template}/worker/manifest.json
-Finished worker.
+Finished worker
 Completed.\n`
         const { stdout } = await execFile('azion-framework-adapter build');
         const flareactOutputDir = fs.existsSync(path.join(template,'out/_flareact'));
