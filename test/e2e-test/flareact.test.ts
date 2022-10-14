@@ -14,12 +14,14 @@ import { expect } from 'chai';
 describe('Create Flareact application', () => {
     let templatePath: string;
     let template: string;
+    let realPath: string;
 
     before(() => {
         // Creates temporary local template repository
         templatePath = fs.mkdtempSync(path.join(os.tmpdir(), 'flareact-test'));
+        realPath = fs.realpathSync(templatePath);
         const templateName = 'flareact-template';
-        template = path.join(templatePath, templateName);
+        template = path.join(realPath, templateName);
         console.log("Temporary directory", template);
 
         const s3 = new AWS.S3 ({
