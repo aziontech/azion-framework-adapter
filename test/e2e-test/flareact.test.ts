@@ -51,6 +51,7 @@ describe('Create Flareact application', () => {
 
     it('init template flareact"', async () => {
         const { stdout} = await execFile(`azion-framework-adapter init ${template} https://github.com/flareact/flareact-template`);
+        console.log("Template path", template);
         expect(stdout).to.be.equal('Completed.\n');
     });
 
@@ -96,23 +97,23 @@ Completed.\n`
         const bucketParams = {
             Bucket: "azion-test"
         }
-        const allKeys: any[] = [];
-        async function getAllKeys(bucketParams: AWS.S3.ListObjectsV2Request,  allKeys: any[]){
+        const filesOnS3Bucket: any[] = [];
+        async function getAllKeys(bucketParams: AWS.S3.ListObjectsV2Request,  filesOnS3Bucket: any[]){
             const response = await s3.listObjectsV2(bucketParams).promise();
-            response.Contents?.forEach(obj => allKeys.push(obj.Key?.replace('__static_content_test/first-contact-e2e/', '')));
+            response.Contents?.forEach(obj => filesOnS3Bucket.push(obj.Key?.replace('__static_content_test/first-contact-e2e/', '')));
 
             if (response.NextContinuationToken) {
                 bucketParams.ContinuationToken = response.NextContinuationToken;
-                await getAllKeys(bucketParams, allKeys); // RECURSIVE CALL
+                await getAllKeys(bucketParams, filesOnS3Bucket); // RECURSIVE CALL
             }
-            return allKeys;
+            return filesOnS3Bucket;
         }
 
-        await getAllKeys(bucketParams, allKeys);
+        await getAllKeys(bucketParams, filesOnS3Bucket);
 
         const manifest = fs.readFileSync(`${template}/worker/manifest.json`);
         const manifestArray = Object.values(JSON.parse(manifest.toString()));
-        const allKeysContainManifestFiles = manifestArray.every((each) =>  allKeys.includes(each) );
-        expect(allKeysContainManifestFiles).to.be.true;
+        const filesOnS3BucketContainManifestFiles = manifestArray.every((each) =>  filesOnS3Bucket.includes(each) );
+        expect(filesOnS3BucketContainManifestFiles).to.be.true;
     });
 })
