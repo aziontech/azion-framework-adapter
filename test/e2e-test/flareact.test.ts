@@ -15,6 +15,7 @@ describe('Create Flareact application', () => {
     let templatePath: string;
     let template: string;
     let realPath: string;
+    let localOutput: string;
 
     before(() => {
         // Creates temporary local template repository
@@ -22,6 +23,7 @@ describe('Create Flareact application', () => {
         realPath = fs.realpathSync(templatePath);
         const templateName = 'flareact-template';
         template = path.join(realPath, templateName);
+        localOutput = process.cwd();
         console.log("Temporary directory", template);
 
         const s3 = new AWS.S3 ({
@@ -45,15 +47,17 @@ describe('Create Flareact application', () => {
         })
     });
 
-    // after(() => {
-    //     if (templatePath) {
-    //         fs.rmSync(templatePath, { recursive: true });
-    //     }
-    // });
+    after(() => {
+        process.chdir(localOutput);
+        if (templatePath) {
+            fs.rmSync(templatePath, { recursive: true });
+        }
+    });
 
     it('init template flareact"', async () => {
         const { stdout} = await execFile(`azion-framework-adapter init ${template} https://github.com/flareact/flareact-template`);
         console.log("Template path", template);
+        console.log("Local actual", process.cwd())
         expect(stdout).to.be.equal('Completed.\n');
     });
 
@@ -106,7 +110,7 @@ Completed.\n`
 
             if (response.NextContinuationToken) {
                 bucketParams.ContinuationToken = response.NextContinuationToken;
-                await getAllKeys(bucketParams, filesOnS3Bucket); // RECURSIVE CALL
+                await getAllKeys(bucketParams, filesOnS3Bucket);
             }
             return filesOnS3Bucket;
         }
