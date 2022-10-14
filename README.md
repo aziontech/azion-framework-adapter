@@ -72,6 +72,24 @@ azion-framework-adapter publish
 
 After building and publishing your code to Azion, you should login into Azion's Real Time Manager and create an Edge Application that will make use of your recently published Edge Function. Subsequent builds followed by corresponding publishes will automatically update your Edge Application.
 
+## Tests
+
+### Unit tests
+```
+npm run test
+```
+
+### E2E tests
+
+Before run e2e test you need initialize the Verdaccio and LocalStack containners to emulate npm registry and AWS S3 Bucket
+```
+docker-compose up
+```
+Access http://0.0.0.0:4873 and folow the instructions.
+```
+npm run e2e
+```
+
 ## Notes
 * We strongly recommend to use [azion-cli](https://github.com/aziontech/azion-cli) for a better developer experience.
 
