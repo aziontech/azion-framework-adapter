@@ -15,7 +15,7 @@ Commands:
   publish [options]                         Publish the application.
   help [command]                            display help for command\n`
 
-    it('Option "Help"', async () => {
+    it('Output of "Help" option', async () => {
         const { stdout} = await exec('azion-framework-adapter --help');
         expect(stdout).to.be.equal(afaStdOutput)
     })

@@ -11,7 +11,7 @@ import AWS = require('aws-sdk');
 
 import { expect } from 'chai';
 
-describe.only('Test S3', () => {
+describe('Create Flareact application', () => {
     let templatePath: string;
     let template: string;
 
@@ -38,7 +38,7 @@ describe.only('Test S3', () => {
             if (err) {
                 console.log("Error", err);
             } else {
-                console.log("success", data.Location)
+                console.log("Create bucket", data.Location)
             }
         })
     });
@@ -67,7 +67,7 @@ describe.only('Test S3', () => {
         expect(packageLock).to.be.true;
     });
 
-    it('Try to build', async () => {
+    it('Build the Flareact project', async () => {
         const expectOutput = `Finished client.
 Wrote manifest file to ${template}/worker/manifest.json
 Finished worker.
@@ -78,13 +78,13 @@ Completed.\n`
         expect(flareactOutputDir).to.be.true;
     });
 
-    it('Try to publish', async () => {
+    it('Publish only asset of the flareact to S3', async () => {
         const { stdout } =await execFile('azion-framework-adapter publish -s');
         const publishOutputMessage = `Loading asset manifest from ${template}/worker/manifest.json\n`;
         expect(stdout).to.be.equal(publishOutputMessage);
     });
 
-    it("List assets on S3 Bucket", () => {
+    it("Compare manifest with the list of files on S3 Bucket", async () => {
         const s3 = new AWS.S3 ({
             accessKeyId: "123456",
             secretAccessKey: "123456",
@@ -96,16 +96,23 @@ Completed.\n`
         const bucketParams = {
             Bucket: "azion-test"
         }
+        const allKeys: any[] = [];
+        async function getAllKeys(bucketParams: AWS.S3.ListObjectsV2Request,  allKeys: any[]){
+            const response = await s3.listObjectsV2(bucketParams).promise();
+            response.Contents?.forEach(obj => allKeys.push(obj.Key?.replace('__static_content_test/first-contact-e2e/', '')));
 
-        s3.listObjectsV2(bucketParams, function (err, data) {
-            if (err) {
-                console.log("Error", err);
-            } else {
-                console.log("success", data.Name, data.Contents?.map(assets => assets.Key?.replace('__static_content_test/first-contact-e2e/', '')));
+            if (response.NextContinuationToken) {
+                bucketParams.ContinuationToken = response.NextContinuationToken;
+                await getAllKeys(bucketParams, allKeys); // RECURSIVE CALL
             }
-        })
+            return allKeys;
+        }
+
+        await getAllKeys(bucketParams, allKeys);
 
         const manifest = fs.readFileSync(`${template}/worker/manifest.json`);
-        console.log("manifest", JSON.parse(manifest.toString()));
+        const manifestArray = Object.values(JSON.parse(manifest.toString()));
+        const allKeysContainManifestFiles = manifestArray.every((each) =>  allKeys.includes(each) );
+        expect(allKeysContainManifestFiles).to.be.true;
     });
 })

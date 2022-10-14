@@ -12,9 +12,9 @@
     "cover": "nyc --reporter=lcov --reporter=text npm t",
     "exec": "node dist/main.js",
     "lint": "npx eslint --fix src && npx eslint --fix test",
-    "test": "rimraf ./out && npm run build && npm run build:tests && mocha out/unit-test/*.js",
+    "test": "rimraf ./out && npm run build && npm run build:tests && mocha testOut/unit-test/*.js",
     "rebuild:all": "npm run clean && npm run build:all",
-    "e2e": "rimraf ./out && npm run build && npm run build:tests && mocha out/e2e-test/*.js"
+    "e2e": "rimraf ./out && npm run build && npm run build:tests && mocha testOut/e2e-test/*.js"
   },
   "files": [
     "dist/**/*.js",
