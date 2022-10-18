@@ -15,7 +15,7 @@ Azion Framework Adapter is a command line tool that builds Jamstack projects tar
 * [Individual Contributor License Agreement (CLA)](CLA.md)
 
 ## Prerequisites
-* Node version >= 14.
+* Node version >= 16.
 
 ## Install
 
