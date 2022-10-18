@@ -19,6 +19,12 @@ Azion Framework Adapter is a command line tool that builds Jamstack projects tar
 
 ## Install
 
+### From npm
+```
+npm install -g azion-framework-adapter
+```
+You must have permission to install global packages with npm in your operating system. If you are having problems installing the package globally check [Resolving EACCES permissions errors when installing packages globally](https://docs.npmjs.com/resolving-eacces-permissions-errors-when-installing-packages-globally).
+
 ### From source
 ```
   git clone git@github.com:aziontech/azion-framework-adapter.git
@@ -29,6 +35,14 @@ Azion Framework Adapter is a command line tool that builds Jamstack projects tar
 ```
 
 ## Usage
+After install it globally in your machine, run:
+```
+azion-framework-adapter COMMAND
+```
+You can use the package without installing it, just run:
+```
+npx azion-framework-adapter COMMAND
+```
 
 ### Using the template
 Static site example:
