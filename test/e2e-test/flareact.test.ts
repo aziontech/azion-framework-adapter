@@ -16,6 +16,17 @@ describe('Create Flareact application', () => {
     let template: string;
     let realPath: string;
     let localOutput: string;
+    const bucketParams = {
+        Bucket: "azion-test"
+    }
+
+    const s3 = new AWS.S3 ({
+        accessKeyId: "123456",
+        secretAccessKey: "123456",
+        signatureVersion: "v4",
+        s3ForcePathStyle: true,
+        endpoint: "http://localhost:4566"
+    });
 
     before(async () => {
         // Creates temporary local template repository
@@ -24,18 +35,6 @@ describe('Create Flareact application', () => {
         const templateName = 'flareact-template';
         template = path.join(realPath, templateName);
         localOutput = process.cwd();
-
-        const s3 = new AWS.S3 ({
-            accessKeyId: "123456",
-            secretAccessKey: "123456",
-            signatureVersion: "v4",
-            s3ForcePathStyle: true,
-            endpoint: "http://localhost:4566"
-        });
-
-        const bucketParams = {
-            Bucket: "azion-test"
-        }
 
         await s3.createBucket(bucketParams).promise();
     });
@@ -83,17 +82,6 @@ describe('Create Flareact application', () => {
     });
 
     it("Compare manifest with the list of files on S3 Bucket", async () => {
-        const s3 = new AWS.S3 ({
-            accessKeyId: "123456",
-            secretAccessKey: "123456",
-            signatureVersion: "v4",
-            s3ForcePathStyle: true,
-            endpoint: "http://localhost:4566"
-        });
-
-        const bucketParams = {
-            Bucket: "azion-test"
-        }
         const filesOnS3Bucket: any[] = [];
         async function getAllKeys(bucketParams: AWS.S3.ListObjectsV2Request,  filesOnS3Bucket: any[]){
             const response = await s3.listObjectsV2(bucketParams).promise();
