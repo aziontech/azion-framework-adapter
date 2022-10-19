@@ -52,7 +52,7 @@ describe('Create Flareact application', () => {
     });
 
     it('Copy azion.json file ', async () => {
-        await copy(path.join(process.cwd(), 'test', 'project-examples', 'azion-flareact.json'),path.join(template,'azion.json'))
+        await copy(path.join(process.cwd(), 'test', 'config-files', 'azion-flareact.json'),path.join(template,'azion.json'))
         const azionConfigFile = fs.existsSync(path.join(template,'azion.json'));
         expect(azionConfigFile).to.be.true;
     });

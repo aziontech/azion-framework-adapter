@@ -11,24 +11,24 @@ import AWS = require('aws-sdk');
 
 import { expect } from 'chai';
 
-describe('Create Flareact application with error', () => {
+describe.only('Create Flareact application with error', () => {
     let templatePath: string;
     let template: string;
     let realPath: string;
     let localOutput: string;
+    const bucketParams = {
+        Bucket: "azion-test"
+    }
+
+    const s3 = new AWS.S3 ({
+        accessKeyId: "123456",
+        secretAccessKey: "123456",
+        signatureVersion: "v4",
+        s3ForcePathStyle: true,
+        endpoint: "http://localhost:4566"
+    });
 
     before(async () => {
-        const s3 = new AWS.S3 ({
-            accessKeyId: "123456",
-            secretAccessKey: "123456",
-            signatureVersion: "v4",
-            s3ForcePathStyle: true,
-            endpoint: "http://localhost:4566"
-        });
-
-        const bucketParams = {
-            Bucket: "azion-test"
-        }
 
         await s3.createBucket(bucketParams).promise();
     });
@@ -82,7 +82,7 @@ describe('Create Flareact application with error', () => {
     describe('Create Flareact application with "azion.json" without S3 credential', () => {
 
         before(async () => {
-            await copy(path.join(localOutput, 'test', 'project-examples', 'azion-flareact-without-S3.json'),path.join(template,'azion.json'))
+            await copy(path.join(localOutput, 'test', 'config-files', 'azion-flareact-without-S3.json'),path.join(template,'azion.json'))
         });
 
         it('Build the Flareact project with "azion.json" without S3 credentials', async () => {
