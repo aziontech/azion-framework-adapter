@@ -13,7 +13,8 @@ export interface KVConfig {
     secretAccessKey: string,
     region: string,
     bucket: string,
-    path: string
+    path: string,
+    endpoint?: string
 }
 
 export interface Config {

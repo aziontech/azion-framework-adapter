@@ -26,7 +26,8 @@
                 "bucket": "string",
                 "region": "string",
                 "$comment": "Path is used to set individual prefixes (paths) for each KV inside the bucket",
-                "path": "string"
+                "path": "string",
+                "endpoint": "string"
             }
         }
     }
