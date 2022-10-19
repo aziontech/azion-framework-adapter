@@ -11,7 +11,7 @@ import AWS = require('aws-sdk');
 
 import { expect } from 'chai';
 
-describe.only('Create Flareact application with error', () => {
+describe('Create Flareact application with error', () => {
     let templatePath: string;
     let template: string;
     let realPath: string;
