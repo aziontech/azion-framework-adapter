@@ -11,11 +11,22 @@ import AWS = require('aws-sdk');
 
 import { expect } from 'chai';
 
-describe('Create nextjs application', () => {
+describe.only('Create nextjs application', () => {
     let templatePath: string;
     let template: string;
     let realPath: string;
     let localOutput: string;
+    const bucketParams = {
+        Bucket: "azion-test"
+    }
+
+    const s3 = new AWS.S3 ({
+        accessKeyId: "123456",
+        secretAccessKey: "123456",
+        signatureVersion: "v4",
+        s3ForcePathStyle: true,
+        endpoint: "http://localhost:4566"
+    });
 
     before(async () => {
         // Creates temporary local template repository
@@ -24,18 +35,6 @@ describe('Create nextjs application', () => {
         const templateName = 'nextjs-template';
         template = path.join(realPath, templateName);
         localOutput = process.cwd();
-
-        const s3 = new AWS.S3 ({
-            accessKeyId: "123456",
-            secretAccessKey: "123456",
-            signatureVersion: "v4",
-            s3ForcePathStyle: true,
-            endpoint: "http://localhost:4566"
-        });
-
-        const bucketParams = {
-            Bucket: "azion-test"
-        }
 
         await s3.createBucket(bucketParams).promise();
     });
@@ -77,7 +76,7 @@ describe('Create nextjs application', () => {
 
 
     it('Copy azion.json file ', async () => {
-        await copy(path.join(localOutput, 'test', 'project-examples', 'azion-next.json'),path.join(template,'./cells-site-template/azion.json'))
+        await copy(path.join(localOutput, 'test', 'config-files', 'azion-next.json'),path.join(template,'./cells-site-template/azion.json'))
         const azionConfigFile = fs.existsSync(path.join(template,'./cells-site-template/azion.json'));
         expect(azionConfigFile).to.be.true;
     });
@@ -99,17 +98,6 @@ describe('Create nextjs application', () => {
     });
 
     it("Compare manifest with the list of files on S3 Bucket", async () => {
-        const s3 = new AWS.S3 ({
-            accessKeyId: "123456",
-            secretAccessKey: "123456",
-            signatureVersion: "v4",
-            s3ForcePathStyle: true,
-            endpoint: "http://localhost:4566"
-        });
-
-        const bucketParams = {
-            Bucket: "azion-test"
-        }
         const filesOnS3Bucket: any[] = [];
         async function getAllKeys(bucketParams: AWS.S3.ListObjectsV2Request,  filesOnS3Bucket: any[]){
             const response = await s3.listObjectsV2(bucketParams).promise();
