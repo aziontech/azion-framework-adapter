@@ -38,6 +38,22 @@ jobs:
         run: npm test
   publish:
     needs: build-and-unit-test
+    services:
+      verdaccio:
+        image: verdaccio/verdaccio:5
+        ports:
+          - 4873:4873
+        volumes:
+          - verdaccio/storage:/verdaccio/storage
+          - verdaccio/config:/verdaccio/conf
+          - verdacio/plugins:/verdaccio/plugins
+      localstack:
+        image: localstack/localstack
+        env:
+          SERVICES: s3
+          DEFAULT_REGION: us-east-1
+          DATA_DIR: /tmp/localstack/data
+        ports: ["4566:4566"]
 
     strategy:
       matrix:
@@ -49,20 +65,14 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - name: Start containers
-        run: docker-compose -f "docker-compose.yml" up -d --build
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node-version }}
       - name: Installing dependencies
-        run: chown -R 10001:65533 verdaccio
-      - name: Installing dependencies
         run: npm ci
       - name: Building
         run: npm run build --if-present
-      - name: login
-        run: npx npm-cli-login -u test -p 1234 -e test@domain.test -r http://localhost:4873
       - name: publish
         run: npm publish --registry http://localhost:4873
       - name: check
