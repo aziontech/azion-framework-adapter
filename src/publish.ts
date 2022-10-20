@@ -14,10 +14,15 @@ export async function publish(options: any): Promise<ErrorCode> {
 
         if (!options.onlyFunction) {
             const cfg: AssetPublisherConfig = await AssetPublisher.getConfig(rawCfg, process.env);
-            const s3 = new S3({
+            const s3 = new S3 ({
                 accessKeyId: cfg.kv.accessKeyId,
-                secretAccessKey: cfg.kv.secretAccessKey
+                secretAccessKey: cfg.kv.secretAccessKey,
+                signatureVersion: "v4",
+                s3ForcePathStyle: true
             });
+            if(cfg.kv.endpoint) {
+                s3.config.endpoint = cfg.kv.endpoint
+            }
             const publisher = new AssetPublisher(cwd(), s3, cfg);
             await publisher.deployStaticAssets(options.assetsDir);
         }
@@ -26,7 +31,8 @@ export async function publish(options: any): Promise<ErrorCode> {
             const cfg: AzionPublisherConfig = await AzionPublisher.getConfig(rawCfg, process.env);
             const azion = await AzionApi.init(cfg.azion.end_point, cfg.azion.token);
             const publisher = new AzionPublisher(azion, cwd(), cfg);
-            await publisher.deployEdgeFunction();
+            const deployedEdgeFunction = await publisher.deployEdgeFunction();
+            console.log('Function id:', deployedEdgeFunction.id);
         }
 
         return ErrorCode.Ok;
