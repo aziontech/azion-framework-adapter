@@ -44,9 +44,9 @@ jobs:
         ports:
           - 4873:4873
         volumes:
-          - $GITHUB_WORKSPACE/verdaccio/storage:/verdaccio/storage
-          - $GITHUB_WORKSPACE/verdaccio/config:/verdaccio/conf
-          - $GITHUB_WORKSPACE/verdacio/plugins:/verdaccio/plugins
+          - /verdaccio/storage:/verdaccio/storage
+          - /verdaccio/config:/verdaccio/conf
+          - /verdacio/plugins:/verdaccio/plugins
       localstack:
         image: localstack/localstack
         env:
