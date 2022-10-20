@@ -56,7 +56,7 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - name: Installing dependencies
-        run: chown -R 10001:65533 /verdaccio
+        run: chown -R 10001:65533 verdaccio
       - name: Installing dependencies
         run: npm ci
       - name: Building
