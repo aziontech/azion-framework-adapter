@@ -38,7 +38,7 @@ jobs:
         run: npm test
   publish:
     needs: build-and-unit-test
-    - uses: actions/checkout@v2
+    uses: actions/checkout@v2
     services:
       verdaccio:
         image: verdaccio/verdaccio:5
