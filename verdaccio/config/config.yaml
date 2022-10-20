@@ -12,6 +12,9 @@
 # https://github.com/verdaccio/verdaccio/tree/master/packages/config/src/conf
 #
 
+web:
+  title: Azion
+
 # path to a directory with all packages
 storage: /verdaccio/storage
 
@@ -46,6 +49,12 @@ packages:
     access: $all
     publish: $all
     proxy: npmjs
+
+  "azion-framework-adapter":
+    access: $all
+    publish: $all
+    unpublish: $all
+
 
   '**':
     # allow all users (including non-authenticated users) to read and
