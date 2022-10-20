@@ -38,16 +38,15 @@ jobs:
         run: npm test
   publish:
     needs: build-and-unit-test
-    uses: actions/checkout@v2
     services:
       verdaccio:
         image: verdaccio/verdaccio:5
         ports:
           - 4873:4873
         volumes:
-          - /verdaccio/storage:/verdaccio/storage
-          - /verdaccio/config:/verdaccio/conf
-          - /verdacio/plugins:/verdaccio/plugins
+          - ${GITHUB_WORKSPACE}/verdaccio/storage:/verdaccio/storage
+          - ${GITHUB_WORKSPACE}/verdaccio/config:/verdaccio/conf
+          - ${GITHUB_WORKSPACE}/verdacio/plugins:/verdaccio/plugins
       localstack:
         image: localstack/localstack
         env:
@@ -65,6 +64,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
+      - uses: actions/checkout@v2
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v2
         with:
