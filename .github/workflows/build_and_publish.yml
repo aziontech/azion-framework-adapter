@@ -13,7 +13,7 @@ jobs:
     strategy:
       matrix:
         node-version: [16.x]
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest]
 
     name: Test - ${{ matrix.os }} - Node v${{ matrix.node-version }}
 
@@ -44,9 +44,9 @@ jobs:
         ports:
           - 4873:4873
         volumes:
-          - "/verdaccio/storage:/verdaccio/storage"
-          - "/verdaccio/config:/verdaccio/conf"
-          - "/plugins:/verdaccio/plugins"
+          - "aziontech/azion-framework-adapter/verdaccio/storage:/verdaccio/storage"
+          - "aziontech/azion-framework-adapter/verdaccio/config:/verdaccio/conf"
+          - "aziontech/azion-framework-adapter/verdacio/plugins:/verdaccio/plugins"
       localstack:
         image: localstack/localstack
         env:
