@@ -28,6 +28,31 @@ describe('Create nextjs application', () => {
         endpoint: "http://localhost:4566"
     });
 
+    async function getAllKeys(bucketParams: AWS.S3.ListObjectsV2Request,  filesOnS3Bucket: any[]){
+        const response = await s3.listObjectsV2(bucketParams).promise();
+        response.Contents?.forEach(obj => filesOnS3Bucket.push(obj.Key?.replace('__static_content_test/nextjs-e2e/', '')));
+
+        if (response.NextContinuationToken) {
+            bucketParams.ContinuationToken = response.NextContinuationToken;
+            await getAllKeys(bucketParams, filesOnS3Bucket);
+        }
+        return filesOnS3Bucket;
+    }
+
+    async function removeAllKeys(bucketParams: AWS.S3.ListObjectsV2Request){
+        const response = await s3.listObjectsV2(bucketParams).promise();
+        console.log(response);
+
+        const keys: { Key: string; }[] = []
+        for(const i of response.Contents??[]){
+            if (i.Key !== undefined) {
+                keys.push({Key: i.Key})
+            }
+        }
+
+        s3.deleteObjects({Bucket: bucketParams.Bucket, Delete: { Objects: keys}});
+    }
+
     before(async () => {
         // Creates temporary local template repository
         templatePath = fs.mkdtempSync(path.join(os.tmpdir(), 'nextjs-test'));
@@ -46,7 +71,7 @@ describe('Create nextjs application', () => {
         }
     });
 
-    it.only('init template nextjs"', async () => {
+    it('init template nextjs"', async () => {
         console.log('Creating Next project');
         const expectOutput = `Export successful. Files written to ${template}/out`
         await execFile(`npx -y create-next-app@latest ${template}`);
@@ -94,24 +119,12 @@ describe('Create nextjs application', () => {
     });
 
     it('Publish only asset of the nextjs to S3', async () => {
+        removeAllKeys(bucketParams);
         const { stdout } =await execFile('azion-framework-adapter publish --only-assets --assets-dir ../out');
         const publishOutputMessage = `Loading asset manifest from ${template}/cells-site-template/worker/manifest.json\n`;
         expect(stdout).to.be.equal(publishOutputMessage);
-    });
 
-    it("Compare manifest with the list of files on S3 Bucket", async () => {
         const filesOnS3Bucket: any[] = [];
-        async function getAllKeys(bucketParams: AWS.S3.ListObjectsV2Request,  filesOnS3Bucket: any[]){
-            const response = await s3.listObjectsV2(bucketParams).promise();
-            response.Contents?.forEach(obj => filesOnS3Bucket.push(obj.Key?.replace('__static_content_test/nextjs-e2e/', '')));
-
-            if (response.NextContinuationToken) {
-                bucketParams.ContinuationToken = response.NextContinuationToken;
-                await getAllKeys(bucketParams, filesOnS3Bucket);
-            }
-            return filesOnS3Bucket;
-        }
-
         await getAllKeys(bucketParams, filesOnS3Bucket);
 
         const manifest = fs.readFileSync(`${template}/cells-site-template/worker/manifest.json`);

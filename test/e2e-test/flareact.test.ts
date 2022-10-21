@@ -28,6 +28,31 @@ describe('Create Flareact application', () => {
         endpoint: "http://localhost:4566"
     });
 
+    async function getAllKeys(bucketParams: AWS.S3.ListObjectsV2Request,  filesOnS3Bucket: any[]){
+        const response = await s3.listObjectsV2(bucketParams).promise();
+        response.Contents?.forEach(obj => filesOnS3Bucket.push(obj.Key?.replace('__static_content_test/flareact-e2e/', '')));
+
+        if (response.NextContinuationToken) {
+            bucketParams.ContinuationToken = response.NextContinuationToken;
+            await getAllKeys(bucketParams, filesOnS3Bucket);
+        }
+        return filesOnS3Bucket;
+    }
+
+    async function removeAllKeys(bucketParams: AWS.S3.ListObjectsV2Request){
+        const response = await s3.listObjectsV2(bucketParams).promise();
+        console.log(response);
+
+        const keys: { Key: string; }[] = []
+        for(const i of response.Contents??[]){
+            if (i.Key !== undefined) {
+                keys.push({Key: i.Key})
+            }
+        }
+
+        s3.deleteObjects({Bucket: bucketParams.Bucket, Delete: { Objects: keys}});
+    }
+
     before(async () => {
         // Creates temporary local template repository
         templatePath = fs.mkdtempSync(path.join(os.tmpdir(), 'flareact-test'));
@@ -76,24 +101,11 @@ describe('Create Flareact application', () => {
     });
 
     it('Publish only asset of the flareact to S3', async () => {
+        removeAllKeys(bucketParams);
         const { stdout } =await execFile('azion-framework-adapter publish -s');
         const publishOutputMessage = `Loading asset manifest from ${template}/worker/manifest.json\n`;
         expect(stdout).to.be.equal(publishOutputMessage);
-    });
-
-    it("Compare manifest with the list of files on S3 Bucket", async () => {
         const filesOnS3Bucket: any[] = [];
-        async function getAllKeys(bucketParams: AWS.S3.ListObjectsV2Request,  filesOnS3Bucket: any[]){
-            const response = await s3.listObjectsV2(bucketParams).promise();
-            response.Contents?.forEach(obj => filesOnS3Bucket.push(obj.Key?.replace('__static_content_test/flareact-e2e/', '')));
-
-            if (response.NextContinuationToken) {
-                bucketParams.ContinuationToken = response.NextContinuationToken;
-                await getAllKeys(bucketParams, filesOnS3Bucket);
-            }
-            return filesOnS3Bucket;
-        }
-
         await getAllKeys(bucketParams, filesOnS3Bucket);
 
         const manifest = fs.readFileSync(`${template}/worker/manifest.json`);

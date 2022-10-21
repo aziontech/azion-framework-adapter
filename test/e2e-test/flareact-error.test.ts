@@ -66,7 +66,7 @@ describe('Create Flareact application with error', () => {
             const expectOnError =  "Couldn't read file 'azion.json' at the project's root directory. Because ENOENT: no such file or directory, open 'azion.json'\n"
 
             function run(cmd: string) {
-                return new Promise((resolve, _reject) => {
+                return new Promise((resolve) => {
                     execFile(cmd, (error: any, stdout: any, stderr: any) => {
                         resolve({stdout,stderr, error})
                     })
@@ -89,7 +89,7 @@ describe('Create Flareact application with error', () => {
             const expectOnError =  "S3 credentials not set either in the configuration file or as environment variables.\n"
 
             function run(cmd: string) {
-                return new Promise((resolve, _reject) => {
+                return new Promise((resolve) => {
                     execFile(cmd, (error: any, stdout: any, stderr: any) => {
                         resolve({stdout,stderr, error})
                     })
