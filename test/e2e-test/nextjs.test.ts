@@ -41,8 +41,6 @@ describe('Create nextjs application', () => {
 
     async function removeAllKeys(bucketParams: AWS.S3.ListObjectsV2Request){
         const response = await s3.listObjectsV2(bucketParams).promise();
-        console.log(response);
-
         const keys: { Key: string; }[] = []
         for(const i of response.Contents??[]){
             if (i.Key !== undefined) {

@@ -11,7 +11,7 @@ import AWS = require('aws-sdk');
 
 import { expect } from 'chai';
 
-describe('Create Flareact application', () => {
+describe.only('Create Flareact application', () => {
     let templatePath: string;
     let template: string;
     let realPath: string;
@@ -41,8 +41,6 @@ describe('Create Flareact application', () => {
 
     async function removeAllKeys(bucketParams: AWS.S3.ListObjectsV2Request){
         const response = await s3.listObjectsV2(bucketParams).promise();
-        console.log(response);
-
         const keys: { Key: string; }[] = []
         for(const i of response.Contents??[]){
             if (i.Key !== undefined) {
