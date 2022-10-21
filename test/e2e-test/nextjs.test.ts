@@ -46,8 +46,9 @@ describe('Create nextjs application', () => {
         }
     });
 
-    it('init template nextjs"', async () => {
+    it.only('init template nextjs"', async () => {
         console.log('Creating Next project');
+        const expectOutput = `Export successful. Files written to ${template}/out`
         await execFile(`npx -y create-next-app@latest ${template}`);
         const data = fs.readFileSync(`${template}/pages/index.js`);
         const dataToString = data.toString();
@@ -58,7 +59,8 @@ describe('Create nextjs application', () => {
         fs.writeFileSync(`${template}/pages/index.js`,arrayToText)
         process.chdir(template);
         await execFile(`npx next build`);
-        await execFile(`npx next export`);
+        const { stdout } = await execFile(`npx next export`);
+        expect(stdout).to.have.string(expectOutput);
     });
 
     it('Clone cell site template', async () => {
