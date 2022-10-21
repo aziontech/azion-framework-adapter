@@ -1,0 +1,14 @@
+{
+  "kv": {
+    "accessKeyId": "123456K",
+    "secretAccessKey": "123456K",
+    "bucket": "azion-test",
+    "region": "us-east-1",
+    "path": "__static_content_test/flareact-e2e",
+    "endpoint": "http://localhost:4566"
+  },
+  "azion": {
+    "token": "azion12345679",
+    "function_name": "flareact-first-contact"
+  }
+}
