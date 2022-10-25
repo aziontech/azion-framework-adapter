@@ -11,7 +11,7 @@ import AWS = require('aws-sdk');
 
 import { expect } from 'chai';
 
-describe('Create nextjs application', () => {
+describe.only('Create nextjs application', () => {
     let templatePath: string;
     let template: string;
     let realPath: string;
@@ -72,14 +72,7 @@ describe('Create nextjs application', () => {
     it('init template nextjs"', async () => {
         console.log('Creating Next project');
         const expectOutput = `Export successful. Files written to ${template}/out`
-        await execFile(`npx -y create-next-app@latest ${template}`);
-        const data = fs.readFileSync(`${template}/pages/index.js`);
-        const dataToString = data.toString();
-        const dataToArray = dataToString.split('\n');
-        dataToArray.splice(1,1); //Remove import of NextJS/Image
-        dataToArray.splice(61,1,'               <img src="/vercel.svg" alt="Vercel Logo" width="72" height="16" />\n');
-        const arrayToText =  dataToArray.join('\n');
-        fs.writeFileSync(`${template}/pages/index.js`,arrayToText)
+        await execFile(`npx -y create-next-app@latest --example basic-css ${template}`);
         process.chdir(template);
         await execFile(`npx next build`);
         const { stdout } = await execFile(`npx next export`);
