@@ -31,11 +31,18 @@ export class AssetPublisher {
         const config = await validate(cfg, AssetPublisherConfigSchema,
             'https://azion.com/azion-framework-adapter/2022-05.1/asset-publisher-config.schema.json');
         const kv = config.kv;
-        kv.accessKeyId = kv.accessKeyId ?? env.AWS_ACCESS_KEY_ID;
-        kv.secretAccessKey = kv.secretAccessKey ?? env.AWS_SECRET_ACCESS_KEY;
+
+        kv.accessKeyId = kv.accessKeyId || env.AWS_ACCESS_KEY_ID;
+        kv.secretAccessKey = kv.secretAccessKey || env.AWS_SECRET_ACCESS_KEY;
+
+        kv.bucket = kv.bucket || env.AWS_DEFAULT_BUCKET_NAME;
+        kv.region = kv.region || env.AWS_DEFAULT_BUCKET_REGION;
+        kv.path = kv.path || env.AWS_DEFAULT_BUCKET_PATH;
+
         if (!kv.accessKeyId || !kv.secretAccessKey) {
             throw new S3CredentialsNotSet();
         }
+
         return config;
     }
     constructor(rootPath: string, s3: S3, cfg: Config) {
