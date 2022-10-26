@@ -9,6 +9,7 @@
   },
   "azion": {
     "token": "azion12345679",
-    "function_name": "flareact-first-contact"
+    "function_name": "flareact-first-contact",
+    "end_point": "http://0.0.0.0:8080"
   }
 }
