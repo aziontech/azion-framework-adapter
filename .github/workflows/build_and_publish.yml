@@ -66,7 +66,7 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - name: Json Server
-        run: npx json-server --port 8080 -w data/db.json -m data/file.js -q &
+        run: npx json-server --port 8080 -w json-server-conf/db.json -m json-server-conf/file.js -q &
       - name: Installing dependencies
         run: npm ci
       - name: Building
