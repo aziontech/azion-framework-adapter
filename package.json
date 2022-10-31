@@ -1,6 +1,6 @@
 {
   "name": "azion-framework-adapter",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Command line tool that builds Jamstack projects targeting Azion's Edge Functions.",
   "main": "dist/main.js",
   "bin": {
@@ -15,8 +15,9 @@
     "cover": "nyc --reporter=lcov --reporter=text npm t",
     "exec": "node dist/main.js",
     "lint": "npx eslint --fix src && npx eslint --fix test",
-    "test": "rimraf ./test/out && npm run build && npm run build:tests && mocha",
-    "rebuild:all": "npm run clean && npm run build:all"
+    "test": "rimraf ./out && npm run build && npm run build:tests && mocha --recursive ./out/ts/",
+    "rebuild:all": "npm run clean && npm run build:all",
+    "e2e": "rimraf ./out && npm run build && npm run build:tests && mocha ./out/e2e-test/*.test.js"
   },
   "files": [
     "dist/**/*.js",
