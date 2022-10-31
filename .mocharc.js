@@ -7,5 +7,4 @@ module.exports = {
     reporter: 'mochawesome',
     'reporter-option': ['reportDir=test-results'],
     require: 'source-map-support/register',
-    spec: ['test/out/**/*.test.js']
 };

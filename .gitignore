@@ -5,3 +5,4 @@ coverage
 test-results
 verdaccio/storage
 verdaccio/config/htpasswd
+out
