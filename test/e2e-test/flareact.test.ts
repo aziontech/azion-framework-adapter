@@ -97,13 +97,13 @@ describe('Create Flareact application', () => {
         expect(flareactOutputDir).to.be.false;
     });
 
-    it('Copy azion.json file ', async () => {
+    it('Copy azion.json file without S3 keys ', async () => {
         await copy(path.join(localOutput, 'test', 'config-files', 'azion-flareact-without-S3.json'),path.join(template,'azion.json'), { overwrite: true})
         const azionConfigFile = fs.existsSync(path.join(template,'azion.json'));
         expect(azionConfigFile).to.be.true;
     });
 
-    it('Build the Flareact project with "azion.json" without S3 credentials', async () => {
+    it('Build the Flareact project with "azion.json" without S3 credentials and expect it fail', async () => {
         const expectOnError =  "S3 credentials not set either in the configuration file or as environment variables.\n"
 
         function run(cmd: string) {
@@ -119,7 +119,7 @@ describe('Create Flareact application', () => {
         expect(flareactOutputDir).to.be.false;
     });
 
-    it('Copy azion.json file ', async () => {
+    it('Copy azion.json file with S3 credentials ', async () => {
         await copy(path.join(localOutput, 'test', 'config-files', 'azion-flareact.json'),path.join(template,'azion.json'), { overwrite: true})
         const azionConfigFile = fs.existsSync(path.join(template,'azion.json'));
         expect(azionConfigFile).to.be.true;
@@ -136,63 +136,55 @@ describe('Create Flareact application', () => {
         expect(flareactOutputDir).to.be.true;
     });
 
-    describe("Publish only assets", () => {
+    it('Publish only asset of the flareact to S3', async () => {
+        removeAllKeys(bucketParams);
+        const { stdout } =await execFile('azion-framework-adapter publish -s');
+        const publishOutputMessage = `Loading asset manifest from ${template}/worker/manifest.json\n`;
+        expect(stdout).to.be.equal(publishOutputMessage);
+        const filesOnS3Bucket: any[] = [];
+        await getAllKeys(bucketParams, filesOnS3Bucket);
 
-        it('Publish only asset of the flareact to S3', async () => {
-            removeAllKeys(bucketParams);
-            const { stdout } =await execFile('azion-framework-adapter publish -s');
-            const publishOutputMessage = `Loading asset manifest from ${template}/worker/manifest.json\n`;
-            expect(stdout).to.be.equal(publishOutputMessage);
-            const filesOnS3Bucket: any[] = [];
-            await getAllKeys(bucketParams, filesOnS3Bucket);
-
-            const manifest = fs.readFileSync(`${template}/worker/manifest.json`);
-            const manifestArray = Object.values(JSON.parse(manifest.toString()));
-            const filesOnS3BucketContainManifestFiles = manifestArray.every((each) =>  filesOnS3Bucket.includes(each) );
-            expect(filesOnS3BucketContainManifestFiles).to.be.true;
-        });
-
+        const manifest = fs.readFileSync(`${template}/worker/manifest.json`);
+        const manifestArray = Object.values(JSON.parse(manifest.toString()));
+        const filesOnS3BucketContainManifestFiles = manifestArray.every((each) =>  filesOnS3Bucket.includes(each) );
+        expect(filesOnS3BucketContainManifestFiles).to.be.true;
     });
 
-    describe("Publish only functions", async () => {
-
-        it('Copy azion.json file with wrong token ', async () => {
-            await copy(path.join(localOutput, 'test', 'config-files', 'azion-flareact-with-wrong-token.json'),path.join(template,'azion.json'), { overwrite: true})
-            const azionConfigFile = fs.existsSync(path.join(template,'azion.json'));
-            expect(azionConfigFile).to.be.true;
-        });
-
-        it('Try to publish only function with wrong token and expect to fail', async () => {
-            const expectOutput = 'Cannot save edge function to Azion: {"detail":"Invalid token"}\n';
-            function run(cmd: string) {
-                return new Promise((resolve) => {
-                    execFile(cmd, (error: any, stdout: any, stderr: any) => {
-                        resolve({stdout,stderr, error})
-                    })
-                })
-            }
-            const afaStdOutput = await run('azion-framework-adapter publish --only-function');
-            expect((afaStdOutput as {stdout: string}).stdout).to.be.equal(expectOutput);
-        })
-
-        it('Copy azion.json file with rigth token ', async () => {
-            await copy(path.join(localOutput, 'test', 'config-files', 'azion-flareact.json'),path.join(template,'azion.json'), { overwrite: true})
-            const azionConfigFile = fs.existsSync(path.join(template,'azion.json'));
-            expect(azionConfigFile).to.be.true;
-        });
-
-        it('Publish only function', async () => {
-            const expectOutput = 'Function id: 1\n';
-            function run(cmd: string) {
-                return new Promise((resolve) => {
-                    execFile(cmd, (error: any, stdout: any, stderr: any) => {
-                        resolve({stdout,stderr, error})
-                    })
-                })
-            }
-            const afaStdOutput = await run('azion-framework-adapter publish --only-function');
-            expect((afaStdOutput as {stdout: string}).stdout).to.be.equal(expectOutput);
-        })
-
+    it('Copy azion.json file with wrong token ', async () => {
+        await copy(path.join(localOutput, 'test', 'config-files', 'azion-flareact-with-wrong-token.json'),path.join(template,'azion.json'), { overwrite: true})
+        const azionConfigFile = fs.existsSync(path.join(template,'azion.json'));
+        expect(azionConfigFile).to.be.true;
     });
+
+    it('Try to publish only function with wrong token and expect to fail', async () => {
+        const expectOutput = 'Cannot save edge function to Azion: {"detail":"Invalid token"}\n';
+        function run(cmd: string) {
+            return new Promise((resolve) => {
+                execFile(cmd, (error: any, stdout: any, stderr: any) => {
+                    resolve({stdout,stderr, error})
+                })
+            })
+        }
+        const afaStdOutput = await run('azion-framework-adapter publish --only-function');
+        expect((afaStdOutput as {stdout: string}).stdout).to.be.equal(expectOutput);
+    })
+
+    it('Copy azion.json file with rigth token ', async () => {
+        await copy(path.join(localOutput, 'test', 'config-files', 'azion-flareact.json'),path.join(template,'azion.json'), { overwrite: true})
+        const azionConfigFile = fs.existsSync(path.join(template,'azion.json'));
+        expect(azionConfigFile).to.be.true;
+    });
+
+    it('Publish only function', async () => {
+        const expectOutput = 'Function id: 1\n';
+        function run(cmd: string) {
+            return new Promise((resolve) => {
+                execFile(cmd, (error: any, stdout: any, stderr: any) => {
+                    resolve({stdout,stderr, error})
+                })
+            })
+        }
+        const afaStdOutput = await run('azion-framework-adapter publish --only-function');
+        expect((afaStdOutput as {stdout: string}).stdout).to.be.equal(expectOutput);
+    })
 })
