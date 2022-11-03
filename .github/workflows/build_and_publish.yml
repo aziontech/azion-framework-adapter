@@ -59,6 +59,8 @@ jobs:
         run: npm ci
       - name: Building
         run: npm run build --if-present
+      - name: login Verdaccio
+        run: run: npx npm-cli-login -u test -p 1234 -e test@domain.test -r http://localhost:4873
       - name: publish
         run: npm publish --registry http://localhost:4873
       - name: check
