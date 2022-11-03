@@ -38,23 +38,6 @@ jobs:
         run: npm test
   publish:
     needs: build-and-unit-test
-    services:
-      verdaccio:
-        image: verdaccio/verdaccio:5
-        ports:
-          - 4873:4873
-        volumes:
-          - verdaccio/storage:/verdaccio/storage
-          - verdaccio/config:/verdaccio/conf
-          - verdacio/plugins:/verdaccio/plugins
-      localstack:
-        image: localstack/localstack
-        env:
-          SERVICES: s3
-          DEFAULT_REGION: us-east-1
-          DATA_DIR: /tmp/localstack/data
-        ports: ["4566:4566"]
-
     strategy:
       matrix:
         node-version: [16.x]
@@ -69,6 +52,9 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node-version }}
+      - name: Docker compose
+        run: ./setup-e2e-enviroment.sh
+        shell: bash
       - name: Installing dependencies
         run: npm ci
       - name: Building

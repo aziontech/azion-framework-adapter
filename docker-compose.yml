@@ -9,9 +9,8 @@ services:
     ports:
       - "4873:4873"
     volumes:
-      - "./verdaccio/storage:/verdaccio/storage"
       - "./verdaccio/config:/verdaccio/conf"
-      - "./plugins:/verdaccio/plugins"
+      - "./verdaccio/plugins:/verdaccio/plugins"
   localstack:
     image: localstack/localstack:latest
     container_name: "Localstack"
