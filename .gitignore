@@ -6,3 +6,5 @@ test-results
 verdaccio/storage
 verdaccio/config/htpasswd
 out
+.DS_Store
+out

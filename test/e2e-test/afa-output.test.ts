@@ -4,7 +4,7 @@ const exec = util.promisify(require('node:child_process').exec);
 import { expect } from 'chai';
 
 describe('Azion Framework Adapter menu', () => {
-    const stdOutput = `Usage: azion-framework-adapter [options] [command]\n
+    const stdOutput = `[options] [command]\n
 Options:
   -V, --version                             output the version number
   -h, --help                                display help for command
@@ -14,6 +14,9 @@ Commands:
   build [options]                           Build and upload.
   publish [options]                         Publish the application.
   help [command]                            display help for command\n`
+
+    const azionFrameworkAdapterStdOutput = `Usage: azion-framework-adapter ${stdOutput}`;
+    const azfaStdOutput = `Usage: azfa ${stdOutput}`;
 
     const initOutput = `Usage: azion-framework-adapter init [options] <target-dir> <repository>
 
@@ -47,23 +50,27 @@ Options:
   -h, --help                    display help for command\n`
 
     it('Output of "Help" option', async () => {
-        const { stdout} = await exec('azion-framework-adapter --help');
-        expect(stdout).to.be.equal(stdOutput)
+        const { stdout } = await exec('azion-framework-adapter --help');
+        expect(stdout).to.be.equal(azionFrameworkAdapterStdOutput);
+    })
+
+    it('Output of "Help" option (with short alias)', async () => {
+      const { stdout } = await exec('azfa --help');
+      expect(stdout).to.be.equal(azfaStdOutput);
     })
 
     it('Output of "Init" option', async () => {
-        const { stdout} = await exec('azion-framework-adapter init --help');
+        const { stdout } = await exec('azion-framework-adapter init --help');
         expect(stdout).to.be.equal(initOutput)
     })
 
     it('Output of "build" option', async () => {
-        const { stdout} = await exec('azion-framework-adapter build --help');
-        // console.log(stdout);
+        const { stdout } = await exec('azion-framework-adapter build --help');
         expect(stdout).to.be.equals(buildOutput)
     })
 
     it('Output of "publish" option', async () => {
-        const { stdout} = await exec('azion-framework-adapter publish --help');
+        const { stdout } = await exec('azion-framework-adapter publish --help');
         expect(stdout).to.be.equals(publishOutput)
     })
 })
