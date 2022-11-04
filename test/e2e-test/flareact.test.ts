@@ -85,8 +85,7 @@ describe('Flareact test', () => {
 
         describe('Build the Flareact project without "azion.json"', () => {
             before(async () => {
-                await copy(path.join(localOutput, 'test', 'config-files', 'azion-flareact-without-S3.json'),path.join(template,'azion.json'), { overwrite: true})
-                fs.rmSync(path.join(template, 'azion.json'))
+                fs.rmSync(path.join(template, 'azion.json'), {force: true})
             })
             it('and expect it fail', async () => {
                 const expectOnError =  "Couldn't read file 'azion.json' at the project's root directory. Because ENOENT: no such file or directory, open 'azion.json'\n"
@@ -174,12 +173,12 @@ describe('Flareact test', () => {
             });
         })
 
-        describe("Try to publish only function with wrong token and expect to fail", () => {
+        describe("Try to publish only function with wrong token", () => {
             before(async () => {
                 await copy(path.join(localOutput, 'test', 'config-files', 'azion-flareact-with-wrong-token.json'),path.join(template,'azion.json'), { overwrite: true})
             })
 
-            it('Try to publish only function with wrong token and expect to fail', async () => {
+            it('and expect it fail.', async () => {
                 const expectOutput = 'Cannot save edge function to Azion: {"detail":"Invalid token"}\n';
                 function run(cmd: string) {
                     return new Promise((resolve) => {
@@ -198,7 +197,7 @@ describe('Flareact test', () => {
                 await copy(path.join(localOutput, 'test', 'config-files', 'azion-flareact.json'),path.join(template,'azion.json'), { overwrite: true})
             })
 
-            it('Publish only function', async () => {
+            it('and expect it pass.', async () => {
                 const expectOutput = 'Function id: 1\n';
                 function run(cmd: string) {
                     return new Promise((resolve) => {
