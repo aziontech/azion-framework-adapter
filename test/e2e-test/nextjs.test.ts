@@ -48,7 +48,7 @@ describe('Create nextjs application', () => {
             }
         }
 
-        s3.deleteObjects({Bucket: bucketParams.Bucket, Delete: { Objects: keys}});
+        await s3.deleteObjects({Bucket: bucketParams.Bucket, Delete: { Objects: keys}}).promise();
     }
 
     before(async () => {
