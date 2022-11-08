@@ -8,16 +8,6 @@ auth:
   htpasswd:
     file: /verdaccio/storage/htpasswd
 
-# security:
-#   api:
-#     jwt:
-#       sign:
-#         expiresIn: 60d
-#         notBefore: 1
-#   web:
-#     sign:
-#       expiresIn: 7d
-
 # a list of other known repositories we can talk to
 uplinks:
   npmjs:
