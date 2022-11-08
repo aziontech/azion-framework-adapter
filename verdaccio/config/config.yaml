@@ -1,17 +1,3 @@
-
-
-#
-# This is the config file used for the docker images.
-# It allows all users to do anything, so don't use it on production systems.
-#
-# Do not configure host and port under `listen` in this file
-# as it will be ignored when using docker.
-# see https://github.com/verdaccio/verdaccio/blob/master/wiki/docker.md#docker-and-custom-port-configuration
-#
-# Look here for more config file examples:
-# https://github.com/verdaccio/verdaccio/tree/master/packages/config/src/conf
-#
-
 web:
   title: Azion
 
@@ -21,18 +7,16 @@ storage: /verdaccio/storage
 auth:
   htpasswd:
     file: /verdaccio/storage/htpasswd
-    # Maximum amount of users allowed to register, defaults to "+inf".
-    # You can set this to -1 to disable registration.
-    #max_users: 1000
-security:
-  api:
-    jwt:
-      sign:
-        expiresIn: 60d
-        notBefore: 1
-  web:
-    sign:
-      expiresIn: 7d
+
+# security:
+#   api:
+#     jwt:
+#       sign:
+#         expiresIn: 60d
+#         notBefore: 1
+#   web:
+#     sign:
+#       expiresIn: 7d
 
 # a list of other known repositories we can talk to
 uplinks:
@@ -40,10 +24,6 @@ uplinks:
     url: https://registry.npmjs.org/
 
 packages:
-  '@jota/*':
-    access: $all
-    publish: $all
-
   '@*/*':
     # scoped packages
     access: $all
@@ -79,4 +59,3 @@ middlewares:
 # log settings
 log:
   - { type: stdout, format: pretty, level: trace }
-  #- {type: file, path: verdaccio.log, level: info}
