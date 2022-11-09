@@ -97,7 +97,7 @@ jobs:
       - name: Get Azfa version
         run: AZFA_VERSION=$(grep version package.json | awk -F \" '{print $4}')
       - name: Set Azfa Version
-        run: echo "AZFA_VERSION=${{AZFA_VERSION}}" >> $GITHUB_ENV
+        run: echo "AZFA_VERSION=${AZFA_VERSION}" >> $GITHUB_ENV
       - name: Set Tag
         run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
       - name: Test
