@@ -101,5 +101,4 @@ jobs:
           echo ${{ env.RELEASE_VERSION }}
           echo $AZFA_VERSION
           echo ${{ env.AZFA_VERSION}}
-      - name: Test conditional
         if: ${{ env.RELEASE_VERSION }} == ${{ env.AZFA_VERSION}}
