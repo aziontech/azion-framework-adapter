@@ -83,6 +83,7 @@ jobs:
   #       run: npm run e2e
   release:
     # needs: publish
+    name: Publish release if package.json version was bumped
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -91,15 +92,24 @@ jobs:
         with:
           node-version: '16.x'
           registry-url: 'https://registry.npmjs.org'
-      - name: Get Azfa version
-        run: AZFA_VERSION=$(grep version package.json | awk -F \" '{print $4}')
-      - name: Set Azfa Version
-        run: echo "AZFA_VERSION=${AZFA_VERSION}" >> $GITHUB_ENV
-      - name: Set Tag
-        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
-      - name: Test
-        run: |
-          echo $RELEASE_VERSION
-          echo ${{ env.RELEASE_VERSION }}
-          echo  ${{ env.AZFA_VERSION }}
-        if: ${{ env.RELEASE_VERSION }} == ${{ env.AZFA_VERSION }}
+      - name: Check package version
+        id: cpv
+        uses: PostHog/check-package-version@v2
+
+        - name: Echo output
+          run: |
+              echo "Committed version: ${{ steps.cpv.outputs.committed-version }}"
+              echo "Published version: ${{ steps.cpv.outputs.published-version }}"
+              echo "Is new version: ${{ steps.cpv.outputs.is-new-version }}"
+      # - name: Get Azfa version
+      #   run: AZFA_VERSION=$(grep version package.json | awk -F \" '{print $4}')
+      # - name: Set Azfa Version
+      #   run: echo "AZFA_VERSION=${AZFA_VERSION}" >> $GITHUB_ENV
+      # - name: Set Tag
+      #   run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+      # - name: Test
+      #   run: |
+      #     echo $RELEASE_VERSION
+      #     echo ${{ env.RELEASE_VERSION }}
+      #     echo  ${{ env.AZFA_VERSION }}
+      #   if: ${{ env.RELEASE_VERSION }} == ${{ env.AZFA_VERSION }}
