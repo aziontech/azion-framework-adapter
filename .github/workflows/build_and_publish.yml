@@ -106,6 +106,6 @@ jobs:
           echo ${{ env.RELEASE_VERSION }}
           echo  ${{ env.AZFA_VERSION }}
       - name: Test
-        if: ${{ env.RELEASE_VERSION == env.AZFA_VERSION }}
+        if: ${{ "0.2.1" == env.AZFA_VERSION }}
         run: |
           echo "Compre um Kombi"
