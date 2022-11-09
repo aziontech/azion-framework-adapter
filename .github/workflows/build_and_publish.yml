@@ -100,9 +100,12 @@ jobs:
       #   run: echo "AZFA_VERSION=${AZFA_VERSION}" >> $GITHUB_ENV
       - name: Set Tag
         run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
-      - name: Test
+      - name: Show
         run: |
           echo $RELEASE_VERSION
           echo ${{ env.RELEASE_VERSION }}
           echo  ${{ env.AZFA_VERSION }}
-        if: ${{ env.RELEASE_VERSION }} == ${{ env.AZFA_VERSION }}
+      - name: Test
+        if: ${{ env.RELEASE_VERSION == env.AZFA_VERSION }}
+        run: |
+          echo "Compre um Kombi"
