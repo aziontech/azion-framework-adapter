@@ -100,4 +100,4 @@ jobs:
           echo $RELEASE_VERSION
           echo ${{ env.RELEASE_VERSION }}
           echo $AZFA_VERSION
-        if: ${{ env.RELEASE_VERSION }} == AZFA_VERSION
+        if: ${{ env.RELEASE_VERSION }} == $AZFA_VERSION
