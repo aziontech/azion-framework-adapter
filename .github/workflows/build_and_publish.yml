@@ -92,7 +92,7 @@ jobs:
           node-version: '16.x'
           registry-url: 'https://registry.npmjs.org'
       - name: Set Azfa version
-        run: echo AZFA_VERSION=grep version package.json | awk -F \" '{print $4}' >> $GITHUB_ENV
+        run: AZFA_VERSION=$(grep version package.json | awk -F \" '{print $4}')
       - name: Set Tag
         run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
       - name: Test
@@ -100,5 +100,4 @@ jobs:
           echo $RELEASE_VERSION
           echo ${{ env.RELEASE_VERSION }}
           echo $AZFA_VERSION
-          echo ${{ env.AZFA_VERSION}}
-        if: ${{ env.RELEASE_VERSION }} == ${{ env.AZFA_VERSION}}
+        if: ${{ env.RELEASE_VERSION }} == AZFA_VERSION
