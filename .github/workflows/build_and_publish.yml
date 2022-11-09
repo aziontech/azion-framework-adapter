@@ -8,76 +8,98 @@ on:
       - main
 
 jobs:
-  build-and-unit-test:
+  # build-and-unit-test:
 
-    strategy:
-      matrix:
-        node-version: [16.x]
-        os: [ubuntu-latest, macos-latest]
+  #   strategy:
+  #     matrix:
+  #       node-version: [16.x]
+  #       os: [ubuntu-latest, macos-latest]
 
-    name: Test - ${{ matrix.os }} - Node v${{ matrix.node-version }}
+  #   name: Test - ${{ matrix.os }} - Node v${{ matrix.node-version }}
 
-    runs-on: ${{ matrix.os }}
+  #   runs-on: ${{ matrix.os }}
 
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - run: |
+  #         git config --global user.name github-actions
+  #         git config --global user.email github-actions@github.com
+  #     - name: Setup Node ${{ matrix.node-version }}
+  #       uses: actions/setup-node@v3
+  #       with:
+  #         node-version: ${{ matrix.node-version }}
+  #     - name: Installing dependencies
+  #       run: npm ci
+  #     - name: Building
+  #       run: npm run build --if-present
+  #     - name: Running lint
+  #       run: npm run lint
+  #     - name: Running tests
+  #       run: npm test
+  # publish:
+  #   needs: build-and-unit-test
+  #   services:
+  #     verdaccio:
+  #       image: verdaccio/verdaccio:5
+  #       ports:
+  #         - 4873:4873
+  #     localstack:
+  #       image: localstack/localstack
+  #       env:
+  #         SERVICES: s3
+  #         DEFAULT_REGION: us-east-1
+  #         DATA_DIR: /tmp/localstack/data
+  #       ports: ["4566:4566"]
+
+  #   strategy:
+  #     matrix:
+  #       node-version: [16.x]
+  #       os: [ubuntu-latest]
+
+  #   name: E2E Test - ${{ matrix.os }} - Node v${{ matrix.node-version }}
+  #   runs-on: ${{ matrix.os }}
+
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Use Node.js ${{ matrix.node-version }}
+  #       uses: actions/setup-node@v2
+  #       with:
+  #         node-version: ${{ matrix.node-version }}
+  #     - name: Json Server
+  #       run: npx json-server --port 8080 -w json-server-conf/db.json -m json-server-conf/file.js -q &
+  #     - name: Installing dependencies
+  #       run: npm ci
+  #     - name: Building
+  #       run: npm run build --if-present
+  #     - name: login
+  #       run: npx npm-cli-login -u test -p 1234 -e test@domain.test -r http://localhost:4873
+  #     - name: publish
+  #       run: npm publish --registry http://localhost:4873
+  #     - name: check
+  #       run: npm info azion-framework-adapter --json --registry http://localhost:4873
+  #     - name: install global
+  #       run: npm install -g azion-framework-adapter --registry http://localhost:4873
+  #     - name: Test E2E
+  #       run: npm run e2e
+  release:
+    # needs: publish
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - run: |
-          git config --global user.name github-actions
-          git config --global user.email github-actions@github.com
-      - name: Setup Node ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
+      # Setup .npmrc file to publish to npm
+      - uses: actions/setup-node@v3
         with:
-          node-version: ${{ matrix.node-version }}
-      - name: Installing dependencies
-        run: npm ci
-      - name: Building
-        run: npm run build --if-present
-      - name: Running lint
-        run: npm run lint
-      - name: Running tests
-        run: npm test
-  publish:
-    needs: build-and-unit-test
-    services:
-      verdaccio:
-        image: verdaccio/verdaccio:5
-        ports:
-          - 4873:4873
-      localstack:
-        image: localstack/localstack
-        env:
-          SERVICES: s3
-          DEFAULT_REGION: us-east-1
-          DATA_DIR: /tmp/localstack/data
-        ports: ["4566:4566"]
-
-    strategy:
-      matrix:
-        node-version: [16.x]
-        os: [ubuntu-latest]
-
-    name: E2E Test - ${{ matrix.os }} - Node v${{ matrix.node-version }}
-    runs-on: ${{ matrix.os }}
-
-    steps:
-      - uses: actions/checkout@v2
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v2
-        with:
-          node-version: ${{ matrix.node-version }}
-      - name: Json Server
-        run: npx json-server --port 8080 -w json-server-conf/db.json -m json-server-conf/file.js -q &
-      - name: Installing dependencies
-        run: npm ci
-      - name: Building
-        run: npm run build --if-present
-      - name: login
-        run: npx npm-cli-login -u test -p 1234 -e test@domain.test -r http://localhost:4873
-      - name: publish
-        run: npm publish --registry http://localhost:4873
-      - name: check
-        run: npm info azion-framework-adapter --json --registry http://localhost:4873
-      - name: install global
-        run: npm install -g azion-framework-adapter --registry http://localhost:4873
-      - name: Test E2E
-        run: npm run e2e
+          node-version: '16.x'
+          registry-url: 'https://registry.npmjs.org'
+      - name: Set Azfa version
+        run: echo "AZFA_VERSION=grep version package.json | awk -F \" '{print $4}'" >> $GITHUB_ENV
+      - name: Set Tag
+        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+      - name: Test
+        run: |
+          echo $RELEASE_VERSION
+          echo ${{ env.RELEASE_VERSION }}
+          echo $AZFA_VERSION
+          echo ${{ env.AZFA_VERSION}}
+      - name: Test conditional
+        if: ${{ env.RELEASE_VERSION }} == ${{ env.AZFA_VERSION}}
