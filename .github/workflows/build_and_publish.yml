@@ -101,5 +101,5 @@ jobs:
           echo ${{ env.RELEASE_VERSION }}
           echo  ${{ env.AZFA_VERSION }}
       - name: Publish
-        if: ${{ env.AZFA_VERSION == env.RELEASE_VERSION}}
+        if: ${{ env.AZFA_VERSION == '0.2.1'}}
         run: echo "Publishing"
