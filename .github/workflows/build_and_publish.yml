@@ -102,3 +102,5 @@ jobs:
       - name: Publish new version
         if: ${{ env.AZFA_VERSION == env.RELEASE_VERSION }}
         run: echo "npm publish"
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
