@@ -38,19 +38,6 @@ jobs:
         run: npm test
   publish:
     needs: build-and-unit-test
-    services:
-      verdaccio:
-        image: verdaccio/verdaccio:5
-        ports:
-          - 4873:4873
-      localstack:
-        image: localstack/localstack
-        env:
-          SERVICES: s3
-          DEFAULT_REGION: us-east-1
-          DATA_DIR: /tmp/localstack/data
-        ports: ["4566:4566"]
-
     strategy:
       matrix:
         node-version: [16.x]
@@ -65,8 +52,9 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node-version }}
-      - name: Json Server
-        run: npx json-server --port 8080 -w json-server-conf/db.json -m json-server-conf/file.js -q &
+      - name: Start containers
+        run: docker compose up -d
+        shell: bash
       - name: Installing dependencies
         run: npm ci
       - name: Building
@@ -81,3 +69,6 @@ jobs:
         run: npm install -g azion-framework-adapter --registry http://localhost:4873
       - name: Test E2E
         run: npm run e2e
+      - name: Stop containers
+        if: always()
+        run: docker-compose -f "docker-compose.yml" down
