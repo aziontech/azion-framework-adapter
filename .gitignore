@@ -3,5 +3,8 @@ dist
 .nyc_output
 coverage
 test-results
+verdaccio/storage
+verdaccio/config/htpasswd
+out
 .DS_Store
 out
