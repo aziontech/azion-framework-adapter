@@ -6,7 +6,7 @@ import { validate } from './config';
 import ManifestBuilder from './manifest';
 
 import AssetPublisherConfigSchema from './asset-publisher-config.schema.json';
-import { S3CredentialsNotSet } from './errors';
+import { S3CredentialsNotSet, S3BucketNotSet } from './errors';
 
 export interface KVConfig {
     accessKeyId: string,
@@ -41,6 +41,10 @@ export class AssetPublisher {
 
         if (!kv.accessKeyId || !kv.secretAccessKey) {
             throw new S3CredentialsNotSet();
+        }
+
+        if (!kv.bucket || !kv.region || !kv.path) {
+            throw new S3BucketNotSet();
         }
 
         return config;

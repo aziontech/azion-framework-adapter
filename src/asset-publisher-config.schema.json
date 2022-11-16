@@ -14,11 +14,7 @@
             "description": "Credentials for the S3 where the KV will be stored.",
             "type": "object",
             "additionalProperties": false,
-            "required": [
-                "bucket",
-                "region",
-                "path"
-            ],
+            "required": [],
             "$comment": "accessKeyId and secretAccessKey aren't required if user sets environment variables AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY",
             "properties": {
                 "accessKeyId": "string",
