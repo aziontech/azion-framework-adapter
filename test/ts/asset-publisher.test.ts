@@ -106,7 +106,6 @@ describe('Asset Publisher', () => {
         const publisher = new AssetPublisher(tempDir, s3Mockup, cfg);
         publisher.deployStaticAssets();
         s3Data.length.should.be.equal(12);
-
     });
 
     it('should accept additional config parameters', async () => {
@@ -141,5 +140,26 @@ describe('Asset Publisher', () => {
         const rawReadCfg = await read_config(options);
         const config = AssetPublisher.getConfig(rawReadCfg, env);
         return config.should.be.eventually.rejectedWith(S3CredentialsNotSet);
+    });
+
+    it("should accept enviroment S3 bucket configuration", async () => {
+        const rawCfg: any = {
+            kv: {
+                accessKeyId: "1",
+                secretAccessKey: "2"
+            }
+        };
+        const rawEnv: any = {
+            AWS_DEFAULT_BUCKET_NAME: 'foo',
+            AWS_DEFAULT_BUCKET_REGION: 'bar',
+            AWS_DEFAULT_BUCKET_PATH: '/foo'
+        };
+
+        const cfg = await AssetPublisher.getConfig(rawCfg, rawEnv);
+        cfg.kv.should.to.include({
+            bucket: 'foo',
+            region: 'bar',
+            path: '/foo'
+        });
     });
 });

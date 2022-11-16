@@ -27,7 +27,7 @@ export class AzionPublisher {
         const config = await validate(cfg, AzionPublisherConfigSchema,
             'https://azion.com/azion-framework-adapter/2022-05.1/azion-publisher.schema.json');
         const azion = config.azion;
-        azion.token = azion.token ?? env.AZION_TOKEN;
+        azion.token = azion.token || env.AZION_TOKEN;
         if (!azion.token) {
             throw new AzionCredentialsNotSet();
         }
