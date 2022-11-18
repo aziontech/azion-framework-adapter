@@ -87,7 +87,7 @@ jobs:
           node-version: '16.x'
           registry-url: 'https://registry.npmjs.org'
       - name: Set Azfa version
-        run: awk -F\" '/"version":/ {print $4}' package.json |xargs echo "AZFA_VERSION=v" | tr -d '[:space:]' >> $GITHUB_ENV
+        run: echo "AZFA_VERSIOn=v$(awk -F\" '/"version":/ {print $4}' package.json)" >> $GITHUB_ENV
       - name: Set Release version
         run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
       - name: Show versions
