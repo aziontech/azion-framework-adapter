@@ -77,7 +77,7 @@ jobs:
         run: docker-compose -f "docker-compose.yml" down
   publish:
     needs: e2e-test
-    if: ${{ github.repository == 'aziontech/azion-framework-adapter' && github.event_name == 'push' && github.ref_type == 'tag' }}
+    if: ${{ github.repository == 'aziontech/azion-framework-adapter' && github.event_name == 'create' && github.ref_type == 'tag' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
