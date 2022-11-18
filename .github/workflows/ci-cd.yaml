@@ -1,4 +1,4 @@
-name: Azion Framework adapter build and test
+name: CI/CD
 
 on:
   pull_request:
@@ -6,6 +6,9 @@ on:
   push:
     branches:
       - main
+  create:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
 
 jobs:
   build-and-unit-test:
@@ -36,7 +39,7 @@ jobs:
         run: npm run lint
       - name: Running tests
         run: npm test
-  publish:
+  e2e-test:
     needs: build-and-unit-test
     strategy:
       matrix:
@@ -72,3 +75,27 @@ jobs:
       - name: Stop containers
         if: always()
         run: docker-compose -f "docker-compose.yml" down
+  publish:
+    needs: e2e-test
+    if: ${{ github.repository == 'aziontech/azion-framework-adapter' && github.event_name == 'create' && github.ref_type == 'tag' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      # Setup .npmrc file to publish to npm
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '16.x'
+          registry-url: 'https://registry.npmjs.org'
+      - name: Set Azfa version
+        run: echo "AZFA_VERSIOn=v$(awk -F\" '/"version":/ {print $4}' package.json)" >> $GITHUB_ENV
+      - name: Set Release version
+        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+      - name: Show versions
+        run: |
+          echo "Version on tag: ${{ env.RELEASE_VERSION }}"
+          echo "New Azfa version ${{ env.AZFA_VERSION }}"
+      - name: Publish new version
+        if: ${{ env.AZFA_VERSION == env.RELEASE_VERSION }}
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
