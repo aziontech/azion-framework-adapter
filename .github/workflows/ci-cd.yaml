@@ -1,4 +1,4 @@
-name: Azion Framework adapter build and test
+name: CI/CD
 
 on:
   pull_request:
