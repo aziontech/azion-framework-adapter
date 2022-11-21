@@ -27,12 +27,12 @@ services:
     image: node:alpine
     container_name: Json-server
     volumes:
-      - "./json-server-data:/json-server-data"
+      - "./json-server-conf:/json-server-conf"
     command:
         - /bin/sh
         - -c
         - |
           npm install -g json-server
-          json-server --port 3000 --host 0.0.0.0 -w json-server-data/db.json -m json-server-data/file.js
+          json-server --port 3000 --host 0.0.0.0 -w json-server-conf/db.json -m json-server-conf/file.js
     ports:
       - "8080:3000"
