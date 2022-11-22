@@ -13,6 +13,7 @@ export enum ErrorCode {
     NotAValidFile = 1090,
     FileNotFound = 2000,
     CannotSaveFunction = 2010,
+    S3BucketNotSet = 2020,
 }
 
 export abstract class BaseError extends Error {
@@ -106,12 +107,22 @@ export class FileNotFound extends BaseError {
     }
 }
 
+
 export class CannotSaveFunction extends BaseError {
     get errorCode(): ErrorCode {
         return ErrorCode.CannotSaveFunction;
     }
     constructor(message: string) {
         super(`Cannot save edge function to Azion: ${message}`);
+    }
+}
+
+export class S3BucketNotSet extends BaseError {
+    get errorCode(): ErrorCode {
+        return ErrorCode.S3BucketNotSet;
+    }
+    constructor() {
+        super(`S3 bucket vars not set either in the configuration file or as environment variables.`);
     }
 }
 

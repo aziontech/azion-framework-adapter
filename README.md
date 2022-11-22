@@ -52,9 +52,20 @@ git clone https://github.com/aziontech/cells-site-template
 
 ## Build
 
-You will need a bucket in AWS S3, its access key and its secret access key. You can set the credentials at the `azion.json` file inside the project or define the environment variables `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`. The access credentials to the bucket will be stored in the code sent to Azion and the Edge Function will use them to retrieve the necessary pages stored during the publish step.
-Similarly, you will need credentials to deploy your project at Azion and you can either set those in the `azion.json` file or define the environment variable `AZION_TOKEN`. The Azion credentials are not stored in the built code.
+You will need a bucket in AWS S3, its access key and its secret access key. You can set the credentials at the `azion.json` file inside the project or define the environment variables `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`.
 
+You can alternatively enter the bucket data in the `environment variables`:
+
+```
+AWS_DEFAULT_BUCKET_NAME=bucket-name
+AWS_DEFAULT_BUCKET_REGION=sa-east-1
+AWS_DEFAULT_BUCKET_PATH=path
+```
+
+The access credentials to the bucket will be stored in the code sent to Azion and the Edge Function will use them to retrieve the necessary pages stored during the publish step.
+Similarly, you will need a [Personal Token](https://www.azion.com/pt-br/documentacao/produtos/gestao-de-contas/personal-tokens) to deploy your project at Azion and you can either set those in the `azion.json` file or define the environment variable `AZION_TOKEN`. The Azion credentials are not stored in the built code.
+
+> Values from the `azion.json` file will be prioritized over environment variables if populated.
 ### Build steps
 ```
   cd ./PROJECT_NAME
@@ -65,9 +76,9 @@ Similarly, you will need credentials to deploy your project at Azion and you can
     "kv": {
       "accessKeyId": "<AWS_ACCESS_KEY_ID>",
       "secretAccessKey": "<AWS_SECRET_ACCESS_KEY>",
-      "bucket": "my-bucket-name",
-      "region": "us-east-1",
-      "path": "__static_content"
+      "bucket": "<AWS_DEFAULT_BUCKET_NAME>",
+      "region": "<AWS_DEFAULT_BUCKET_REGION>",
+      "path": "<AWS_DEFAULT_BUCKET_PATH>"
     },
     "azion": {
       "token": "<AZION_TOKEN>",

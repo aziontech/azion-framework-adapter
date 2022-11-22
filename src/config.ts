@@ -35,5 +35,4 @@ export function read_config(options: any): Config {
     } catch (err: any) {
         throw new NotAValidFile(cfgPath, err.message);
     }
-    return config;
 }
