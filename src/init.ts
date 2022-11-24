@@ -3,6 +3,9 @@ import path from 'path';
 
 import simpleGit from 'simple-git';
 import { Err, Ok, Result } from 'ts-results';
+import util = require('node:util');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const execCommand = util.promisify(require('node:child_process').exec);
 
 import {
     BaseError,
@@ -14,6 +17,8 @@ import {
     errorCode,
     NotADirectory
 } from './errors';
+
+const cellSiteTemplateRepo = "https://github.com/aziontech/cells-site-template.git";
 
 function validate_target_directory(directory: string): Result<void, BaseError> {
 
@@ -75,8 +80,39 @@ async function init(targetDir: string, repository: string, options: any): Promis
 
 }
 
+async function initCellsTemplate(targetDir: string) {
+    try {
+        console.log("Creating azion directory");
+        if(!fs.existsSync("azion")) fs.mkdirSync("azion");
+        process.chdir(path.join(targetDir,"azion"));
+
+        console.log("Cloning template repository");
+        await simpleGit().clone(cellSiteTemplateRepo, "cells-site-template");
+        await simpleGit("cells-site-template").removeRemote("origin");
+
+        process.chdir(path.join(targetDir,"cells-site-template/"));
+        console.log("installing dependencies.");
+        await execCommand("npm ci");
+        console.log("All dependecies instaleds!");
+    } catch (err) {
+        displayError(err);
+        return errorCode(err);
+    }
+}
+
+
 export async function exec(targetDir: string, repository: string, options: any): Promise<ErrorCode> {
     try {
+        if(options.staticSite ) {
+            const isInitTemplate = fs.existsSync(path.join(targetDir,"azion/cells-site-template/src/index.js"));
+            if (!isInitTemplate) {
+                await initCellsTemplate(targetDir);
+            } else {
+                console.log("Project already initialized!");
+            }
+            return ErrorCode.Ok;
+        }
+
         const result = await init(targetDir, repository, options);
         if (result.ok) {
             console.log("Completed.");
