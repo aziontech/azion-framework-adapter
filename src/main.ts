@@ -14,8 +14,11 @@ const { version } = require('../package.json');
 program.version(version);
 
 program
-    .command('init <target-dir> <repository>')
+    .command('init')
+    .argument('[target-dir]',"Target dir",".")
+    .argument('[repository]')
     .option('-n, --project-name <project-name>', 'project name')
+    .option('-s, --static-site', 'Clone template to static site')
     .description('Create a new project from a template.')
     .action(async (targetDir, repository, options) => {
         exit(await init.exec(targetDir, repository, options));
