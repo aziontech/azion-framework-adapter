@@ -213,9 +213,10 @@ describe('init', () => {
             console.log.should.have.been.called.with("All dependecies instaleds!");
         });
 
-        it('should fail when clone the template', async () => {
+        it('should fail when path to template is invalid', async () => {
             const initCellsTemplate = introspectedInit.__get__('initCellsTemplate');
-            await initCellsTemplate('.', 'asdf');
+            const errorCode = await initCellsTemplate('.', 'asdf');
+            expect(errorCode).to.be.equal(100);
             console.log.should.have.been.called.exactly(3);
             console.log.should.have.been.called.with("Creating azion directory");
             console.log.should.have.been.called.with("Cloning template repository");
