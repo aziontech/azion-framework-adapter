@@ -15,9 +15,9 @@ program.version(version);
 
 program
     .command('init')
-    .argument('[target-dir]',"Target dir",".")
-    .argument('[repository]')
-    .option('-n, --project-name <project-name>', 'project name')
+    .argument('[target-dir]','Target directory','.')
+    .argument('[repository]', 'Repository url')
+    .option('-n, --project-name <project-name>', 'Project name')
     .option('-s, --static-site', 'Clone template to static site')
     .description('Create a new project from a template.')
     .action(async (targetDir, repository, options) => {

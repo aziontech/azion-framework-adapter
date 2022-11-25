@@ -10,7 +10,7 @@ Options:
   -h, --help                                display help for command
 
 Commands:
-  init [options] <target-dir> <repository>  Create a new project from a template.
+  init [options] [target-dir] [repository]  Create a new project from a template.
   build [options]                           Build and upload.
   publish [options]                         Publish the application.
   help [command]                            display help for command\n`
@@ -18,12 +18,17 @@ Commands:
     const azionFrameworkAdapterStdOutput = `Usage: azion-framework-adapter ${stdOutput}`;
     const azfaStdOutput = `Usage: azfa ${stdOutput}`;
 
-    const initOutput = `Usage: azion-framework-adapter init [options] <target-dir> <repository>
+    const initOutput = `Usage: azion-framework-adapter init [options] [target-dir] [repository]
 
 Create a new project from a template.
 
+Arguments:
+  target-dir                         Target directory (default: ".")
+  repository                         Repository url
+
 Options:
-  -n, --project-name <project-name>  project name
+  -n, --project-name <project-name>  Project name
+  -s, --static-site                  Clone template to static site
   -h, --help                         display help for command\n`
 
     const buildOutput = `Usage: azion-framework-adapter build [options]
@@ -55,8 +60,8 @@ Options:
     })
 
     it('Output of "Help" option (with short alias)', async () => {
-      const { stdout } = await exec('azfa --help');
-      expect(stdout).to.be.equal(azfaStdOutput);
+        const { stdout } = await exec('azfa --help');
+        expect(stdout).to.be.equal(azfaStdOutput);
     })
 
     it('Output of "Init" option', async () => {

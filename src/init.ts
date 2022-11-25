@@ -80,7 +80,7 @@ async function init(targetDir: string, repository: string, options: any): Promis
 
 }
 
-async function initCellsTemplate(targetDir: string) {
+async function initCellsTemplate(targetDir: string, cellSiteTemplateRepo: string) {
     try {
         console.log("Creating azion directory");
         if(!fs.existsSync("azion")) fs.mkdirSync("azion");
@@ -91,7 +91,7 @@ async function initCellsTemplate(targetDir: string) {
         await simpleGit("cells-site-template").removeRemote("origin");
 
         process.chdir(path.join(targetDir,"cells-site-template/"));
-        console.log("installing dependencies.");
+        console.log("Installing dependencies.");
         await execCommand("npm ci");
         console.log("All dependecies instaleds!");
     } catch (err) {
@@ -106,7 +106,7 @@ export async function exec(targetDir: string, repository: string, options: any):
         if(options.staticSite ) {
             const isInitTemplate = fs.existsSync(path.join(targetDir,"azion/cells-site-template/src/index.js"));
             if (!isInitTemplate) {
-                await initCellsTemplate(targetDir);
+                await initCellsTemplate(targetDir, cellSiteTemplateRepo);
             } else {
                 console.log("Project already initialized!");
             }

@@ -11,6 +11,7 @@ import rewire = require('rewire');
 
 import { ErrorCode, NotADirectory } from '../../dist/errors';
 import * as init from '../../dist/init';
+import { expect } from 'chai';
 
 const exec = promisify<string, any, { stdout: string, stderr: string }>(child_process.exec);
 
@@ -30,6 +31,7 @@ describe('init', () => {
     let consoleOutput: any[];
     let templatePath: string;
     let template: string;
+    let initialDir: string;
 
     before(() => {
 
@@ -37,13 +39,21 @@ describe('init', () => {
         templatePath = fs.mkdtempSync(path.join(os.tmpdir(), 'flareact-test'));
         const templateName = 'flareact-template';
         template = path.join(templatePath, templateName);
+        initialDir = process.cwd();
 
         // create local temporary template
         child_process.execSync(`git -C ${templatePath} init ${templateName}`, { encoding: 'utf-8' });
 
         // add package.json
         fs.writeFileSync(path.join(template, 'package.json'), JSON.stringify({}));
+        fs.writeFileSync(path.join(template, 'package-lock.json'), JSON.stringify({
+            "name": "cells-site-template",
+            "lockfileVersion": 2,
+            "requires": true,
+            "packages": {}
+        }));
         child_process.execSync(`git -C ${template} add package.json`, { encoding: 'utf-8' });
+        child_process.execSync(`git -C ${template} add package-lock.json`, { encoding: 'utf-8' });
         child_process.execSync(`git -C ${template} commit -m Begin`, { encoding: 'utf-8' });
     });
 
@@ -65,6 +75,7 @@ describe('init', () => {
             // eslint-disable-next-line prefer-rest-params
             consoleOutput.push(arguments);
         });
+
 
         notEmptyDir = fs.mkdtempSync(path.join(os.tmpdir(), 'flareact-filled-tst'));
         tmpFile = notEmptyDir + "/tmp_file";
@@ -179,6 +190,35 @@ describe('init', () => {
             result.val.should.be.a('cannotclonetemplate');
 
 
+        });
+    });
+
+    describe('Initialize cells site template', () => {
+        afterEach(() => {
+            process.chdir(initialDir);
+            fs.rmSync(path.join(initialDir,'azion'), { recursive: true});
+        });
+
+        it('should clone template and install dependencies', async () => {
+            const initCellsTemplate = introspectedInit.__get__('initCellsTemplate');
+            await initCellsTemplate('.', template);
+
+            const isInitTemplate = fs.existsSync(path.join(initialDir,"azion/cells-site-template/package.json"));
+            expect(isInitTemplate).to.be.true;
+
+            console.log.should.have.been.called.exactly(4);
+            console.log.should.have.been.called.with("Creating azion directory");
+            console.log.should.have.been.called.with("Cloning template repository");
+            console.log.should.have.been.called.with("Installing dependencies.");
+            console.log.should.have.been.called.with("All dependecies instaleds!");
+        });
+
+        it('should fail when clone the template', async () => {
+            const initCellsTemplate = introspectedInit.__get__('initCellsTemplate');
+            await initCellsTemplate('.', 'asdf');
+            console.log.should.have.been.called.exactly(3);
+            console.log.should.have.been.called.with("Creating azion directory");
+            console.log.should.have.been.called.with("Cloning template repository");
         });
     });
 
