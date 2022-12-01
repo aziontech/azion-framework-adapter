@@ -135,7 +135,7 @@ describe('Flareact test', () => {
                 const expectOutput = `Finished client.\n`+
                 `Wrote manifest file to ${template}/worker/manifest.json\n`+
                 `Finished worker.\n`+
-                `Completed.\n`
+                `Build completed.\n`
                 const { stdout } = await execFile('azion-framework-adapter build');
                 const flareactOutputDir = fs.existsSync(path.join(template,'out/_flareact'));
                 expect(stdout).to.be.equal(expectOutput);
@@ -152,7 +152,7 @@ describe('Flareact test', () => {
                 const expectOutput = `Finished client.\n`+
                 `Wrote manifest file to ${template}/worker/manifest.json\n`+
                 `Finished worker.\n`+
-                `Completed.\n`
+                `Build completed.\n`
                 const { stdout } = await execFile('azion-framework-adapter build');
                 const flareactOutputDir = fs.existsSync(path.join(template,'out/_flareact'));
                 expect(stdout).to.be.equal(expectOutput);

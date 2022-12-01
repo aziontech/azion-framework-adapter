@@ -102,7 +102,7 @@ describe('Create nextjs application', () => {
     it('Build the nextjs project', async () => {
         const expectOutput = `Wrote manifest file to ${template}/cells-site-template/worker/manifest.json\n`+
         `Finished worker.\n`+
-        `Completed.\n`
+        `Build completed.\n`
         const { stdout } = await execFile('azion-framework-adapter build --static-site --assets-dir ../out');
         const nextjsOutputDir = fs.existsSync(path.join(template,'/cells-site-template/worker/function.js'));
         expect(stdout).to.be.equal(expectOutput);

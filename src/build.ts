@@ -13,6 +13,7 @@ import { generateWorkerFlareactConfig } from './configs/flareact/webpack.worker.
 import { generateWorkerStaticSiteConfig } from './configs/static-site/webpack.worker.config';
 import { displayError, ErrorCode, errorCode, FailedToBuild } from "./errors";
 import ManifestBuilder, { ManifestMap } from "./manifest";
+import { initCellsTemplate } from "./utils";
 
 interface KVArgs {
   accessKeyId: string;
@@ -28,6 +29,8 @@ const CLIENT_CFG_PATH =
 const WORKER_CFG_PATH =
   "node_modules/flareact/configs/webpack.worker.config.js";
 const BASIC_CFG_PATH = "webpack.config.js";
+
+const cellSiteTemplateRepo = "https://github.com/aziontech/cells-site-template.git";
 
 export class Builder {
     targetDir: string;
@@ -169,6 +172,9 @@ export class Builder {
 
     static async exec(options: any): Promise<ErrorCode> {
         try {
+            if(options.staticSite) {
+                await initCellsTemplate('.', cellSiteTemplateRepo);
+            }
             const rawCfg = read_config(options);
             const cfg = await AssetPublisher.getConfig(rawCfg, process.env);
             const kvArgs: KVArgs = Object.assign({ retries: 0 }, cfg.kv);
@@ -188,7 +194,7 @@ export class Builder {
                 options.staticSite
             );
 
-            console.log("Completed.");
+            console.log("Build completed.");
             return ErrorCode.Ok;
         } catch (err: any) {
             displayError(err);
