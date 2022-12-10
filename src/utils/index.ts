@@ -1,6 +1,5 @@
 import * as fs from 'fs';
 import path from 'path';
-import process from 'process';
 import simpleGit from 'simple-git';
 import util = require('node:util');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -11,19 +10,18 @@ import { displayError,  errorCode,  } from "../errors";
 export async function initCellsTemplate(targetDir: string, cellSiteTemplateRepo: string) {
     try {
         console.log("Creating azion directory");
-        if(!fs.existsSync(path.join(targetDir,"azion"))) fs.mkdirSync(path.join(targetDir,"azion"), {recursive: true});
-        process.chdir(path.join(targetDir,"azion"));
+        if (!fs.existsSync(targetDir)) fs.mkdirSync((targetDir), { recursive: true });
 
-        if(fs.existsSync("cells-site-template")) fs.rmSync("cells-site-template", {recursive: true});
+        if (!fs.existsSync("cells-site-template")) {
+            const repoDir = path.join(targetDir, "cells-site-template");
+            console.log("Cloning template repository");
+            await simpleGit().clone(cellSiteTemplateRepo, repoDir);
+            await simpleGit(repoDir).removeRemote("origin");
 
-        console.log("Cloning template repository");
-        await simpleGit().clone(cellSiteTemplateRepo, "cells-site-template");
-        await simpleGit("cells-site-template").removeRemote("origin");
-
-        process.chdir("cells-site-template/");
-        console.log("Installing dependencies.");
-        await execCommand("npm ci");
-        console.log("All dependecies instaleds!");
+            console.log("Installing dependencies.");
+            await execCommand("npm ci --prefix azion/cells-site-template");
+            console.log("All dependecies instaleds!");
+        }
     } catch (err) {
         displayError(err);
         return errorCode(err);

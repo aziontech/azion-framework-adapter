@@ -34,13 +34,14 @@ const cellSiteTemplateRepo = "https://github.com/aziontech/cells-site-template.g
 
 export class Builder {
     targetDir: string;
+    prefix: string;
 
-    constructor(targetDir: string) {
+    constructor(targetDir: string, prefix: string) {
         this.targetDir = targetDir;
+        this.prefix = prefix;
     }
 
-    static init(): Builder {
-        const targetDir = process.cwd();
+    static init(targetDir: string, prefix: string): Builder {
         try {
             const workerDir = path.join(targetDir, "worker");
 
@@ -54,14 +55,14 @@ export class Builder {
             } else {
                 fs.mkdirSync(workerDir);
             }
-            return new Builder(targetDir);
+            return new Builder(targetDir, prefix);
         } catch (error: any) {
             throw new FailedToBuild(targetDir, error.message);
         }
     }
 
     async buildClient(): Promise<webpack.Stats> {
-        const baseConfigPath = path.join(this.targetDir, CLIENT_CFG_PATH);
+        const baseConfigPath = path.join(this.targetDir, this.prefix, CLIENT_CFG_PATH);
         // eslint-disable-next-line @typescript-eslint/no-var-requires
         const baseConfig = require(baseConfigPath)({});
         const config = merge(baseConfig, clientFlareactConfig);
@@ -103,7 +104,7 @@ export class Builder {
         isStaticSite: boolean
     ): Promise<webpack.Stats> {
         // eslint-disable-next-line @typescript-eslint/no-var-requires
-        const baseConfig = require(path.join(this.targetDir, configPath));
+        const baseConfig = require(path.join(this.targetDir, this.prefix, configPath));
         const baseConfigObj = typeof baseConfig === "function" ?
             baseConfig() : baseConfig;
 
@@ -172,14 +173,16 @@ export class Builder {
 
     static async exec(options: any): Promise<ErrorCode> {
         try {
-            if(options.staticSite) {
-                await initCellsTemplate('.', cellSiteTemplateRepo);
+            let prefix;
+            if (options.staticSite) {
+                await initCellsTemplate('azion', cellSiteTemplateRepo);
+                prefix = path.join("azion", "cells-site-template");
             }
             const rawCfg = read_config(options);
             const cfg = await AssetPublisher.getConfig(rawCfg, process.env);
             const kvArgs: KVArgs = Object.assign({ retries: 0 }, cfg.kv);
 
-            const builder = Builder.init();
+            const builder = Builder.init(process.cwd(), prefix ?? "./");
 
             let webpackConfigPath = BASIC_CFG_PATH;
             if (!options.staticSite) {
