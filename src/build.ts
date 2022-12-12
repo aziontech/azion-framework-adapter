@@ -179,7 +179,14 @@ export class Builder {
             if (!options.staticSite) {
                 await builder.buildClient();
                 webpackConfigPath = WORKER_CFG_PATH;
+            } else {
+                const isInitTemplate = fs.existsSync(path.join(builder.targetDir, "azion/cells-site-template/src/index.js"));
+                if (!isInitTemplate) {
+                    console.log("You must initialize your application before build.");
+                    return ErrorCode.FailedToBuild;
+                }
             }
+
             const manifest = builder.generateManifest(options.assetsDir);
             await builder.buildWorker(
                 webpackConfigPath,
