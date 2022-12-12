@@ -210,7 +210,7 @@ describe('init', () => {
             console.log.should.have.been.called.with("Creating azion directory");
             console.log.should.have.been.called.with("Cloning template repository");
             console.log.should.have.been.called.with("Installing dependencies.");
-            console.log.should.have.been.called.with("All dependecies instaleds!");
+            console.log.should.have.been.called.with("All dependencies have been installed!");
         });
 
         it('should fail when path to template is invalid', async () => {

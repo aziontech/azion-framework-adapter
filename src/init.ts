@@ -93,7 +93,7 @@ async function initCellsTemplate(targetDir: string, cellSiteTemplateRepo: string
         process.chdir(path.join(targetDir,"cells-site-template/"));
         console.log("Installing dependencies.");
         await execCommand("npm ci");
-        console.log("All dependecies instaleds!");
+        console.log("All dependencies have been installed!");
     } catch (err) {
         displayError(err);
         return errorCode(err);
