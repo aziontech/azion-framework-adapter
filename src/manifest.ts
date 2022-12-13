@@ -12,8 +12,8 @@ export default class ManifestBuilder {
     private map: ManifestMap = {};
     private pagesPath: string;
 
-    constructor(rootPath: string, subDir = 'out') {
-        this.jsonPath = path.join(rootPath, "worker/manifest.json");
+    constructor(rootPath: string, subDir = 'out', outputJsonPath = 'worker/manifest.json') {
+        this.jsonPath = path.join(rootPath, outputJsonPath);
         this.pagesPath = path.join(rootPath, subDir);
     }
 
@@ -36,6 +36,7 @@ export default class ManifestBuilder {
             manifest[manifestPath] = storagePath;
 
         }
+        fs.mkdirSync(this.jsonPath.replace('manifest.json', ''), { recursive: true });
         fs.writeFileSync(this.jsonPath, JSON.stringify(manifest, null, " "));
         console.info("Wrote manifest file to", this.jsonPath);
         return manifest;
