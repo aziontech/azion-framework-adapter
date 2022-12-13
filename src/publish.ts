@@ -23,7 +23,7 @@ export async function publish(options: any): Promise<ErrorCode> {
             if(cfg.kv.endpoint) {
                 s3.config.endpoint = cfg.kv.endpoint
             }
-            const publisher = new AssetPublisher(cwd(), s3, cfg);
+            const publisher = new AssetPublisher(cwd(), s3, cfg, options.staticSite);
             await publisher.deployStaticAssets(options.assetsDir);
         }
 

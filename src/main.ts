@@ -41,6 +41,7 @@ program
     .option('-d, --assets-dir <directory>', 'path to static assets')
     .option('-e, --only-function', 'skip deploy of assets')
     .option('-s, --only-assets', 'skip deploy of Edge Function')
+    .option('-t, --static-site', 'publish static site function')
     .action(async (options) => {
         if (options.onlyAssets && options.onlyFunction) {
             console.warn("-e and -s must not be used at the same time");
