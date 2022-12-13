@@ -4,6 +4,7 @@ import process from 'process';
 import webpack from 'webpack';
 import merge from "webpack-merge";
 
+import * as init from './init';
 import { AssetPublisher } from './asset-publisher';
 import { BOOTSTRAP_CODE } from "./bootstraps/common";
 import { BootstrapUtils } from "./bootstraps/utils";
@@ -161,8 +162,8 @@ export class Builder {
         });
     }
 
-    generateManifest(subdir = "out"): any {
-        const manifestBuilder = new ManifestBuilder(this.targetDir, subdir);
+    generateManifest(subdir = "out", outputJsonPath = 'worker/manifest.json'): any {
+        const manifestBuilder = new ManifestBuilder(this.targetDir, subdir, outputJsonPath);
         const manifest = manifestBuilder.storageManifest();
         return manifest;
     }
@@ -173,21 +174,37 @@ export class Builder {
             const cfg = await AssetPublisher.getConfig(rawCfg, process.env);
             const kvArgs: KVArgs = Object.assign({ retries: 0 }, cfg.kv);
 
-            const builder = Builder.init();
+            let builder = Builder.init();
+            let manifest;
 
             let webpackConfigPath = BASIC_CFG_PATH;
             if (!options.staticSite) {
+                manifest = builder.generateManifest(options.assetsDir);
                 await builder.buildClient();
                 webpackConfigPath = WORKER_CFG_PATH;
             } else {
-                const isInitTemplate = fs.existsSync(path.join(builder.targetDir, "azion/cells-site-template/src/index.js"));
+                // checking static site template
+                const templatePath = 'azion/cells-site-template'
+                const isInitTemplate = fs.existsSync(path.join(builder.targetDir, `${templatePath}/src/index.js`));
                 if (!isInitTemplate) {
-                    console.log("You must initialize your application before build.");
-                    return ErrorCode.FailedToBuild;
+                    console.log("Static site template not initialized. Initializing ...");
+                    fs.rmSync(path.join(builder.targetDir, templatePath), { recursive: true, force: true })
+                    const initResult = await init.exec(builder.targetDir, '', options);
+
+                    if (initResult !== ErrorCode.Ok) {
+                        console.log("Error initializing static site template.")
+                        return ErrorCode.FailedToBuild
+                    }
+                } else {
+                    process.chdir(path.join(builder.targetDir, templatePath));
                 }
+
+                manifest = builder.generateManifest(options.assetsDir, `${templatePath}/worker/manifest.json`);
+                console.log("Static site template initialized. Building ...");
+                builder = Builder.init();
             }
 
-            const manifest = builder.generateManifest(options.assetsDir);
+            console.log("done MANIFEST !")
             await builder.buildWorker(
                 webpackConfigPath,
                 manifest,
