@@ -179,8 +179,10 @@ export class Builder {
 
             let webpackConfigPath = BASIC_CFG_PATH;
             if (!options.staticSite) {
-                manifest = builder.generateManifest(options.assetsDir);
                 await builder.buildClient();
+
+                manifest = builder.generateManifest(options.assetsDir);
+
                 webpackConfigPath = WORKER_CFG_PATH;
             } else {
                 // checking static site template
@@ -188,23 +190,24 @@ export class Builder {
                 const isInitTemplate = fs.existsSync(path.join(builder.targetDir, `${templatePath}/src/index.js`));
                 if (!isInitTemplate) {
                     console.log("Static site template not initialized. Initializing ...");
+
                     fs.rmSync(path.join(builder.targetDir, templatePath), { recursive: true, force: true })
+
                     const initResult = await init.exec(builder.targetDir, '', options);
-                    process.chdir(path.join(builder.targetDir, templatePath));
+
                     if (initResult !== ErrorCode.Ok) {
                         console.log("Error initializing static site template.")
                         return ErrorCode.FailedToBuild
                     }
-                } else {
-                    process.chdir(path.join(builder.targetDir, templatePath));
                 }
+
+                process.chdir(path.join(builder.targetDir, templatePath));
 
                 manifest = builder.generateManifest(options.assetsDir, `${templatePath}/worker/manifest.json`);
                 console.log("Static site template initialized. Building ...");
                 builder = Builder.init();
             }
 
-            console.log("done MANIFEST !")
             await builder.buildWorker(
                 webpackConfigPath,
                 manifest,
