@@ -84,15 +84,14 @@ async function initCellsTemplate(targetDir: string, cellSiteTemplateRepo: string
     try {
         console.log("Creating azion directory");
         if(!fs.existsSync("azion")) fs.mkdirSync("azion");
-        process.chdir(path.join(targetDir,"azion"));
 
+        const repoDir = path.join(targetDir, "azion/cells-site-template");
         console.log("Cloning template repository");
-        await simpleGit().clone(cellSiteTemplateRepo, "cells-site-template");
-        await simpleGit("cells-site-template").removeRemote("origin");
+        await simpleGit().clone(cellSiteTemplateRepo, repoDir);
+        await simpleGit(repoDir).removeRemote("origin");
 
-        process.chdir(path.join(targetDir,"cells-site-template/"));
         console.log("Installing dependencies.");
-        await execCommand("npm ci");
+        await execCommand("npm ci --prefix ./azion/cells-site-template");
         console.log("All dependencies have been installed!");
     } catch (err) {
         displayError(err);

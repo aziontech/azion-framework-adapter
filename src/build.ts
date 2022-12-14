@@ -190,7 +190,7 @@ export class Builder {
                     console.log("Static site template not initialized. Initializing ...");
                     fs.rmSync(path.join(builder.targetDir, templatePath), { recursive: true, force: true })
                     const initResult = await init.exec(builder.targetDir, '', options);
-
+                    process.chdir(path.join(builder.targetDir, templatePath));
                     if (initResult !== ErrorCode.Ok) {
                         console.log("Error initializing static site template.")
                         return ErrorCode.FailedToBuild
