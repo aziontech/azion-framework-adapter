@@ -11,7 +11,7 @@ import AWS = require('aws-sdk');
 
 import { expect } from 'chai';
 
-describe('Create nextjs application', () => {
+describe.only('Create nextjs application', () => {
     let templatePath: string;
     let template: string;
     let realPath: string;
@@ -60,6 +60,12 @@ describe('Create nextjs application', () => {
         localOutput = process.cwd();
 
         await s3.createBucket(bucketParams).promise();
+
+        console.log('Creating Next project');
+        await execFile(`npx -y create-next-app@latest --example basic-css ${template}`);
+        process.chdir(template);
+        await execFile(`npx next build`);
+        await execFile(`npx next export`);
     });
 
     after(() => {
@@ -69,56 +75,40 @@ describe('Create nextjs application', () => {
         }
     });
 
-    it('init template nextjs"', async () => {
-        console.log('Creating Next project');
-        const expectOutput = `Export successful. Files written to ${template}/out`
-        await execFile(`npx -y create-next-app@latest --example basic-css ${template}`);
+    it('Init cell site template', async () => {
+
+        const expectOutput = `Creating azion directory\n`+
+        `Cloning template repository\n`+
+        `Installing dependencies.\n`+
+        `All dependencies have been installed!\n`
+
         process.chdir(template);
-        await execFile(`npx next build`);
-        const { stdout } = await execFile(`npx next export`);
-        expect(stdout).to.have.string(expectOutput);
-    });
-
-    it('Clone cell site template', async () => {
-        process.chdir(template);
-        const { stdout} = await execFile(`azion-framework-adapter init cells-site-template https://github.com/aziontech/cells-site-template`);
-        expect(stdout).to.be.equal('Completed.\n');
-    });
-
-    it('Install dependencies', async () => {
-        process.chdir('./cells-site-template');
-        await execFile('npm install');
-        const packageLock = fs.existsSync(path.join(template,'./cells-site-template/package-lock.json'));
-        expect(packageLock).to.be.true;
-    });
-
-
-    it('Copy azion.json file ', async () => {
-        await copy(path.join(localOutput, 'test', 'config-files', 'azion-next.json'),path.join(template,'./cells-site-template/azion.json'))
-        const azionConfigFile = fs.existsSync(path.join(template,'./cells-site-template/azion.json'));
-        expect(azionConfigFile).to.be.true;
+        const { stdout} = await execFile(`azion-framework-adapter init -s`);
+        expect(stdout).to.be.equal(expectOutput);
     });
 
     it('Build the nextjs project', async () => {
-        const expectOutput = `Wrote manifest file to ${template}/cells-site-template/worker/manifest.json\n`+
+        await copy(path.join(localOutput, 'test', 'config-files', 'azion-next.json'),path.join(template,'./azion/cells-site-template/azion.json'))
+        const expectOutput = `Wrote manifest file to ${template}/azion/cells-site-template/worker/manifest.json\n`+
+        `Static site template initialized. Building ...\n`+
         `Finished worker.\n`+
         `Completed.\n`
-        const { stdout } = await execFile('azion-framework-adapter build --static-site --assets-dir ../out');
-        const nextjsOutputDir = fs.existsSync(path.join(template,'/cells-site-template/worker/function.js'));
+        const { stdout } = await execFile('azion-framework-adapter build -c ./azion/cells-site-template/azion.json --static-site --assets-dir ./out || exit $? | 2>&1');
+        const nextjsOutputDir = fs.existsSync(path.join(template,'./azion/cells-site-template/worker/function.js'));
         expect(stdout).to.be.equal(expectOutput);
         expect(nextjsOutputDir).to.be.true;
     });
 
     it('Publish only asset of the nextjs to S3', async () => {
         removeAllKeys(bucketParams);
-        const { stdout } =await execFile('azion-framework-adapter publish --only-assets --assets-dir ../out');
-        const publishOutputMessage = `Loading asset manifest from ${template}/cells-site-template/worker/manifest.json\n`;
+        const { stdout } =await execFile('azion-framework-adapter publish -c ./azion/cells-site-template/azion.json -t --only-assets --assets-dir ./out || exit $? | 2>&1');
+        const publishOutputMessage = `Loading asset manifest from ${template}/azion/cells-site-template/worker/manifest.json\n`;
         expect(stdout).to.be.equal(publishOutputMessage);
 
         const filesOnS3Bucket: any[] = [];
         await getAllKeys(bucketParams, filesOnS3Bucket);
 
-        const manifest = fs.readFileSync(`${template}/cells-site-template/worker/manifest.json`);
+        const manifest = fs.readFileSync(`${template}/azion/cells-site-template/worker/manifest.json`);
         const manifestArray = Object.values(JSON.parse(manifest.toString()));
         const filesOnS3BucketContainManifestFiles = manifestArray.every((each) =>  filesOnS3Bucket.includes(each) );
         expect(filesOnS3BucketContainManifestFiles).to.be.true;
