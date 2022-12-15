@@ -52,6 +52,7 @@ Options:
   -d, --assets-dir <directory>  path to static assets
   -e, --only-function           skip deploy of assets
   -s, --only-assets             skip deploy of Edge Function
+  -t, --static-site             publish static site function
   -h, --help                    display help for command\n`
 
     it('Output of "Help" option', async () => {
