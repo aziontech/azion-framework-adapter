@@ -54,9 +54,8 @@ describe('build', () => {
             previousPath = process.cwd();
             process.chdir(templatePath);
             await exec('npm install', {});
-            const currentDir = process.cwd()
-            builder = new Builder(currentDir);
-            Builder.createWorkerDir(currentDir);
+            builder = new Builder(templatePath);
+            Builder.createWorkerDir(templatePath);
         });
 
         after(() => {
@@ -98,9 +97,8 @@ describe('build', () => {
             previousPath = process.cwd();
             process.chdir(templatePath);
             await exec('npm install', {});
-            const currentDir = process.cwd()
-            builder = new Builder(currentDir);
-            Builder.createWorkerDir(currentDir);
+            builder = new Builder(templatePath);
+            Builder.createWorkerDir(templatePath);
         });
 
         after(() => {
