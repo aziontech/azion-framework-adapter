@@ -34,9 +34,7 @@ export default class ManifestBuilder {
             const storagePath = path.relative(this.pagesPath, hashPath);
 
             manifest[manifestPath] = storagePath;
-
         }
-        fs.mkdirSync(this.jsonPath.replace('manifest.json', ''), { recursive: true });
         fs.writeFileSync(this.jsonPath, JSON.stringify(manifest, null, " "));
         console.info("Wrote manifest file to", this.jsonPath);
         return manifest;

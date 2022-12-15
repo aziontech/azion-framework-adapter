@@ -37,24 +37,18 @@ export class Builder {
         this.targetDir = targetDir;
     }
 
-    static init(): Builder {
-        const targetDir = process.cwd();
-        try {
-            const workerDir = path.join(targetDir, "worker");
+    static createWorkerDir(workerTargetDir: string) {
+        const workerDir = path.join(workerTargetDir, "worker");
 
-            if (fs.existsSync(workerDir)) {
-                if (!fs.statSync(workerDir).isDirectory()) {
-                    throw new FailedToBuild(
-                        targetDir,
-                        "cannot create './worker' directory"
-                    );
-                }
-            } else {
-                fs.mkdirSync(workerDir);
+        if (fs.existsSync(workerDir)) {
+            if (!fs.statSync(workerDir).isDirectory()) {
+                throw new FailedToBuild(
+                    workerTargetDir,
+                    "cannot create 'worker' directory"
+                );
             }
-            return new Builder(targetDir);
-        } catch (error: any) {
-            throw new FailedToBuild(targetDir, error.message);
+        } else {
+            fs.mkdirSync(workerDir);
         }
     }
 
@@ -174,26 +168,30 @@ export class Builder {
             const cfg = await AssetPublisher.getConfig(rawCfg, process.env);
             const kvArgs: KVArgs = Object.assign({ retries: 0 }, cfg.kv);
 
-            let builder = Builder.init();
+            const targetDir = process.cwd();
+
+            let builder = new Builder(targetDir);
             let manifest;
 
             let webpackConfigPath = BASIC_CFG_PATH;
             if (!options.staticSite) {
                 await builder.buildClient();
 
+                Builder.createWorkerDir(targetDir);
                 manifest = builder.generateManifest(options.assetsDir);
 
                 webpackConfigPath = WORKER_CFG_PATH;
             } else {
                 // checking static site template
                 const templatePath = 'azion/cells-site-template'
-                const isInitTemplate = fs.existsSync(path.join(builder.targetDir, `${templatePath}/src/index.js`));
+                const staticSiteWorkerDir = path.join(targetDir, templatePath);
+                const isInitTemplate = fs.existsSync(path.join(staticSiteWorkerDir, '/src/index.js'));
                 if (!isInitTemplate) {
                     console.log("Static site template not initialized. Initializing ...");
 
-                    fs.rmSync(path.join(builder.targetDir, templatePath), { recursive: true, force: true })
+                    fs.rmSync(path.join(staticSiteWorkerDir), { recursive: true, force: true })
 
-                    const initResult = await init.exec(builder.targetDir, '', options);
+                    const initResult = await init.exec(targetDir, '', options);
 
                     if (initResult !== ErrorCode.Ok) {
                         console.log("Error initializing static site template.")
@@ -201,11 +199,13 @@ export class Builder {
                     }
                 }
 
-                process.chdir(path.join(builder.targetDir, templatePath));
-
+                // prepare to build static site
+                Builder.createWorkerDir(staticSiteWorkerDir);
+                process.chdir(staticSiteWorkerDir);
                 manifest = builder.generateManifest(options.assetsDir, `${templatePath}/worker/manifest.json`);
+
                 console.log("Static site template initialized. Building ...");
-                builder = Builder.init();
+                builder = new Builder(path.join(targetDir, templatePath));
             }
 
             await builder.buildWorker(
