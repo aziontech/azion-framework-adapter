@@ -26,6 +26,7 @@ export class AssetPublisher {
     private cfg: Config;
     private s3: S3;
     private rootPath: string;
+    private staticSite: boolean;
 
     static async getConfig(cfg: any, env: any): Promise<Config> {
         const config = await validate(cfg, AssetPublisherConfigSchema,
@@ -49,15 +50,23 @@ export class AssetPublisher {
 
         return config;
     }
-    constructor(rootPath: string, s3: S3, cfg: Config) {
+    constructor(rootPath: string, s3: S3, cfg: Config, staticSite = false) {
         this.cfg = cfg;
         this.rootPath = rootPath;
         this.s3 = s3;
+        this.staticSite = staticSite
     }
 
     public async deployStaticAssets(subdir = 'out') {
         const waitList = [];
-        const manifest = new ManifestBuilder(this.rootPath).loadManifest();
+
+        let manifest;
+        if(this.staticSite) {
+            manifest = new ManifestBuilder(this.rootPath, subdir, 'azion/cells-site-template/worker/manifest.json').loadManifest();
+        } else {
+            manifest = new ManifestBuilder(this.rootPath, subdir).loadManifest();
+        }
+
         for (const localPath of Object.keys(manifest)) {
             const fullPath = path.join(this.rootPath, subdir, localPath);
             const content = fs.readFileSync(fullPath);
