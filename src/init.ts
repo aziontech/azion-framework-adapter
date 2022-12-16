@@ -19,6 +19,7 @@ import {
 } from './errors';
 
 const CELLS_SITE_TEMPLATE_REPO = "https://github.com/aziontech/cells-site-template.git";
+const CELLS_SITE_TEMPLATE_WORK_DIR = "azion/cells-site-template";
 
 function validate_target_directory(directory: string): Result<void, BaseError> {
 
@@ -85,13 +86,13 @@ async function initCellsTemplate(targetDir: string, cellSiteTemplateRepo: string
         console.log("Creating azion directory");
         if(!fs.existsSync("azion")) fs.mkdirSync("azion");
 
-        const repoDir = path.join(targetDir, "azion/cells-site-template");
+        const repoDir = path.join(targetDir, CELLS_SITE_TEMPLATE_WORK_DIR);
         console.log("Cloning template repository");
         await simpleGit().clone(cellSiteTemplateRepo, repoDir);
         await simpleGit(repoDir).removeRemote("origin");
 
         console.log("Installing dependencies.");
-        await execCommand("npm ci --prefix ./azion/cells-site-template");
+        await execCommand(`npm ci --prefix ${CELLS_SITE_TEMPLATE_WORK_DIR}`);
         console.log("All dependencies have been installed!");
     } catch (err) {
         displayError(err);
