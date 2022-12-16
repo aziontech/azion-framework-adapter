@@ -18,7 +18,7 @@ import {
     NotADirectory
 } from './errors';
 
-const cellSiteTemplateRepo = "https://github.com/aziontech/cells-site-template.git";
+const CELLS_SITE_TEMPLATE_REPO = "https://github.com/aziontech/cells-site-template.git";
 
 function validate_target_directory(directory: string): Result<void, BaseError> {
 
@@ -105,7 +105,7 @@ export async function exec(targetDir: string, repository: string, options: any):
         if(options.staticSite ) {
             const isInitTemplate = fs.existsSync(path.join(targetDir,"azion/cells-site-template/src/index.js"));
             if (!isInitTemplate) {
-                await initCellsTemplate(targetDir, cellSiteTemplateRepo);
+                await initCellsTemplate(targetDir, CELLS_SITE_TEMPLATE_REPO);
             } else {
                 console.log("Project already initialized!");
             }
