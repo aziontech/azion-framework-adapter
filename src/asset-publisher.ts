@@ -6,7 +6,8 @@ import { validate } from './config';
 import ManifestBuilder from './manifest';
 
 import AssetPublisherConfigSchema from './asset-publisher-config.schema.json';
-import { S3CredentialsNotSet, S3BucketNotSet } from './errors';
+import { S3CredentialsNotSet } from './errors';
+import { CELLS_SITE_TEMPLATE_WORK_DIR } from './constants';
 
 export interface KVConfig {
     accessKeyId: string,
@@ -62,7 +63,8 @@ export class AssetPublisher {
 
         let manifest;
         if(this.staticSite) {
-            manifest = new ManifestBuilder(this.rootPath, subdir, 'azion/cells-site-template/worker/manifest.json').loadManifest();
+            const manifestPath = path.join(CELLS_SITE_TEMPLATE_WORK_DIR, 'worker', 'manifest.json');
+            manifest = new ManifestBuilder(this.rootPath, subdir, manifestPath).loadManifest();
         } else {
             manifest = new ManifestBuilder(this.rootPath, subdir).loadManifest();
         }

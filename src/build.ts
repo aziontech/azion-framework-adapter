@@ -15,6 +15,8 @@ import { generateWorkerStaticSiteConfig } from './configs/static-site/webpack.wo
 import { displayError, ErrorCode, errorCode, FailedToBuild } from "./errors";
 import ManifestBuilder, { ManifestMap } from "./manifest";
 
+import { CELLS_SITE_TEMPLATE_WORK_DIR } from './constants';
+
 interface KVArgs {
   accessKeyId: string;
   secretAccessKey: string;
@@ -183,9 +185,8 @@ export class Builder {
                 webpackConfigPath = WORKER_CFG_PATH;
             } else {
                 // checking static site template
-                const templatePath = 'azion/cells-site-template'
-                const staticSiteWorkerDir = path.join(targetDir, templatePath);
-                const isInitTemplate = fs.existsSync(path.join(staticSiteWorkerDir, '/src/index.js'));
+                const staticSiteWorkerDir = path.join(targetDir, CELLS_SITE_TEMPLATE_WORK_DIR);
+                const isInitTemplate = fs.existsSync(path.join(staticSiteWorkerDir, 'src', 'index.js'));
                 if (!isInitTemplate) {
                     console.log("Static site template not initialized. Initializing ...");
 
@@ -202,10 +203,10 @@ export class Builder {
                 // prepare to build static site
                 Builder.createWorkerDir(staticSiteWorkerDir);
                 process.chdir(staticSiteWorkerDir);
-                manifest = builder.generateManifest(options.assetsDir, `${templatePath}/worker/manifest.json`);
+                manifest = builder.generateManifest(options.assetsDir, `${CELLS_SITE_TEMPLATE_WORK_DIR}/worker/manifest.json`);
 
                 console.log("Static site template initialized. Building ...");
-                builder = new Builder(path.join(targetDir, templatePath));
+                builder = new Builder(path.join(targetDir, CELLS_SITE_TEMPLATE_WORK_DIR));
             }
 
             await builder.buildWorker(

@@ -13,6 +13,8 @@ import { ErrorCode, NotADirectory } from '../../dist/errors';
 import * as init from '../../dist/init';
 import { expect } from 'chai';
 
+import { CELLS_SITE_TEMPLATE_WORK_DIR } from '../../dist/constants';
+
 const exec = promisify<string, any, { stdout: string, stderr: string }>(child_process.exec);
 
 chai.should();
@@ -203,7 +205,7 @@ describe('init', () => {
             const initCellsTemplate = introspectedInit.__get__('initCellsTemplate');
             await initCellsTemplate('.', template);
 
-            const isInitTemplate = fs.existsSync(path.join(initialDir,"azion/cells-site-template/package.json"));
+            const isInitTemplate = fs.existsSync(path.join(initialDir, CELLS_SITE_TEMPLATE_WORK_DIR, 'package.json'));
             expect(isInitTemplate).to.be.true;
 
             console.log.should.have.been.called.exactly(4);

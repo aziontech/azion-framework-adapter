@@ -7,6 +7,8 @@ import util = require('node:util');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const execCommand = util.promisify(require('node:child_process').exec);
 
+import { CELLS_SITE_TEMPLATE_REPO, CELLS_SITE_TEMPLATE_WORK_DIR } from './constants';
+
 import {
     BaseError,
     CannotCloneTemplate,
@@ -17,9 +19,6 @@ import {
     errorCode,
     NotADirectory
 } from './errors';
-
-const CELLS_SITE_TEMPLATE_REPO = "https://github.com/aziontech/cells-site-template.git";
-const CELLS_SITE_TEMPLATE_WORK_DIR = "azion/cells-site-template";
 
 function validate_target_directory(directory: string): Result<void, BaseError> {
 
@@ -104,7 +103,8 @@ async function initCellsTemplate(targetDir: string, cellSiteTemplateRepo: string
 export async function exec(targetDir: string, repository: string, options: any): Promise<ErrorCode> {
     try {
         if(options.staticSite ) {
-            const isInitTemplate = fs.existsSync(path.join(targetDir,"azion/cells-site-template/src/index.js"));
+            const indexPath = path.join(targetDir, CELLS_SITE_TEMPLATE_WORK_DIR, 'src', 'index.js');
+            const isInitTemplate = fs.existsSync(indexPath);
             if (!isInitTemplate) {
                 await initCellsTemplate(targetDir, CELLS_SITE_TEMPLATE_REPO);
             } else {

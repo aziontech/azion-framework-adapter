@@ -10,6 +10,7 @@ const copy = require('recursive-copy');
 import AWS = require('aws-sdk');
 
 import { expect } from 'chai';
+import { CELLS_SITE_TEMPLATE_WORK_DIR } from '../../dist/constants';
 
 describe('Create nextjs application', () => {
     let templatePath: string;
@@ -88,27 +89,29 @@ describe('Create nextjs application', () => {
     });
 
     it('Build the nextjs project', async () => {
-        await copy(path.join(localOutput, 'test', 'config-files', 'azion-next.json'),path.join(template,'./azion/cells-site-template/azion.json'))
-        const expectOutput = `Wrote manifest file to ${template}/azion/cells-site-template/worker/manifest.json\n`+
+        const configPath = path.join(template, CELLS_SITE_TEMPLATE_WORK_DIR, 'azion.json');
+        await copy(path.join(localOutput, 'test', 'config-files', 'azion-next.json'), configPath)
+        const expectOutput = `Wrote manifest file to ${template}/${CELLS_SITE_TEMPLATE_WORK_DIR}/worker/manifest.json\n`+
         `Static site template initialized. Building ...\n`+
         `Finished worker.\n`+
         `Completed.\n`
-        const { stdout } = await execFile('azion-framework-adapter build -c ./azion/cells-site-template/azion.json --static-site --assets-dir ./out || exit $? | 2>&1');
-        const nextjsOutputDir = fs.existsSync(path.join(template,'./azion/cells-site-template/worker/function.js'));
+        const { stdout } = await execFile(`azion-framework-adapter build -c ${configPath} --static-site --assets-dir ./out || exit $? | 2>&1`);
+        const nextjsOutputDir = fs.existsSync(path.join(template, CELLS_SITE_TEMPLATE_WORK_DIR, 'worker', 'function.js'));
         expect(stdout).to.be.equal(expectOutput);
         expect(nextjsOutputDir).to.be.true;
     });
 
     it('Publish only asset of the nextjs to S3', async () => {
+        const configPath = path.join(template, CELLS_SITE_TEMPLATE_WORK_DIR, 'azion.json');
         removeAllKeys(bucketParams);
-        const { stdout } =await execFile('azion-framework-adapter publish -c ./azion/cells-site-template/azion.json -t --only-assets --assets-dir ./out || exit $? | 2>&1');
-        const publishOutputMessage = `Loading asset manifest from ${template}/azion/cells-site-template/worker/manifest.json\n`;
+        const { stdout } =await execFile(`azion-framework-adapter publish -c ${configPath} -t --only-assets --assets-dir ./out || exit $? | 2>&1`);
+        const publishOutputMessage = `Loading asset manifest from ${template}/${CELLS_SITE_TEMPLATE_WORK_DIR}/worker/manifest.json\n`;
         expect(stdout).to.be.equal(publishOutputMessage);
 
         const filesOnS3Bucket: any[] = [];
         await getAllKeys(bucketParams, filesOnS3Bucket);
 
-        const manifest = fs.readFileSync(`${template}/azion/cells-site-template/worker/manifest.json`);
+        const manifest = fs.readFileSync(`${template}/${CELLS_SITE_TEMPLATE_WORK_DIR}/worker/manifest.json`);
         const manifestArray = Object.values(JSON.parse(manifest.toString()));
         const filesOnS3BucketContainManifestFiles = manifestArray.every((each) =>  filesOnS3Bucket.includes(each) );
         expect(filesOnS3BucketContainManifestFiles).to.be.true;
