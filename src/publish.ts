@@ -6,6 +6,9 @@ import { AzionApi } from './azion-api';
 import { AzionPublisher, Config as AzionPublisherConfig } from './azion-publisher';
 import { read_config } from './config';
 import { displayError, ErrorCode, errorCode } from './errors';
+import ManifestBuilder from './manifest';
+import path from 'path';
+import { CELLS_SITE_TEMPLATE_WORK_DIR } from './constants';
 
 export async function publish(options: any): Promise<ErrorCode> {
 
@@ -23,7 +26,15 @@ export async function publish(options: any): Promise<ErrorCode> {
             if(cfg.kv.endpoint) {
                 s3.config.endpoint = cfg.kv.endpoint
             }
-            const publisher = new AssetPublisher(cwd(), s3, cfg, options.staticSite);
+
+            const manifestBuilder = new ManifestBuilder(
+                cwd(),
+                options.assetsDir,
+                options.staticSite ? path.join(CELLS_SITE_TEMPLATE_WORK_DIR, 'worker', 'manifest.json') : path.join('worker', 'manifest.json')
+            );
+
+            const manifest = manifestBuilder.loadManifest();
+            const publisher = new AssetPublisher(cwd(), s3, cfg, manifest);
             await publisher.deployStaticAssets(options.assetsDir);
         }
 

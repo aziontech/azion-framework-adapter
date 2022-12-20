@@ -7,7 +7,7 @@ import ManifestBuilder from './manifest';
 
 import AssetPublisherConfigSchema from './asset-publisher-config.schema.json';
 import { S3CredentialsNotSet } from './errors';
-import { CELLS_SITE_TEMPLATE_WORK_DIR } from './constants';
+import { ManifestMap } from './manifest';
 
 export interface KVConfig {
     accessKeyId: string,
@@ -27,7 +27,7 @@ export class AssetPublisher {
     private cfg: Config;
     private s3: S3;
     private rootPath: string;
-    private staticSite: boolean;
+    private manifest: ManifestMap;
 
     static async getConfig(cfg: any, env: any): Promise<Config> {
         const config = await validate(cfg, AssetPublisherConfigSchema,
@@ -51,25 +51,17 @@ export class AssetPublisher {
 
         return config;
     }
-    constructor(rootPath: string, s3: S3, cfg: Config, staticSite = false) {
+    constructor(rootPath: string, s3: S3, cfg: Config, manifest: ManifestMap) {
         this.cfg = cfg;
         this.rootPath = rootPath;
         this.s3 = s3;
-        this.staticSite = staticSite
+        this.manifest = manifest
     }
 
     public async deployStaticAssets(subdir = 'out') {
         const waitList = [];
 
-        let manifest;
-        if(this.staticSite) {
-            const manifestPath = path.join(CELLS_SITE_TEMPLATE_WORK_DIR, 'worker', 'manifest.json');
-            manifest = new ManifestBuilder(this.rootPath, subdir, manifestPath).loadManifest();
-        } else {
-            manifest = new ManifestBuilder(this.rootPath, subdir).loadManifest();
-        }
-
-        for (const localPath of Object.keys(manifest)) {
+        for (const localPath of Object.keys(this.manifest)) {
             const fullPath = path.join(this.rootPath, subdir, localPath);
             const content = fs.readFileSync(fullPath);
             const remotePath = ManifestBuilder.getStoragePath(localPath, content);
