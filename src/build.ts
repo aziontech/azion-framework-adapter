@@ -39,13 +39,13 @@ export class Builder {
         this.targetDir = targetDir;
     }
 
-    static createWorkerDir(workerTargetDir: string) {
-        const workerDir = path.join(workerTargetDir, "worker");
+    createWorkerDir() {
+        const workerDir = path.join(this.targetDir, "worker");
 
         if (fs.existsSync(workerDir)) {
             if (!fs.statSync(workerDir).isDirectory()) {
                 throw new FailedToBuild(
-                    workerTargetDir,
+                    workerDir,
                     "cannot create 'worker' directory"
                 );
             }
@@ -158,12 +158,6 @@ export class Builder {
         });
     }
 
-    generateManifest(subdir = "out", outputJsonPath = 'worker/manifest.json'): any {
-        const manifestBuilder = new ManifestBuilder(this.targetDir, subdir, outputJsonPath);
-        const manifest = manifestBuilder.storageManifest();
-        return manifest;
-    }
-
     static async exec(options: any): Promise<ErrorCode> {
         try {
             const rawCfg = read_config(options);
@@ -171,17 +165,15 @@ export class Builder {
             const kvArgs: KVArgs = Object.assign({ retries: 0 }, cfg.kv);
 
             const targetDir = process.cwd();
-
-            let builder = new Builder(targetDir);
+            let builder;
             let manifest;
 
             let webpackConfigPath = BASIC_CFG_PATH;
             if (!options.staticSite) {
+                builder = new Builder(targetDir);
+                builder.createWorkerDir();
                 await builder.buildClient();
-
-                Builder.createWorkerDir(targetDir);
-                manifest = builder.generateManifest(options.assetsDir);
-
+                manifest = new ManifestBuilder(targetDir).storageManifest();
                 webpackConfigPath = WORKER_CFG_PATH;
             } else {
                 // checking static site template
@@ -200,13 +192,11 @@ export class Builder {
                     }
                 }
 
-                // prepare to build static site
-                Builder.createWorkerDir(staticSiteWorkerDir);
-                process.chdir(staticSiteWorkerDir);
-                manifest = builder.generateManifest(options.assetsDir, `${CELLS_SITE_TEMPLATE_WORK_DIR}/worker/manifest.json`);
-
                 console.log("Static site template initialized. Building ...");
-                builder = new Builder(path.join(targetDir, CELLS_SITE_TEMPLATE_WORK_DIR));
+                process.chdir(staticSiteWorkerDir);
+                builder = new Builder(process.cwd());
+                builder.createWorkerDir();
+                manifest = new ManifestBuilder(targetDir, options.assetsDir, `${CELLS_SITE_TEMPLATE_WORK_DIR}/worker/manifest.json`).storageManifest();
             }
 
             await builder.buildWorker(

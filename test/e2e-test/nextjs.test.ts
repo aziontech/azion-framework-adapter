@@ -91,14 +91,16 @@ describe('Create nextjs application', () => {
     it('Build the nextjs project', async () => {
         const configPath = path.join(template, CELLS_SITE_TEMPLATE_WORK_DIR, 'azion.json');
         await copy(path.join(localOutput, 'test', 'config-files', 'azion-next.json'), configPath)
-        const expectOutput = `Wrote manifest file to ${template}/${CELLS_SITE_TEMPLATE_WORK_DIR}/worker/manifest.json\n`+
-        `Static site template initialized. Building ...\n`+
+        const expectOutput = `Static site template initialized. Building ...\n`+
+        `Wrote manifest file to ${template}/${CELLS_SITE_TEMPLATE_WORK_DIR}/worker/manifest.json\n`+
         `Finished worker.\n`+
         `Completed.\n`
         const { stdout } = await execFile(`azion-framework-adapter build -c ${configPath} --static-site --assets-dir ./out || exit $? | 2>&1`);
-        const nextjsOutputDir = fs.existsSync(path.join(template, CELLS_SITE_TEMPLATE_WORK_DIR, 'worker', 'function.js'));
+        const manifestFile = fs.existsSync(path.join(template, CELLS_SITE_TEMPLATE_WORK_DIR, 'worker', 'manifest.json'));
+        const functionFile = fs.existsSync(path.join(template, CELLS_SITE_TEMPLATE_WORK_DIR, 'worker', 'function.js'));
         expect(stdout).to.be.equal(expectOutput);
-        expect(nextjsOutputDir).to.be.true;
+        expect(manifestFile).to.be.true;
+        expect(functionFile).to.be.true;
     });
 
     it('Publish only asset of the nextjs to S3', async () => {

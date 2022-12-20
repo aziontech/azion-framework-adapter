@@ -102,7 +102,7 @@ async function initCellsTemplate(targetDir: string, cellSiteTemplateRepo: string
 
 export async function exec(targetDir: string, repository: string, options: any): Promise<ErrorCode> {
     try {
-        if(options.staticSite ) {
+        if (options.staticSite) {
             const indexPath = path.join(targetDir, CELLS_SITE_TEMPLATE_WORK_DIR, 'src', 'index.js');
             const isInitTemplate = fs.existsSync(indexPath);
             if (!isInitTemplate) {
