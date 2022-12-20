@@ -207,21 +207,12 @@ describe('init', () => {
 
             const isInitTemplate = fs.existsSync(path.join(initialDir, CELLS_SITE_TEMPLATE_WORK_DIR, 'package.json'));
             expect(isInitTemplate).to.be.true;
-
-            console.log.should.have.been.called.exactly(4);
-            console.log.should.have.been.called.with("Creating azion directory");
-            console.log.should.have.been.called.with("Cloning template repository");
-            console.log.should.have.been.called.with("Installing dependencies.");
-            console.log.should.have.been.called.with("All dependencies have been installed!");
         });
 
         it('should fail when path to template is invalid', async () => {
             const initCellsTemplate = introspectedInit.__get__('initCellsTemplate');
             const errorCode = await initCellsTemplate('.', 'asdf');
             expect(errorCode).to.be.equal(100);
-            console.log.should.have.been.called.exactly(3);
-            console.log.should.have.been.called.with("Creating azion directory");
-            console.log.should.have.been.called.with("Cloning template repository");
         });
     });
 

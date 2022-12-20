@@ -4,7 +4,7 @@ import process from 'process';
 import webpack from 'webpack';
 import merge from "webpack-merge";
 
-import * as init from './init';
+import { initCellsTemplate } from './init';
 import { AssetPublisher } from './asset-publisher';
 import { BOOTSTRAP_CODE } from "./bootstraps/common";
 import { BootstrapUtils } from "./bootstraps/utils";
@@ -15,7 +15,7 @@ import { generateWorkerStaticSiteConfig } from './configs/static-site/webpack.wo
 import { displayError, ErrorCode, errorCode, FailedToBuild } from "./errors";
 import ManifestBuilder, { ManifestMap } from "./manifest";
 
-import { CELLS_SITE_TEMPLATE_WORK_DIR } from './constants';
+import { CELLS_SITE_TEMPLATE_REPO, CELLS_SITE_TEMPLATE_WORK_DIR } from './constants';
 
 interface KVArgs {
   accessKeyId: string;
@@ -169,34 +169,20 @@ export class Builder {
             let manifest;
 
             let webpackConfigPath = BASIC_CFG_PATH;
-            if (!options.staticSite) {
-                builder = new Builder(targetDir);
-                builder.createWorkerDir();
-                await builder.buildClient();
-                manifest = new ManifestBuilder(targetDir).storageManifest();
-                webpackConfigPath = WORKER_CFG_PATH;
-            } else {
-                // checking static site template
+            if (options.staticSite) {
+                await initCellsTemplate(targetDir, CELLS_SITE_TEMPLATE_REPO);
                 const staticSiteWorkerDir = path.join(targetDir, CELLS_SITE_TEMPLATE_WORK_DIR);
-                const isInitTemplate = fs.existsSync(path.join(staticSiteWorkerDir, 'src', 'index.js'));
-                if (!isInitTemplate) {
-                    console.log("Static site template not initialized. Initializing ...");
-
-                    fs.rmSync(path.join(staticSiteWorkerDir), { recursive: true, force: true })
-
-                    const initResult = await init.exec(targetDir, '', options);
-
-                    if (initResult !== ErrorCode.Ok) {
-                        console.log("Error initializing static site template.")
-                        return ErrorCode.FailedToBuild
-                    }
-                }
-
                 console.log("Static site template initialized. Building ...");
                 process.chdir(staticSiteWorkerDir);
                 builder = new Builder(process.cwd());
                 builder.createWorkerDir();
                 manifest = new ManifestBuilder(targetDir, options.assetsDir, `${CELLS_SITE_TEMPLATE_WORK_DIR}/worker/manifest.json`).storageManifest();
+            } else {
+                builder = new Builder(targetDir);
+                builder.createWorkerDir();
+                await builder.buildClient();
+                manifest = new ManifestBuilder(targetDir).storageManifest();
+                webpackConfigPath = WORKER_CFG_PATH;
             }
 
             await builder.buildWorker(
@@ -214,3 +200,4 @@ export class Builder {
         }
     }
 }
+

@@ -80,19 +80,23 @@ async function init(targetDir: string, repository: string, options: any): Promis
 
 }
 
-async function initCellsTemplate(targetDir: string, cellSiteTemplateRepo: string) {
+export async function initCellsTemplate(targetDir: string, cellsSiteTemplate: string) {
     try {
-        console.log("Creating azion directory");
-        if(!fs.existsSync("azion")) fs.mkdirSync("azion");
+        fs.mkdirSync("azion", {recursive: true });
 
-        const repoDir = path.join(targetDir, CELLS_SITE_TEMPLATE_WORK_DIR);
-        console.log("Cloning template repository");
-        await simpleGit().clone(cellSiteTemplateRepo, repoDir);
-        await simpleGit(repoDir).removeRemote("origin");
+        const staticSiteWorkerDir = path.join(targetDir, CELLS_SITE_TEMPLATE_WORK_DIR);
+        const isInitTemplate = fs.existsSync(path.join(staticSiteWorkerDir, 'src', 'index.js'));
+        if (!isInitTemplate) {
+            const repoDir = path.join(targetDir, CELLS_SITE_TEMPLATE_WORK_DIR);
+            console.log("Cloning template repository");
+            await simpleGit().clone(cellsSiteTemplate, repoDir);
+            await simpleGit(repoDir).removeRemote("origin");
 
-        console.log("Installing dependencies.");
-        await execCommand(`npm ci --prefix ${CELLS_SITE_TEMPLATE_WORK_DIR}`);
-        console.log("All dependencies have been installed!");
+            console.log("Installing dependencies.");
+            await execCommand(`npm ci --prefix ${CELLS_SITE_TEMPLATE_WORK_DIR}`);
+            console.log("All dependencies have been installed!");
+        }
+
     } catch (err) {
         displayError(err);
         return errorCode(err);
@@ -103,13 +107,7 @@ async function initCellsTemplate(targetDir: string, cellSiteTemplateRepo: string
 export async function exec(targetDir: string, repository: string, options: any): Promise<ErrorCode> {
     try {
         if (options.staticSite) {
-            const indexPath = path.join(targetDir, CELLS_SITE_TEMPLATE_WORK_DIR, 'src', 'index.js');
-            const isInitTemplate = fs.existsSync(indexPath);
-            if (!isInitTemplate) {
-                await initCellsTemplate(targetDir, CELLS_SITE_TEMPLATE_REPO);
-            } else {
-                console.log("Project already initialized!");
-            }
+            await initCellsTemplate(targetDir, CELLS_SITE_TEMPLATE_REPO);
             return ErrorCode.Ok;
         }
 

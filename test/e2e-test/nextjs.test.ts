@@ -78,8 +78,7 @@ describe('Create nextjs application', () => {
 
     it('Init cell site template', async () => {
 
-        const expectOutput = `Creating azion directory\n`+
-        `Cloning template repository\n`+
+        const expectOutput =`Cloning template repository\n`+
         `Installing dependencies.\n`+
         `All dependencies have been installed!\n`
 
