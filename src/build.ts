@@ -4,6 +4,7 @@ import process from 'process';
 import webpack from 'webpack';
 import merge from "webpack-merge";
 
+import { initCellsTemplate } from './init';
 import { AssetPublisher } from './asset-publisher';
 import { BOOTSTRAP_CODE } from "./bootstraps/common";
 import { BootstrapUtils } from "./bootstraps/utils";
@@ -13,6 +14,8 @@ import { generateWorkerFlareactConfig } from './configs/flareact/webpack.worker.
 import { generateWorkerStaticSiteConfig } from './configs/static-site/webpack.worker.config';
 import { displayError, ErrorCode, errorCode, FailedToBuild } from "./errors";
 import ManifestBuilder, { ManifestMap } from "./manifest";
+
+import { CELLS_SITE_TEMPLATE_REPO, CELLS_SITE_TEMPLATE_WORK_DIR } from './constants';
 
 interface KVArgs {
   accessKeyId: string;
@@ -36,24 +39,18 @@ export class Builder {
         this.targetDir = targetDir;
     }
 
-    static init(): Builder {
-        const targetDir = process.cwd();
-        try {
-            const workerDir = path.join(targetDir, "worker");
+    createWorkerDir() {
+        const workerDir = path.join(this.targetDir, "worker");
 
-            if (fs.existsSync(workerDir)) {
-                if (!fs.statSync(workerDir).isDirectory()) {
-                    throw new FailedToBuild(
-                        targetDir,
-                        "cannot create './worker' directory"
-                    );
-                }
-            } else {
-                fs.mkdirSync(workerDir);
+        if (fs.existsSync(workerDir)) {
+            if (!fs.statSync(workerDir).isDirectory()) {
+                throw new FailedToBuild(
+                    workerDir,
+                    "cannot create 'worker' directory"
+                );
             }
-            return new Builder(targetDir);
-        } catch (error: any) {
-            throw new FailedToBuild(targetDir, error.message);
+        } else {
+            fs.mkdirSync(workerDir);
         }
     }
 
@@ -161,26 +158,33 @@ export class Builder {
         });
     }
 
-    generateManifest(subdir = "out"): any {
-        const manifestBuilder = new ManifestBuilder(this.targetDir, subdir);
-        const manifest = manifestBuilder.storageManifest();
-        return manifest;
-    }
-
     static async exec(options: any): Promise<ErrorCode> {
         try {
             const rawCfg = read_config(options);
             const cfg = await AssetPublisher.getConfig(rawCfg, process.env);
             const kvArgs: KVArgs = Object.assign({ retries: 0 }, cfg.kv);
 
-            const builder = Builder.init();
+            const targetDir = process.cwd();
+            let builder;
+            let manifest;
 
             let webpackConfigPath = BASIC_CFG_PATH;
-            if (!options.staticSite) {
+            if (options.staticSite) {
+                await initCellsTemplate(targetDir, CELLS_SITE_TEMPLATE_REPO);
+                const staticSiteWorkerDir = path.join(targetDir, CELLS_SITE_TEMPLATE_WORK_DIR);
+                console.log("Static site template initialized. Building ...");
+                process.chdir(staticSiteWorkerDir);
+                builder = new Builder(process.cwd());
+                builder.createWorkerDir();
+                manifest = new ManifestBuilder(targetDir, options.assetsDir, `${CELLS_SITE_TEMPLATE_WORK_DIR}/worker/manifest.json`).storageManifest();
+            } else {
+                builder = new Builder(targetDir);
+                builder.createWorkerDir();
                 await builder.buildClient();
+                manifest = new ManifestBuilder(targetDir).storageManifest();
                 webpackConfigPath = WORKER_CFG_PATH;
             }
-            const manifest = builder.generateManifest(options.assetsDir);
+
             await builder.buildWorker(
                 webpackConfigPath,
                 manifest,
@@ -196,3 +200,4 @@ export class Builder {
         }
     }
 }
+
