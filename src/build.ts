@@ -119,13 +119,27 @@ export class Builder {
         if (isStaticSite) bootstrapCode += ' global.__PROJECT_TYPE_PATTERN = PROJECT_TYPE_PATTERN_VALUE;';
 
         workerCompiler.hooks.beforeRun.tapAsync(
-            "FileManagerPlugin",
+            "Before compile",
             (_, callback) => {
+                isStaticSite
+                    ? fs.copyFileSync("./src/index.js", "./src/index.tmp.js")
+                    : fs.copyFileSync("./index.js", "./index.tmp.js");
+
                 const bootstrapUtils = new BootstrapUtils(
                     config.entry?.toString() ?? "./index.tmp.js",
                     bootstrapCode
                 );
                 bootstrapUtils.addBootstrap();
+                callback();
+            }
+        );
+
+        workerCompiler.hooks.afterCompile.tapAsync(
+            "After compile",
+            (_, callback) => {
+                isStaticSite
+                    ? fs.rmSync("./src/index.tmp.js")
+                    : fs.rmSync("./index.tmp.js");
                 callback();
             }
         );

@@ -25,21 +25,6 @@ describe('static site worker webpack config', () => {
         expect(plugins).to.include.members(['VirtualModulesPlugin', 'LimitChunkCountPlugin']);
     });
 
-    it('should add file manager plugin with onStart copy and onEnd delete actions', () => {
-        const fileManagerPlugin: any = (workerStaticSiteConfig.plugins ?? []).filter(
-            (el: object) => el.constructor.name === "FileManagerPlugin"
-        )[0];
-
-        expect(fileManagerPlugin).not.to.be.undefined;
-        expect(fileManagerPlugin.options.runTasksInSeries).to.be.true;
-
-        const events = fileManagerPlugin.options.events;
-        expect(events.onStart.copy).not.to.be.undefined;
-        expect(events.onStart.copy).to.have.deep.members([{ source: './src/index.js', destination: './src/index.tmp.js' }]);
-        expect(events.onEnd.delete).not.to.be.undefined;
-        expect(events.onEnd.delete).to.have.deep.members(['./src/index.tmp.js']);
-    });
-
     it('should add DefinePlugin with PROJECT_TYPE definition', () => {
         const definePlugin: any = (workerStaticSiteConfig.plugins ?? []).filter(
             (el: object) => el.constructor.name === "DefinePlugin"
