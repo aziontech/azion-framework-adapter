@@ -134,7 +134,7 @@ export class Builder {
             }
         );
 
-        workerCompiler.hooks.afterCompile.tapAsync(
+        workerCompiler.hooks.done.tapAsync(
             "After compile",
             (_, callback) => {
                 isStaticSite
