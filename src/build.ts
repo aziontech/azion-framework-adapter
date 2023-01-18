@@ -121,9 +121,8 @@ export class Builder {
         workerCompiler.hooks.beforeRun.tapAsync(
             "Before compile",
             (_, callback) => {
-                isStaticSite
-                    ? fs.copyFileSync("./src/index.js", "./src/index.tmp.js")
-                    : fs.copyFileSync("./index.js", "./index.tmp.js");
+
+                fs.copyFileSync(isStaticSite? "./src/index.js": "./index.js", config.entry);
 
                 const bootstrapUtils = new BootstrapUtils(
                     config.entry?.toString() ?? "./index.tmp.js",
@@ -137,9 +136,7 @@ export class Builder {
         workerCompiler.hooks.done.tapAsync(
             "After compile",
             (_, callback) => {
-                isStaticSite
-                    ? fs.rmSync("./src/index.tmp.js")
-                    : fs.rmSync("./index.tmp.js");
+                fs.rmSync(config.entry);
                 callback();
             }
         );
