@@ -1,8 +1,6 @@
-import FileManagerPlugin from "filemanager-webpack-plugin";
 import { Configuration, DefinePlugin } from "webpack";
 import { generateWorkerCommonConfig } from "../common/webpack.worker.config";
 
-const ENTRY_FILE = "./src/index.js";
 const TMP_ENTRY_FILE = "./src/index.tmp.js";
 
 const generateWorkerStaticSiteConfig = (outputPath: string): Configuration  => {
@@ -13,20 +11,6 @@ const generateWorkerStaticSiteConfig = (outputPath: string): Configuration  => {
 
     // Set entry
     config.entry = TMP_ENTRY_FILE;
-
-    config.plugins?.push(
-        new FileManagerPlugin({
-            events: {
-                onStart: {
-                    copy: [{ source: ENTRY_FILE, destination: TMP_ENTRY_FILE }],
-                },
-                onEnd: {
-                    delete: [TMP_ENTRY_FILE],
-                },
-            },
-            runTasksInSeries: true,
-        })
-    );
 
     // Add define plugin
     config.plugins?.push(
