@@ -11,6 +11,9 @@ import rewire = require('rewire');
 
 import { ErrorCode, NotADirectory } from '../../dist/errors';
 import * as init from '../../dist/init';
+import { expect } from 'chai';
+
+import { CELLS_SITE_TEMPLATE_WORK_DIR } from '../../dist/constants';
 
 const exec = promisify<string, any, { stdout: string, stderr: string }>(child_process.exec);
 
@@ -30,6 +33,7 @@ describe('init', () => {
     let consoleOutput: any[];
     let templatePath: string;
     let template: string;
+    let initialDir: string;
 
     before(() => {
 
@@ -37,13 +41,21 @@ describe('init', () => {
         templatePath = fs.mkdtempSync(path.join(os.tmpdir(), 'flareact-test'));
         const templateName = 'flareact-template';
         template = path.join(templatePath, templateName);
+        initialDir = process.cwd();
 
         // create local temporary template
         child_process.execSync(`git -C ${templatePath} init ${templateName}`, { encoding: 'utf-8' });
 
         // add package.json
         fs.writeFileSync(path.join(template, 'package.json'), JSON.stringify({}));
+        fs.writeFileSync(path.join(template, 'package-lock.json'), JSON.stringify({
+            "name": "cells-site-template",
+            "lockfileVersion": 2,
+            "requires": true,
+            "packages": {}
+        }));
         child_process.execSync(`git -C ${template} add package.json`, { encoding: 'utf-8' });
+        child_process.execSync(`git -C ${template} add package-lock.json`, { encoding: 'utf-8' });
         child_process.execSync(`git -C ${template} commit -m Begin`, { encoding: 'utf-8' });
     });
 
@@ -65,6 +77,7 @@ describe('init', () => {
             // eslint-disable-next-line prefer-rest-params
             consoleOutput.push(arguments);
         });
+
 
         notEmptyDir = fs.mkdtempSync(path.join(os.tmpdir(), 'flareact-filled-tst'));
         tmpFile = notEmptyDir + "/tmp_file";
@@ -179,6 +192,27 @@ describe('init', () => {
             result.val.should.be.a('cannotclonetemplate');
 
 
+        });
+    });
+
+    describe('Initialize cells site template', () => {
+        afterEach(() => {
+            process.chdir(initialDir);
+            fs.rmSync(path.join(initialDir,'azion'), { recursive: true});
+        });
+
+        it('should clone template and install dependencies', async () => {
+            const initCellsTemplate = introspectedInit.__get__('initCellsTemplate');
+            await initCellsTemplate('.', template);
+
+            const isInitTemplate = fs.existsSync(path.join(initialDir, CELLS_SITE_TEMPLATE_WORK_DIR, 'package.json'));
+            expect(isInitTemplate).to.be.true;
+        });
+
+        it('should fail when path to template is invalid', async () => {
+            const initCellsTemplate = introspectedInit.__get__('initCellsTemplate');
+            const errorCode = await initCellsTemplate('.', 'asdf');
+            expect(errorCode).to.be.equal(100);
         });
     });
 

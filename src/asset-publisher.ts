@@ -7,6 +7,7 @@ import ManifestBuilder from './manifest';
 
 import AssetPublisherConfigSchema from './asset-publisher-config.schema.json';
 import { S3CredentialsNotSet, S3BucketNotSet } from './errors';
+import { ManifestMap } from './manifest';
 
 export interface KVConfig {
     accessKeyId: string,
@@ -26,6 +27,7 @@ export class AssetPublisher {
     private cfg: Config;
     private s3: S3;
     private rootPath: string;
+    private manifest: ManifestMap;
 
     static async getConfig(cfg: any, env: any): Promise<Config> {
         const config = await validate(cfg, AssetPublisherConfigSchema,
@@ -49,16 +51,17 @@ export class AssetPublisher {
 
         return config;
     }
-    constructor(rootPath: string, s3: S3, cfg: Config) {
+    constructor(rootPath: string, s3: S3, cfg: Config, manifest: ManifestMap) {
         this.cfg = cfg;
         this.rootPath = rootPath;
         this.s3 = s3;
+        this.manifest = manifest
     }
 
     public async deployStaticAssets(subdir = 'out') {
         const waitList = [];
-        const manifest = new ManifestBuilder(this.rootPath).loadManifest();
-        for (const localPath of Object.keys(manifest)) {
+
+        for (const localPath of Object.keys(this.manifest)) {
             const fullPath = path.join(this.rootPath, subdir, localPath);
             const content = fs.readFileSync(fullPath);
             const remotePath = ManifestBuilder.getStoragePath(localPath, content);

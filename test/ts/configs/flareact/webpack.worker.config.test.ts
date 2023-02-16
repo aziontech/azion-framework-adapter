@@ -24,19 +24,4 @@ describe('flareact worker webpack config', () => {
         );
         expect(plugins).to.include.members(['VirtualModulesPlugin', 'LimitChunkCountPlugin']);
     });
-
-    it('should add file manager plugin with onStart copy and onEnd delete actions', () => {
-        const fileManagerPlugin: any = (workerFlareactConfig.plugins ?? []).filter(
-            (el: object) => el.constructor.name === "FileManagerPlugin"
-        )[0];
-
-        expect(fileManagerPlugin).not.to.be.undefined;
-        expect(fileManagerPlugin.options.runTasksInSeries).to.be.true;
-
-        const events = fileManagerPlugin.options.events;
-        expect(events.onStart.copy).not.to.be.undefined;
-        expect(events.onStart.copy).to.have.deep.members([{ source: './index.js', destination: './index.tmp.js' }]);
-        expect(events.onEnd.delete).not.to.be.undefined;
-        expect(events.onEnd.delete).to.have.deep.members(['./index.tmp.js']);
-    });
 });

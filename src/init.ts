@@ -3,6 +3,11 @@ import path from 'path';
 
 import simpleGit from 'simple-git';
 import { Err, Ok, Result } from 'ts-results';
+import util = require('node:util');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const execCommand = util.promisify(require('node:child_process').exec);
+
+import { CELLS_SITE_TEMPLATE_REPO, CELLS_SITE_TEMPLATE_WORK_DIR } from './constants';
 
 import {
     BaseError,
@@ -75,8 +80,37 @@ async function init(targetDir: string, repository: string, options: any): Promis
 
 }
 
+export async function initCellsTemplate(targetDir: string, cellsSiteTemplate: string) {
+    try {
+        fs.mkdirSync("azion", {recursive: true });
+
+        const staticSiteWorkerDir = path.join(targetDir, CELLS_SITE_TEMPLATE_WORK_DIR);
+        const isInitTemplate = fs.existsSync(path.join(staticSiteWorkerDir, 'src', 'index.js'));
+        if (!isInitTemplate) {
+            const repoDir = path.join(targetDir, CELLS_SITE_TEMPLATE_WORK_DIR);
+            console.log("Cloning template repository");
+            await simpleGit().clone(cellsSiteTemplate, repoDir);
+            await simpleGit(repoDir).removeRemote("origin");
+
+            console.log("Installing dependencies.");
+            await execCommand(`npm ci --prefix ${CELLS_SITE_TEMPLATE_WORK_DIR}`);
+            console.log("All dependencies have been installed!");
+        }
+
+    } catch (err) {
+        displayError(err);
+        return errorCode(err);
+    }
+}
+
+
 export async function exec(targetDir: string, repository: string, options: any): Promise<ErrorCode> {
     try {
+        if (options.staticSite) {
+            await initCellsTemplate(targetDir, CELLS_SITE_TEMPLATE_REPO);
+            return ErrorCode.Ok;
+        }
+
         const result = await init(targetDir, repository, options);
         if (result.ok) {
             console.log("Completed.");

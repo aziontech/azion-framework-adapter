@@ -1,6 +1,6 @@
 {
   "name": "azion-framework-adapter",
-  "version": "0.2.1",
+  "version": "0.2.3",
   "description": "Command line tool that builds Jamstack projects targeting Azion's Edge Functions.",
   "main": "dist/main.js",
   "bin": {
@@ -43,9 +43,8 @@
     "aws-sdk": "^2.1031.0",
     "axios": "^0.24.0",
     "commander": "^8.3.0",
-    "filemanager-webpack-plugin": "^3",
     "jsonpolice": "^8.2.2",
-    "simple-git": "^2.47.0",
+    "simple-git": "^3.15.0",
     "ts-results": "^3.3.0",
     "tslib": "^2.4.0",
     "webpack": "^4.46.0",

@@ -14,8 +14,11 @@ const { version } = require('../package.json');
 program.version(version);
 
 program
-    .command('init <target-dir> <repository>')
-    .option('-n, --project-name <project-name>', 'project name')
+    .command('init')
+    .argument('[target-dir]','Target directory','.')
+    .argument('[repository]', 'Repository url')
+    .option('-n, --project-name <project-name>', 'Project name')
+    .option('-s, --static-site', 'Clone template to static site')
     .description('Create a new project from a template.')
     .action(async (targetDir, repository, options) => {
         exit(await init.exec(targetDir, repository, options));
@@ -38,6 +41,7 @@ program
     .option('-d, --assets-dir <directory>', 'path to static assets')
     .option('-e, --only-function', 'skip deploy of assets')
     .option('-s, --only-assets', 'skip deploy of Edge Function')
+    .option('-t, --static-site', 'publish static site function')
     .action(async (options) => {
         if (options.onlyAssets && options.onlyFunction) {
             console.warn("-e and -s must not be used at the same time");

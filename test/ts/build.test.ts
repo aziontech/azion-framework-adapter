@@ -12,6 +12,7 @@ import * as spies from 'chai-spies';
 import { promisify } from 'util';
 
 import { Builder } from '../../dist/build';
+import ManifestBuilder from '../../dist/manifest';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const copy = require('recursive-copy');
@@ -54,7 +55,8 @@ describe('build', () => {
             previousPath = process.cwd();
             process.chdir(templatePath);
             await exec('npm install', {});
-            builder = Builder.init();
+            builder = new Builder(templatePath);
+            builder.createWorkerDir();
         });
 
         after(() => {
@@ -78,7 +80,7 @@ describe('build', () => {
 
         it('should build worker', async () => {
             builder.buildClient();
-            const manifest = builder.generateManifest();
+            const manifest = new ManifestBuilder(templatePath).storageManifest();
 
             const workerBuild = builder.buildWorker('node_modules/flareact/configs/webpack.worker.config.js', manifest, kvArgs, false);
 
@@ -96,7 +98,8 @@ describe('build', () => {
             previousPath = process.cwd();
             process.chdir(templatePath);
             await exec('npm install', {});
-            builder = Builder.init();
+            builder = new Builder(templatePath);
+            builder.createWorkerDir();
         });
 
         after(() => {
