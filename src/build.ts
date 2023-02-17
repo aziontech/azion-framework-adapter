@@ -5,26 +5,26 @@ import webpack from 'webpack';
 import merge from "webpack-merge";
 
 import { initCellsTemplate } from './init';
-import { AssetPublisher } from './asset-publisher';
-import { BOOTSTRAP_CODE } from "./bootstraps/common";
-import { BootstrapUtils } from "./bootstraps/utils";
-import { read_config } from "./config";
+// import { AssetPublisher } from './asset-publisher';
+// import { BOOTSTRAP_CODE } from "./bootstraps/common";
+// import { BootstrapUtils } from "./bootstraps/utils";
+// import { read_config } from "./config";
 import { clientFlareactConfig } from "./configs/flareact/webpack.client.config";
 import { generateWorkerFlareactConfig } from './configs/flareact/webpack.worker.config';
 import { generateWorkerStaticSiteConfig } from './configs/static-site/webpack.worker.config';
 import { displayError, ErrorCode, errorCode, FailedToBuild } from "./errors";
-import ManifestBuilder, { ManifestMap } from "./manifest";
+// import { ManifestMap } from "./manifest";ß
 
 import { CELLS_SITE_TEMPLATE_REPO, CELLS_SITE_TEMPLATE_WORK_DIR } from './constants';
 
-interface KVArgs {
-  accessKeyId: string;
-  secretAccessKey: string;
-  region: string;
-  bucket: string;
-  path: string;
-  retries: number;
-}
+// interface KVArgs {
+//   accessKeyId: string;
+//   secretAccessKey: string;
+//   region: string;
+//   bucket: string;
+//   path: string;
+//   retries: number;
+// }
 
 const CLIENT_CFG_PATH =
   "node_modules/flareact/configs/webpack.client.config.js";
@@ -92,8 +92,8 @@ export class Builder {
 
     async buildWorker(
         configPath: string,
-        manifest: ManifestMap,
-        kvArgs: any,
+        // manifest: ManifestMap,
+        // kvArgs: any,
         isStaticSite: boolean
     ): Promise<webpack.Stats> {
         // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -107,16 +107,16 @@ export class Builder {
 
         const config = merge(baseConfigObj, additionalConfig);
 
-        const definePluginObj: any = (config.plugins ?? []).filter(
-            (el: object) => el.constructor.name === "DefinePlugin"
-        )[0];
-        definePluginObj.definitions.CREDENTIALS_VALUE = JSON.stringify(kvArgs);
-        definePluginObj.definitions.STATIC_CONTENT_MANIFEST_VALUE = JSON.stringify(manifest);
+        // const definePluginObj: any = (config.plugins ?? []).filter(
+        //     (el: object) => el.constructor.name === "DefinePlugin"
+        // )[0];
+        // definePluginObj.definitions.CREDENTIALS_VALUE = JSON.stringify(kvArgs);
+        // definePluginObj.definitions.STATIC_CONTENT_MANIFEST_VALUE = JSON.stringify({});
 
         const workerCompiler = webpack(config);
 
-        let bootstrapCode = BOOTSTRAP_CODE;
-        if (isStaticSite) bootstrapCode += ' global.__PROJECT_TYPE_PATTERN = PROJECT_TYPE_PATTERN_VALUE;';
+    //    let bootstrapCode = "";
+        // if (isStaticSite) bootstrapCode += ' global.__PROJECT_TYPE_PATTERN = PROJECT_TYPE_PATTERN_VALUE;';
 
         workerCompiler.hooks.beforeRun.tapAsync(
             "Before compile",
@@ -124,11 +124,11 @@ export class Builder {
 
                 fs.copyFileSync(isStaticSite? "./src/index.js": "./index.js", config.entry);
 
-                const bootstrapUtils = new BootstrapUtils(
-                    config.entry?.toString() ?? "./index.tmp.js",
-                    bootstrapCode
-                );
-                bootstrapUtils.addBootstrap();
+                // const bootstrapUtils = new BootstrapUtils(
+                //     config.entry?.toString() ?? "./index.tmp.js",
+                //     bootstrapCode
+                // );
+                // bootstrapUtils.addBootstrap();
                 callback();
             }
         );
@@ -171,13 +171,13 @@ export class Builder {
 
     static async exec(options: any): Promise<ErrorCode> {
         try {
-            const rawCfg = read_config(options);
-            const cfg = await AssetPublisher.getConfig(rawCfg, process.env);
-            const kvArgs: KVArgs = Object.assign({ retries: 0 }, cfg.kv);
+            // const rawCfg = read_config(options);
+            // const cfg = await AssetPublisher.getConfig(rawCfg, process.env);
+            // const kvArgs: KVArgs = Object.assign({ retries: 0 }, cfg.kv);
 
             const targetDir = process.cwd();
             let builder;
-            let manifest;
+            // let manifest;
 
             let webpackConfigPath = BASIC_CFG_PATH;
             if (options.staticSite) {
@@ -187,19 +187,19 @@ export class Builder {
                 process.chdir(staticSiteWorkerDir);
                 builder = new Builder(process.cwd());
                 builder.createWorkerDir();
-                manifest = new ManifestBuilder(targetDir, options.assetsDir, `${CELLS_SITE_TEMPLATE_WORK_DIR}/worker/manifest.json`).storageManifest();
+                // manifest = new ManifestBuilder(targetDir, options.assetsDir, `${CELLS_SITE_TEMPLATE_WORK_DIR}/worker/manifest.json`).storageManifest();
             } else {
                 builder = new Builder(targetDir);
                 builder.createWorkerDir();
                 await builder.buildClient();
-                manifest = new ManifestBuilder(targetDir).storageManifest();
+                // manifest = new ManifestBuilder(targetDir).storageManifest();
                 webpackConfigPath = WORKER_CFG_PATH;
             }
 
             await builder.buildWorker(
                 webpackConfigPath,
-                manifest,
-                kvArgs,
+                // {},
+                // {},
                 options.staticSite
             );
 
