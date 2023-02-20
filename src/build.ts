@@ -14,6 +14,7 @@ import { generateWorkerFlareactConfig } from './configs/flareact/webpack.worker.
 import { generateWorkerStaticSiteConfig } from './configs/static-site/webpack.worker.config';
 import { displayError, ErrorCode, errorCode, FailedToBuild } from "./errors";
 import ManifestBuilder, { ManifestMap } from "./manifest";
+import { VersionChecker } from './utils/version-checker/version-checker';
 
 import { CELLS_SITE_TEMPLATE_REPO, CELLS_SITE_TEMPLATE_WORK_DIR } from './constants';
 
@@ -171,11 +172,14 @@ export class Builder {
 
     static async exec(options: any): Promise<ErrorCode> {
         try {
+
+            const targetDir = process.cwd();
+            VersionChecker.nextjs_version(targetDir);
+
             const rawCfg = read_config(options);
             const cfg = await AssetPublisher.getConfig(rawCfg, process.env);
             const kvArgs: KVArgs = Object.assign({ retries: 0 }, cfg.kv);
 
-            const targetDir = process.cwd();
             let builder;
             let manifest;
 
