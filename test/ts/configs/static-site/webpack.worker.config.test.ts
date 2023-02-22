@@ -7,8 +7,10 @@ import path = require('path');
 
 describe('static site worker webpack config', () => {
     let workerStaticSiteConfig: Configuration;
+    const pluginsList: any = [];
+    const versionId = "";
     before(() => {
-        workerStaticSiteConfig = generateWorkerStaticSiteConfig(path.join(process.cwd(), "worker"));
+        workerStaticSiteConfig = generateWorkerStaticSiteConfig(path.join(process.cwd(), "worker"), pluginsList, versionId);
     });
 
     it('should import common configs', () => {
@@ -22,7 +24,7 @@ describe('static site worker webpack config', () => {
         const plugins = workerStaticSiteConfig.plugins?.map(
             (plugin: object) => plugin.constructor.name
         );
-        expect(plugins).to.include.members(['VirtualModulesPlugin', 'LimitChunkCountPlugin']);
+        expect(plugins).to.include.members(['LimitChunkCountPlugin']);
     });
 
     it('should add DefinePlugin with PROJECT_TYPE definition', () => {
@@ -31,7 +33,7 @@ describe('static site worker webpack config', () => {
         )[0];
 
         expect(definePlugin).not.to.be.undefined;
-        expect(definePlugin.definitions).to.have.key('PROJECT_TYPE_PATTERN_VALUE');
+        expect(definePlugin.definitions).to.have.keys('PROJECT_TYPE_PATTERN_VALUE','VERSION_ID');
     });
 });
 
