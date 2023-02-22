@@ -40,6 +40,7 @@ Options:
                                 azion.json]
   -d, --assets-dir <directory>  path to static assets
   -s, --static-site             build static site function
+  -v-id, --version-id           versionId of storage-api
   -h, --help                    display help for command\n`
 
     const publishOutput = `Usage: azion-framework-adapter publish [options]
