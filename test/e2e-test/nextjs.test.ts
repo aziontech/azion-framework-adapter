@@ -65,6 +65,7 @@ describe('Create nextjs application', () => {
         console.log('Creating Next project');
         await execFile(`npx -y create-next-app@latest --example basic-css ${template}`);
         process.chdir(template);
+        await execFile('npm i -S next@12.2.6');
         await execFile(`npx next build`);
         await execFile(`npx next export`);
     });
