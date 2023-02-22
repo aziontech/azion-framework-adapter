@@ -7,5 +7,9 @@ describe("Version Checker test suite",()=>{
         expect(VersionChecker.node_version()).equal(true);
     });
 
+    it("should verify if nextjs_version was called with success",()=>{
+        expect(VersionChecker.nextjs_version(`${process.cwd()}/test/mocks`)).equal(true);
+    });
+
 });
 
