@@ -174,8 +174,6 @@ export class Builder {
         try {
 
             const targetDir = process.cwd();
-            VersionChecker.nextjs_version(targetDir);
-
             const rawCfg = read_config(options);
             const cfg = await AssetPublisher.getConfig(rawCfg, process.env);
             const kvArgs: KVArgs = Object.assign({ retries: 0 }, cfg.kv);
@@ -193,6 +191,7 @@ export class Builder {
                 builder.createWorkerDir();
                 manifest = new ManifestBuilder(targetDir, options.assetsDir, `${CELLS_SITE_TEMPLATE_WORK_DIR}/worker/manifest.json`).storageManifest();
             } else {
+                VersionChecker.nextjs_version(targetDir);
                 builder = new Builder(targetDir);
                 builder.createWorkerDir();
                 await builder.buildClient();
