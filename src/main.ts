@@ -27,6 +27,7 @@ program
 program
     .command('build')
     .description('Build and upload.')
+    .option('-v, --version-id <versionid>', 'build static site function')
     .option('-c, --config <config>', 'path to configuration file [default: azion.json]')
     .option('-d, --assets-dir <directory>', 'path to static assets')
     .option('-s, --static-site', 'build static site function')

@@ -5,26 +5,26 @@ import webpack from 'webpack';
 import merge from "webpack-merge";
 
 import { initCellsTemplate } from './init';
-// import { AssetPublisher } from './asset-publisher';
-// import { BOOTSTRAP_CODE } from "./bootstraps/common";
-// import { BootstrapUtils } from "./bootstraps/utils";
-// import { read_config } from "./config";
+import { AssetPublisher } from './asset-publisher';
+import { BOOTSTRAP_CODE } from "./bootstraps/common";
+import { BootstrapUtils } from "./bootstraps/utils";
+import { read_config } from "./config";
 import { clientFlareactConfig } from "./configs/flareact/webpack.client.config";
 import { generateWorkerFlareactConfig } from './configs/flareact/webpack.worker.config';
 import { generateWorkerStaticSiteConfig } from './configs/static-site/webpack.worker.config';
 import { displayError, ErrorCode, errorCode, FailedToBuild } from "./errors";
-// import { ManifestMap } from "./manifest";ß
+import ManifestBuilder, { ManifestMap } from "./manifest";
 
 import { CELLS_SITE_TEMPLATE_REPO, CELLS_SITE_TEMPLATE_WORK_DIR } from './constants';
 
-// interface KVArgs {
-//   accessKeyId: string;
-//   secretAccessKey: string;
-//   region: string;
-//   bucket: string;
-//   path: string;
-//   retries: number;
-// }
+interface KVArgs {
+  accessKeyId: string;
+  secretAccessKey: string;
+  region: string;
+  bucket: string;
+  path: string;
+  retries: number;
+}
 
 const CLIENT_CFG_PATH =
   "node_modules/flareact/configs/webpack.client.config.js";
@@ -92,43 +92,49 @@ export class Builder {
 
     async buildWorker(
         configPath: string,
-        // manifest: ManifestMap,
-        // kvArgs: any,
-        isStaticSite: boolean
+        manifest: ManifestMap,
+        kvArgs: any,
+        options: any
     ): Promise<webpack.Stats> {
+        const {staticSite, versionId} = options;
         // eslint-disable-next-line @typescript-eslint/no-var-requires
         const baseConfig = require(path.join(this.targetDir, configPath));
         const baseConfigObj = typeof baseConfig === "function" ?
             baseConfig() : baseConfig;
 
         const outputPath = path.join(this.targetDir, "worker");
-        const additionalConfig = isStaticSite ?
-            generateWorkerStaticSiteConfig(outputPath) : generateWorkerFlareactConfig(outputPath);
+        const pluginsList: any[] = [];
+
+        const additionalConfig = staticSite ?
+            generateWorkerStaticSiteConfig(outputPath, pluginsList, versionId) : generateWorkerFlareactConfig(outputPath, pluginsList);
 
         const config = merge(baseConfigObj, additionalConfig);
 
-        // const definePluginObj: any = (config.plugins ?? []).filter(
-        //     (el: object) => el.constructor.name === "DefinePlugin"
-        // )[0];
-        // definePluginObj.definitions.CREDENTIALS_VALUE = JSON.stringify(kvArgs);
-        // definePluginObj.definitions.STATIC_CONTENT_MANIFEST_VALUE = JSON.stringify({});
+        const definePluginObj: any = (config.plugins ?? []).filter(
+            (el: object) => el.constructor.name === "DefinePlugin"
+        )[0];
+
+        let bootstrapCode = "";
+
+        if(!staticSite) {
+            bootstrapCode = BOOTSTRAP_CODE
+            definePluginObj.definitions.CREDENTIALS_VALUE = JSON.stringify(kvArgs);
+            definePluginObj.definitions.STATIC_CONTENT_MANIFEST_VALUE = JSON.stringify(manifest);
+        }
 
         const workerCompiler = webpack(config);
-
-    //    let bootstrapCode = "";
-        // if (isStaticSite) bootstrapCode += ' global.__PROJECT_TYPE_PATTERN = PROJECT_TYPE_PATTERN_VALUE;';
 
         workerCompiler.hooks.beforeRun.tapAsync(
             "Before compile",
             (_, callback) => {
 
-                fs.copyFileSync(isStaticSite? "./src/index.js": "./index.js", config.entry);
+                fs.copyFileSync(staticSite? "./src/index.js": "./index.js", config.entry);
 
-                // const bootstrapUtils = new BootstrapUtils(
-                //     config.entry?.toString() ?? "./index.tmp.js",
-                //     bootstrapCode
-                // );
-                // bootstrapUtils.addBootstrap();
+                const bootstrapUtils = new BootstrapUtils(
+                    config.entry?.toString() ?? "./index.tmp.js",
+                    bootstrapCode
+                );
+                bootstrapUtils.addBootstrap();
                 callback();
             }
         );
@@ -170,14 +176,15 @@ export class Builder {
     }
 
     static async exec(options: any): Promise<ErrorCode> {
+        console.log("Options", options);
         try {
-            // const rawCfg = read_config(options);
-            // const cfg = await AssetPublisher.getConfig(rawCfg, process.env);
-            // const kvArgs: KVArgs = Object.assign({ retries: 0 }, cfg.kv);
+            const rawCfg = read_config(options);
+            const cfg = await AssetPublisher.getConfig(rawCfg, process.env);
+            const kvArgs: KVArgs = Object.assign({ retries: 0 }, cfg.kv);
 
             const targetDir = process.cwd();
             let builder;
-            // let manifest;
+            let manifest = {};
 
             let webpackConfigPath = BASIC_CFG_PATH;
             if (options.staticSite) {
@@ -187,20 +194,19 @@ export class Builder {
                 process.chdir(staticSiteWorkerDir);
                 builder = new Builder(process.cwd());
                 builder.createWorkerDir();
-                // manifest = new ManifestBuilder(targetDir, options.assetsDir, `${CELLS_SITE_TEMPLATE_WORK_DIR}/worker/manifest.json`).storageManifest();
             } else {
                 builder = new Builder(targetDir);
                 builder.createWorkerDir();
                 await builder.buildClient();
-                // manifest = new ManifestBuilder(targetDir).storageManifest();
                 webpackConfigPath = WORKER_CFG_PATH;
+                manifest = new ManifestBuilder(targetDir).storageManifest();
             }
 
             await builder.buildWorker(
                 webpackConfigPath,
-                // {},
-                // {},
-                options.staticSite
+                manifest,
+                kvArgs,
+                options
             );
 
             console.log("Completed.");
