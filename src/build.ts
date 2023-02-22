@@ -176,7 +176,6 @@ export class Builder {
     }
 
     static async exec(options: any): Promise<ErrorCode> {
-        console.log("Options", options);
         try {
             const rawCfg = read_config(options);
             const cfg = await AssetPublisher.getConfig(rawCfg, process.env);
