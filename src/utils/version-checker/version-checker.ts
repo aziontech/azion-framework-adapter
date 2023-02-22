@@ -1,5 +1,6 @@
 import { NextJsChecker } from "./nextjs-checker/nextjs-checker";
 import { NodeChecker } from "./node-checker/node-checker";
+import { InvalidProject } from "./errors/errors";
 import * as fs from "fs";
 
 
@@ -21,10 +22,17 @@ export class VersionChecker{
     }
 
     private static project_type(target_dir:string):string{
-        const azion_json = JSON.parse(
-            fs.readFileSync(`${target_dir}/azion/azion.json`, "utf-8")
-        );
-        return azion_json.type;
+        try{
+            const azion_json = JSON.parse(
+                fs.readFileSync(`${target_dir}/azion/azion.json`, "utf-8")
+            );
+            return azion_json.type;
+        }catch(error){
+            throw new InvalidProject(
+                "Couldn't read file 'azion.json' at the project's root directory. Because ENOENT: no such file or directory, open 'azion.json'\n"
+            );
+        }
+
     }
 
 }
