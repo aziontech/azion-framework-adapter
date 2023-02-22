@@ -68,6 +68,19 @@ describe('Create nextjs application', () => {
         await execFile('npm i -S next@12.2.6');
         await execFile(`npx next build`);
         await execFile(`npx next export`);
+
+        //creating azion config folder
+        if (!fs.existsSync("azion")){
+            const azion_project = {
+                "type": "nextjs"
+            };
+    
+            fs.mkdirSync("azion");
+            fs.writeFile('./azion/azion.json', JSON.stringify(azion_project), err => {
+                if (err) throw err;
+            });
+        }
+    
     });
 
     after(() => {
