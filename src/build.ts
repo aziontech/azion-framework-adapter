@@ -171,11 +171,12 @@ export class Builder {
 
     static async exec(options: any): Promise<ErrorCode> {
         try {
+
+            const targetDir = process.cwd();
             const rawCfg = read_config(options);
             const cfg = await AssetPublisher.getConfig(rawCfg, process.env);
             const kvArgs: KVArgs = Object.assign({ retries: 0 }, cfg.kv);
 
-            const targetDir = process.cwd();
             let builder;
             let manifest;
 

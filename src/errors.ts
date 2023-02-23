@@ -14,6 +14,10 @@ export enum ErrorCode {
     FileNotFound = 2000,
     CannotSaveFunction = 2010,
     S3BucketNotSet = 2020,
+    InvalidProject = 2030,
+    InvalidNextJsVersion = 2040,
+    InvalidVersion = 2050
+
 }
 
 export abstract class BaseError extends Error {
@@ -138,6 +142,16 @@ export function errorCode(err: any): ErrorCode {
     if (err instanceof BaseError) {
         return err.errorCode;
     } else {
+        return ErrorCode.Unknown;
+    }
+}
+
+export function systemError(err:any): ErrorCode {
+    if (err instanceof BaseError) {
+        console.log(err.message);
+        return err.errorCode;
+    } else {
+        console.log(err);
         return ErrorCode.Unknown;
     }
 }

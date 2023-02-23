@@ -11,6 +11,20 @@ import AWS = require('aws-sdk');
 
 import { expect } from 'chai';
 
+function createAzionFile(){
+    //creating azion config folder
+    if (!fs.existsSync("azion")){
+        const azion_project = {
+            "type": "flareact"
+        };
+        
+        fs.mkdirSync("azion");
+        fs.writeFile('./azion/azion.json', JSON.stringify(azion_project), err => {
+            if (err) throw err;
+        });
+    }
+}
+
 describe('Flareact test', () => {
     let templatePath: string;
     let template: string;
@@ -129,6 +143,7 @@ describe('Flareact test', () => {
         describe("Build the Flareact project", () => {
             before(async () => {
                 await copy(path.join(localOutput, 'test', 'config-files', 'azion-flareact.json'),path.join(template,'azion.json'), { overwrite: true})
+                createAzionFile();
             })
 
             it('and expect it pass', async () => {

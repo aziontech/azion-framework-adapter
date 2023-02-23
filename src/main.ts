@@ -1,9 +1,11 @@
 #!/usr/bin/env node
+import { VersionChecker } from './utils/version-checker/version-checker';
 import { program } from 'commander';
 import { exit } from 'process';
 import { Builder } from './build';
 import * as init from './init';
 import { publish } from './publish';
+import { systemError } from "./errors";
 
 // Disabling the eslint rule is cleaner than other methods for embedding the
 // package version.
@@ -12,6 +14,12 @@ import { publish } from './publish';
 const { version } = require('../package.json');
 
 program.version(version);
+
+try{
+    VersionChecker.node_version();
+}catch(error){
+    exit(systemError(error));
+}
 
 program
     .command('init')
