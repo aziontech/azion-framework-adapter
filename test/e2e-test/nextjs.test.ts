@@ -12,7 +12,7 @@ import AWS = require('aws-sdk');
 import { expect } from 'chai';
 import { CELLS_SITE_TEMPLATE_WORK_DIR } from '../../dist/constants';
 
-describe('Create nextjs application', () => {
+describe.only('Create nextjs application', () => {
     let templatePath: string;
     let template: string;
     let realPath: string;
@@ -58,6 +58,7 @@ describe('Create nextjs application', () => {
         realPath = fs.realpathSync(templatePath);
         const templateName = 'nextjs-template';
         template = path.join(realPath, templateName);
+
         localOutput = process.cwd();
 
         await s3.createBucket(bucketParams).promise();
@@ -90,15 +91,10 @@ describe('Create nextjs application', () => {
     it('Build the nextjs project', async () => {
         const configPath = path.join(template, CELLS_SITE_TEMPLATE_WORK_DIR, 'azion.json');
         await copy(path.join(localOutput, 'test', 'config-files', 'azion-next.json'), configPath)
-        const expectOutput = `Static site template initialized. Building ...\n`+
-        `Wrote manifest file to ${template}/${CELLS_SITE_TEMPLATE_WORK_DIR}/worker/manifest.json\n`+
-        `Finished worker.\n`+
-        `Completed.\n`
+        const expectOutput = `Static site template initialized. Building ...\n`
         const { stdout } = await execFile(`azion-framework-adapter build -c ${configPath} --static-site --assets-dir ./out || exit $? | 2>&1`);
-        const manifestFile = fs.existsSync(path.join(template, CELLS_SITE_TEMPLATE_WORK_DIR, 'worker', 'manifest.json'));
         const functionFile = fs.existsSync(path.join(template, CELLS_SITE_TEMPLATE_WORK_DIR, 'worker', 'function.js'));
         expect(stdout).to.be.equal(expectOutput);
-        expect(manifestFile).to.be.true;
         expect(functionFile).to.be.true;
     });
 

@@ -116,7 +116,10 @@ export class Builder {
 
         let bootstrapCode = "";
 
-        if(!staticSite) {
+
+        if (staticSite) {
+            bootstrapCode = ' global.__PROJECT_TYPE_PATTERN = PROJECT_TYPE_PATTERN_VALUE;';
+        } else {
             bootstrapCode = BOOTSTRAP_CODE
             definePluginObj.definitions.CREDENTIALS_VALUE = JSON.stringify(kvArgs);
             definePluginObj.definitions.STATIC_CONTENT_MANIFEST_VALUE = JSON.stringify(manifest);
