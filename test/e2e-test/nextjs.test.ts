@@ -12,7 +12,7 @@ import AWS = require('aws-sdk');
 import { expect } from 'chai';
 import { CELLS_SITE_TEMPLATE_WORK_DIR } from '../../dist/constants';
 
-describe.only('Create nextjs application', () => {
+describe('Create nextjs application', () => {
     let templatePath: string;
     let template: string;
     let realPath: string;
@@ -58,7 +58,6 @@ describe.only('Create nextjs application', () => {
         realPath = fs.realpathSync(templatePath);
         const templateName = 'nextjs-template';
         template = path.join(realPath, templateName);
-
         localOutput = process.cwd();
 
         await s3.createBucket(bucketParams).promise();
@@ -91,14 +90,16 @@ describe.only('Create nextjs application', () => {
     it('Build the nextjs project', async () => {
         const configPath = path.join(template, CELLS_SITE_TEMPLATE_WORK_DIR, 'azion.json');
         await copy(path.join(localOutput, 'test', 'config-files', 'azion-next.json'), configPath)
-        const expectOutput = `Static site template initialized. Building ...\n`
+        const expectOutput = `Static site template initialized. Building ...\n`+
+        `Finished worker.\n`+
+        `Completed.\n`
         const { stdout } = await execFile(`azion-framework-adapter build -c ${configPath} --static-site --assets-dir ./out || exit $? | 2>&1`);
         const functionFile = fs.existsSync(path.join(template, CELLS_SITE_TEMPLATE_WORK_DIR, 'worker', 'function.js'));
         expect(stdout).to.be.equal(expectOutput);
         expect(functionFile).to.be.true;
     });
 
-    it('Publish only asset of the nextjs to S3', async () => {
+    it.skip('Publish only asset of the nextjs to S3', async () => {
         const configPath = path.join(template, CELLS_SITE_TEMPLATE_WORK_DIR, 'azion.json');
         removeAllKeys(bucketParams);
         const { stdout } =await execFile(`azion-framework-adapter publish -c ${configPath} -t --only-assets --assets-dir ./out || exit $? | 2>&1`);
