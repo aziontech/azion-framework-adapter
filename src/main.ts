@@ -11,7 +11,6 @@ import { displayError } from "./errors";
 // package version.
 //
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-
 const { version } = require('../package.json');
 
 program.version(version);
