@@ -3,7 +3,7 @@ import { InvalidProject } from "../../../../dist/utils/version-checker/errors/er
 import { assert, expect } from "chai";
 import * as sinon from "sinon";
 
-describe.only("Version Checker test suite",()=>{
+describe("Version Checker test suite",()=>{
 
     it("Should verify if node_version method was called",()=>{
         const spy = sinon.spy(VersionChecker,"node_version");
