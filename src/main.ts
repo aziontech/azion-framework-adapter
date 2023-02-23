@@ -38,6 +38,7 @@ program
     .option('-c, --config <config>', 'path to configuration file [default: azion.json]')
     .option('-d, --assets-dir <directory>', 'path to static assets')
     .option('-s, --static-site', 'build static site function')
+    .option('-vid, --version-id <id>', 'versionId of storage-api')
     .action(async (options) => {
         exit(await Builder.exec(options));
     });
