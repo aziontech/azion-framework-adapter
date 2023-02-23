@@ -36,7 +36,6 @@ Options:
 Build and upload.
 
 Options:
-  -v, --version-id <versionid>  build static site function
   -c, --config <config>         path to configuration file [default:
                                 azion.json]
   -d, --assets-dir <directory>  path to static assets
