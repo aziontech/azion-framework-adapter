@@ -19,7 +19,7 @@ describe.only("Version Checker test suite",()=>{
     });
 
     it("should verify if nextjs_version was called with success",()=>{
-        const versionCheckerStub = sinon.stub(VersionChecker,"nextjs_version").callsFake((arg:string) => {
+        const versionCheckerStub = sinon.stub(VersionChecker,"nextjs_version").callsFake(() => {
             return true
         });
         const arg = "/fake/path";
