@@ -14,7 +14,6 @@ import { generateWorkerFlareactConfig } from './configs/flareact/webpack.worker.
 import { generateWorkerStaticSiteConfig } from './configs/static-site/webpack.worker.config';
 import { displayError, ErrorCode, errorCode, FailedToBuild } from "./errors";
 import ManifestBuilder, { ManifestMap } from "./manifest";
-import { VersionChecker } from './utils/version-checker/version-checker';
 
 import { CELLS_SITE_TEMPLATE_REPO, CELLS_SITE_TEMPLATE_WORK_DIR } from './constants';
 
@@ -191,7 +190,6 @@ export class Builder {
                 builder.createWorkerDir();
                 manifest = new ManifestBuilder(targetDir, options.assetsDir, `${CELLS_SITE_TEMPLATE_WORK_DIR}/worker/manifest.json`).storageManifest();
             } else {
-                VersionChecker.nextjs_version(targetDir);
                 builder = new Builder(targetDir);
                 builder.createWorkerDir();
                 await builder.buildClient();
