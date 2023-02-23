@@ -18,7 +18,7 @@ program.version(version);
 try{
     VersionChecker.node_version();
 }catch(error){
-    systemError(error);
+    exit(systemError(error));
 }
 
 program
