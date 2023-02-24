@@ -60,6 +60,7 @@
     "@types/node": "^16.11.9",
     "@types/rewire": "^2.5.28",
     "@types/sinon": "^10.0.13",
+    "@types/sinon-chai": "^3.2.9",
     "@types/webpack": "^4.41.32",
     "@types/xxhashjs": "^0.2.2",
     "@typescript-eslint/eslint-plugin": "^5.26.0",
