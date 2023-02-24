@@ -90,6 +90,7 @@ export async function initCellsTemplate(targetDir: string, cellsSiteTemplate: st
             const repoDir = path.join(targetDir, CELLS_SITE_TEMPLATE_WORK_DIR);
             console.log("Cloning template repository");
             await simpleGit().clone(cellsSiteTemplate, repoDir);
+            await simpleGit(repoDir).pull(cellsSiteTemplate, 'use-cells-fetch-api');
             await simpleGit(repoDir).removeRemote("origin");
 
             console.log("Installing dependencies.");

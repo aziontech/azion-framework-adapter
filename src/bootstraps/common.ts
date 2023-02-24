@@ -83,6 +83,6 @@ const BOOTSTRAP_CODE = `const bootstrap = require("bootstrap"); Object.keys(boot
 
 export {
     KV,
-    makeCaches,
     BOOTSTRAP_CODE,
+    makeCaches
 };

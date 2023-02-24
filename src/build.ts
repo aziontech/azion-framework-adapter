@@ -94,35 +94,44 @@ export class Builder {
         configPath: string,
         manifest: ManifestMap,
         kvArgs: any,
-        isStaticSite: boolean
+        options: any
     ): Promise<webpack.Stats> {
+        const {staticSite, versionId} = options;
         // eslint-disable-next-line @typescript-eslint/no-var-requires
         const baseConfig = require(path.join(this.targetDir, configPath));
         const baseConfigObj = typeof baseConfig === "function" ?
             baseConfig() : baseConfig;
 
         const outputPath = path.join(this.targetDir, "worker");
-        const additionalConfig = isStaticSite ?
-            generateWorkerStaticSiteConfig(outputPath) : generateWorkerFlareactConfig(outputPath);
+        const pluginsList: any[] = [];
+
+        const additionalConfig = staticSite ?
+            generateWorkerStaticSiteConfig(outputPath, pluginsList, versionId) : generateWorkerFlareactConfig(outputPath, pluginsList);
 
         const config = merge(baseConfigObj, additionalConfig);
 
         const definePluginObj: any = (config.plugins ?? []).filter(
             (el: object) => el.constructor.name === "DefinePlugin"
         )[0];
-        definePluginObj.definitions.CREDENTIALS_VALUE = JSON.stringify(kvArgs);
-        definePluginObj.definitions.STATIC_CONTENT_MANIFEST_VALUE = JSON.stringify(manifest);
+
+        let bootstrapCode = "";
+
+
+        if (staticSite) {
+            bootstrapCode = ' global.__PROJECT_TYPE_PATTERN = PROJECT_TYPE_PATTERN_VALUE;';
+        } else {
+            bootstrapCode = BOOTSTRAP_CODE
+            definePluginObj.definitions.CREDENTIALS_VALUE = JSON.stringify(kvArgs);
+            definePluginObj.definitions.STATIC_CONTENT_MANIFEST_VALUE = JSON.stringify(manifest);
+        }
 
         const workerCompiler = webpack(config);
-
-        let bootstrapCode = BOOTSTRAP_CODE;
-        if (isStaticSite) bootstrapCode += ' global.__PROJECT_TYPE_PATTERN = PROJECT_TYPE_PATTERN_VALUE;';
 
         workerCompiler.hooks.beforeRun.tapAsync(
             "Before compile",
             (_, callback) => {
 
-                fs.copyFileSync(isStaticSite? "./src/index.js": "./index.js", config.entry);
+                fs.copyFileSync(staticSite? "./src/index.js": "./index.js", config.entry);
 
                 const bootstrapUtils = new BootstrapUtils(
                     config.entry?.toString() ?? "./index.tmp.js",
@@ -178,7 +187,7 @@ export class Builder {
             const kvArgs: KVArgs = Object.assign({ retries: 0 }, cfg.kv);
 
             let builder;
-            let manifest;
+            let manifest = {};
 
             let webpackConfigPath = BASIC_CFG_PATH;
             if (options.staticSite) {
@@ -188,20 +197,19 @@ export class Builder {
                 process.chdir(staticSiteWorkerDir);
                 builder = new Builder(process.cwd());
                 builder.createWorkerDir();
-                manifest = new ManifestBuilder(targetDir, options.assetsDir, `${CELLS_SITE_TEMPLATE_WORK_DIR}/worker/manifest.json`).storageManifest();
             } else {
                 builder = new Builder(targetDir);
                 builder.createWorkerDir();
                 await builder.buildClient();
-                manifest = new ManifestBuilder(targetDir).storageManifest();
                 webpackConfigPath = WORKER_CFG_PATH;
+                manifest = new ManifestBuilder(targetDir).storageManifest();
             }
 
             await builder.buildWorker(
                 webpackConfigPath,
                 manifest,
                 kvArgs,
-                options.staticSite
+                options
             );
 
             console.log("Completed.");
