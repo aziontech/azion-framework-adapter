@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, statSync } from 'fs';
 import path from 'path';
 
-import { FailedToBuild } from '../../errors';
+import { ErrorCode, FailedToBuild } from '../../errors';
 
 
 abstract class Builder {
@@ -25,6 +25,9 @@ abstract class Builder {
             mkdirSync(workerDir);
         }
     }
+
+    abstract build(params: any): Promise<ErrorCode>;
+    abstract buildWorker(params: any): Promise<any>;
 }
 
 export { Builder }

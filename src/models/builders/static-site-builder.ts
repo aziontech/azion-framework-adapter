@@ -2,9 +2,9 @@ import { Builder } from "./builder";
 import { ErrorCode } from '../../errors';
 
 
-const ERROR_MESSAGE = "Nextjs build not implemented!";
+const ERROR_MESSAGE = "Static Site build not implemented!";
 
-class NextjsBuilder extends Builder {
+class StaticSiteBuilder extends Builder {
     constructor(targetDir: string) {
         super(targetDir);
 
@@ -24,4 +24,4 @@ class NextjsBuilder extends Builder {
     }
 }
 
-export { NextjsBuilder }
+export { StaticSiteBuilder }
