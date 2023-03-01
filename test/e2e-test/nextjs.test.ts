@@ -52,6 +52,8 @@ describe.only('Create nextjs static application', () => {
         const expectOutput = `Initialising build.\n`+
         `Completed.\n`
         const stdout = await execFile(`azion-framework-adapter build --version-id k0mb1 --static-site || exit $? | 2>&1`);
+        console.log(stdout);
+        console.log(stdout);
         const functionContent = fs.readFileSync(functionPath, 'utf8');
         const functionFile = fs.existsSync(functionPath);
 
