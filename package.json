@@ -48,7 +48,7 @@
     "sinon-chai": "^3.7.0",
     "ts-results": "^3.3.0",
     "tslib": "^2.4.0",
-    "webpack": "^4.46.0",
+    "webpack": "^5.75.0",
     "webpack-merge": "^5.8.0",
     "webpack-virtual-modules": "^0.4.3",
     "xxhashjs": "^0.2.2"
