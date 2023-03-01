@@ -7,8 +7,6 @@ const ERROR_MESSAGE = "Static Site build not implemented!";
 class StaticSiteBuilder extends Builder {
     constructor(targetDir: string) {
         super(targetDir);
-
-        throw Error(ERROR_MESSAGE);
     }
 
     async build(params: any): Promise<ErrorCode> {

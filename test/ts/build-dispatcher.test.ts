@@ -1,5 +1,4 @@
 import * as chai from 'chai';
-import * as sinonChai from "sinon-chai";
 import * as sinon from "sinon";
 
 import { ErrorCode } from "../../dist/errors";
@@ -7,21 +6,10 @@ import { BuildDispatcher } from '../../dist/build-dispatcher';
 import { StaticSiteBuilder } from '../../dist/models/builders/static-site-builder';
 
 
-chai.use(sinonChai);
-
 const { expect } = chai;
 
 describe('Build Dispatcher', () => {
     let result: ErrorCode;
-    let buildStub: any;
-
-    beforeEach(() => {
-        buildStub = sinon.stub(StaticSiteBuilder.prototype, 'build');
-    });
-
-    afterEach(() => {
-        buildStub.restore();
-    });
 
     describe('when a default build process is invoked', () => {
         it('should call Nextjs build', async () => {
@@ -48,7 +36,7 @@ describe('Build Dispatcher', () => {
     describe('when an error occurs in the build process', () => {
         it('should log error and return error code', async () => {
             const options = { staticSite: true }
-
+            const buildStub = sinon.stub(StaticSiteBuilder.prototype, 'build');
             buildStub.throws(Error);
 
             result = await BuildDispatcher.exec(options);

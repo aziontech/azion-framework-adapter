@@ -1,15 +1,11 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as chai from 'chai';
-import * as sinonChai from "sinon-chai";
-import * as sinon from "sinon";
 
 import { Builder } from '../../../../dist/models/builders/builder';
 import { StaticSiteBuilder } from '../../../../dist/models/builders/static-site-builder';
 import { FailedToBuild } from '../../../../dist/errors';
 
-
-chai.use(sinonChai);
 
 const { expect } = chai;
 
@@ -48,16 +44,13 @@ describe('Builder', () => {
         });
 
         describe('that specified path already exists and is a dir', () => {
-            before(() => {
-                fs.mkdirSync(workerDir);
-            });
-
             it('should NOT take actions', () => {
-                const spy = sinon.spy(fs, "mkdirSync");
+                chai.spy.restore();
+                chai.spy.on(fs, "mkdirSync");
 
                 builder.createWorkerDir();
 
-                expect(spy).to.not.have.been.called;
+                expect(fs.mkdirSync).to.not.have.been.called;
             });
         });
 

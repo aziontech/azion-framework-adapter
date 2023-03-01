@@ -6,17 +6,15 @@ import { StaticSiteBuilder } from "./models/builders/static-site-builder";
 class BuildDispatcher {
     static async exec(options: any): Promise<ErrorCode> {
         try {
-            let builder;
-
             const targetDir: string = process.cwd();
 
             if (options.staticSite) {
-                builder = new StaticSiteBuilder(targetDir);
+                const builder = new StaticSiteBuilder(targetDir);
+                await builder.build(options);
             } else {
-                builder = new NextjsBuilder(targetDir);
+                const builder = new NextjsBuilder(targetDir);
+                await builder.build(options);
             }
-
-            builder.build(options);
 
             console.log("Completed.");
 

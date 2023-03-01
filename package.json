@@ -60,7 +60,6 @@
     "@types/node": "^16.11.9",
     "@types/rewire": "^2.5.28",
     "@types/sinon": "^10.0.13",
-    "@types/sinon-chai": "^3.2.9",
     "@types/webpack": "^4.41.32",
     "@types/xxhashjs": "^0.2.2",
     "@typescript-eslint/eslint-plugin": "^5.26.0",
@@ -78,7 +77,6 @@
     "rewire": "^3.0.2",
     "rimraf": "^3.0.2",
     "sinon": "^15.0.1",
-    "sinon-chai": "^3.7.0",
     "source-map-support": "^0.5.21",
     "typescript": "^4.7.2"
   },
