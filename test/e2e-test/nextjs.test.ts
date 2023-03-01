@@ -26,8 +26,6 @@ describe.only('Create nextjs static application', () => {
         await execFile(`npx -y create-next-app@latest --example basic-css ${template}`);
         process.chdir(template);
         await execFile('npm i -S next@12.2.6');
-        await execFile(`npx next build`);
-        await execFile(`npx next export`);
 
         //creating azion config folder
         if (!fs.existsSync("azion")){

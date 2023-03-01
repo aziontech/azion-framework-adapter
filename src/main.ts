@@ -2,7 +2,6 @@
 import { VersionChecker } from './utils/version-checker/version-checker';
 import { program } from 'commander';
 import { exit } from 'process';
-// import { Builder } from './build2';
 import * as init from './init';
 import { publish } from './publish';
 import { systemError } from "./errors";
