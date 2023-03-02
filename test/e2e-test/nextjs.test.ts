@@ -7,8 +7,6 @@ import * as path from 'path';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const copy = require('recursive-copy');
 
-import AWS = require('aws-sdk');
-
 import { expect } from 'chai';
 import { CELLS_SITE_TEMPLATE_WORK_DIR } from '../../dist/constants';
 
@@ -17,40 +15,7 @@ describe('Create nextjs application', () => {
     let template: string;
     let realPath: string;
     let localOutput: string;
-    const bucketParams = {
-        Bucket: "azion-test"
-    }
 
-    const s3 = new AWS.S3 ({
-        accessKeyId: "123456",
-        secretAccessKey: "123456",
-        signatureVersion: "v4",
-        s3ForcePathStyle: true,
-        endpoint: "http://localhost:4566"
-    });
-
-    async function getAllKeys(bucketParams: AWS.S3.ListObjectsV2Request,  filesOnS3Bucket: any[]){
-        const response = await s3.listObjectsV2(bucketParams).promise();
-        response.Contents?.forEach(obj => filesOnS3Bucket.push(obj.Key?.replace('__static_content_test/nextjs-e2e/', '')));
-
-        if (response.NextContinuationToken) {
-            bucketParams.ContinuationToken = response.NextContinuationToken;
-            await getAllKeys(bucketParams, filesOnS3Bucket);
-        }
-        return filesOnS3Bucket;
-    }
-
-    async function removeAllKeys(bucketParams: AWS.S3.ListObjectsV2Request){
-        const response = await s3.listObjectsV2(bucketParams).promise();
-        const keys: { Key: string; }[] = []
-        for(const i of response.Contents??[]){
-            if (i.Key !== undefined) {
-                keys.push({Key: i.Key})
-            }
-        }
-
-        await s3.deleteObjects({Bucket: bucketParams.Bucket, Delete: { Objects: keys}}).promise();
-    }
 
     before(async () => {
         // Creates temporary local template repository
@@ -59,8 +24,6 @@ describe('Create nextjs application', () => {
         const templateName = 'nextjs-template';
         template = path.join(realPath, templateName);
         localOutput = process.cwd();
-
-        await s3.createBucket(bucketParams).promise();
 
         console.log('Creating Next project');
         await execFile(`npx -y create-next-app@latest --example basic-css ${template}`);
@@ -114,21 +77,5 @@ describe('Create nextjs application', () => {
         expect(functionContent).to.include('k0mb1');
         expect(stdout).to.be.equal(expectOutput);
         expect(functionFile).to.be.true;
-    });
-
-    it.skip('Publish only asset of the nextjs to S3', async () => {
-        const configPath = path.join(template, CELLS_SITE_TEMPLATE_WORK_DIR, 'azion.json');
-        removeAllKeys(bucketParams);
-        const { stdout } =await execFile(`azion-framework-adapter publish -c ${configPath} -t --only-assets --assets-dir ./out || exit $? | 2>&1`);
-        const publishOutputMessage = `Loading asset manifest from ${template}/${CELLS_SITE_TEMPLATE_WORK_DIR}/worker/manifest.json\n`;
-        expect(stdout).to.be.equal(publishOutputMessage);
-
-        const filesOnS3Bucket: any[] = [];
-        await getAllKeys(bucketParams, filesOnS3Bucket);
-
-        const manifest = fs.readFileSync(`${template}/${CELLS_SITE_TEMPLATE_WORK_DIR}/worker/manifest.json`);
-        const manifestArray = Object.values(JSON.parse(manifest.toString()));
-        const filesOnS3BucketContainManifestFiles = manifestArray.every((each) =>  filesOnS3Bucket.includes(each) );
-        expect(filesOnS3BucketContainManifestFiles).to.be.true;
     });
 })
