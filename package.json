@@ -51,12 +51,12 @@
     "webpack": "^4.46.0",
     "webpack-merge": "^5.8.0",
     "webpack-virtual-modules": "^0.4.3",
-    "xxhashjs": "^0.2.2"
-  },
-  "devDependencies": {
+    "xxhashjs": "^0.2.2",
     "@esbuild-plugins/node-globals-polyfill": "^0.2.3",
     "@esbuild-plugins/node-modules-polyfill": "^0.2.2",
-    "esbuild": "^0.17.5",
+    "esbuild": "^0.17.5"
+  },
+  "devDependencies": {
     "@types/chai": "^4.2.22",
     "@types/chai-as-promised": "^7.1.4",
     "@types/chai-spies": "^1.0.3",
