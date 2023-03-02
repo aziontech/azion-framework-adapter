@@ -5,26 +5,15 @@ import webpack from 'webpack';
 import merge from "webpack-merge";
 
 import { initCellsTemplate } from './init';
-import { AssetPublisher } from './asset-publisher';
 import { BOOTSTRAP_CODE } from "./bootstraps/common";
 import { BootstrapUtils } from "./bootstraps/utils";
-import { read_config } from "./config";
 import { clientFlareactConfig } from "./configs/flareact/webpack.client.config";
 import { generateWorkerFlareactConfig } from './configs/flareact/webpack.worker.config';
 import { generateWorkerStaticSiteConfig } from './configs/static-site/webpack.worker.config';
 import { displayError, ErrorCode, errorCode, FailedToBuild } from "./errors";
-import ManifestBuilder, { ManifestMap } from "./manifest";
 
 import { CELLS_SITE_TEMPLATE_REPO, CELLS_SITE_TEMPLATE_WORK_DIR } from './constants';
 
-interface KVArgs {
-  accessKeyId: string;
-  secretAccessKey: string;
-  region: string;
-  bucket: string;
-  path: string;
-  retries: number;
-}
 
 const CLIENT_CFG_PATH =
   "node_modules/flareact/configs/webpack.client.config.js";
@@ -92,7 +81,7 @@ export class Builder {
 
     async buildWorker(
         configPath: string,
-        manifest: ManifestMap,
+        manifest: any,
         kvArgs: any,
         options: any
     ): Promise<webpack.Stats> {
@@ -182,12 +171,8 @@ export class Builder {
         try {
 
             const targetDir = process.cwd();
-            const rawCfg = read_config(options);
-            const cfg = await AssetPublisher.getConfig(rawCfg, process.env);
-            const kvArgs: KVArgs = Object.assign({ retries: 0 }, cfg.kv);
-
             let builder;
-            let manifest = {};
+            const manifest = {};
 
             let webpackConfigPath = BASIC_CFG_PATH;
             if (options.staticSite) {
@@ -202,13 +187,12 @@ export class Builder {
                 builder.createWorkerDir();
                 await builder.buildClient();
                 webpackConfigPath = WORKER_CFG_PATH;
-                manifest = new ManifestBuilder(targetDir).storageManifest();
             }
 
             await builder.buildWorker(
                 webpackConfigPath,
                 manifest,
-                kvArgs,
+                {},
                 options
             );
 
