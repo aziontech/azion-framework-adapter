@@ -12,7 +12,6 @@ import * as spies from 'chai-spies';
 import { promisify } from 'util';
 
 import { Builder } from '../../dist/build';
-import ManifestBuilder from '../../dist/manifest';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const copy = require('recursive-copy');
@@ -28,14 +27,6 @@ describe('build', () => {
     let templatePath: string;
     let builder: Builder;
     let sandbox: ChaiSpies.Sandbox;
-    const kvArgs = {
-        accessKeyId: "val1",
-        secretAccessKey: "val2",
-        bucket: "val3",
-        region: "val4",
-        path: "val5",
-        retries: 0
-    };
 
     before(() => {
         sandbox = chai.spy.sandbox();
@@ -80,9 +71,9 @@ describe('build', () => {
 
         it('should build worker', async () => {
             builder.buildClient();
-            const manifest = new ManifestBuilder(templatePath).storageManifest();
+            const manifest = {};
 
-            const workerBuild = builder.buildWorker('node_modules/flareact/configs/webpack.worker.config.js', manifest, kvArgs, false);
+            const workerBuild = builder.buildWorker('node_modules/flareact/configs/webpack.worker.config.js', manifest,{}, false);
 
             return workerBuild.should.be.fulfilled.then(() => {
                 const workerDir = fs.existsSync(path.join(process.cwd(), 'worker', 'function.js'));
