@@ -11,7 +11,6 @@ class BuildDispatcher {
             if (options.staticSite) {
                 const builder = new StaticSiteBuilder(targetDir);
                 await builder.build(options);
-                await builder.buildWorker(options);
             } else {
                 const builder = new NextjsBuilder(targetDir);
                 await builder.build(options);

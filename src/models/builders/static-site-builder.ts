@@ -1,85 +1,81 @@
 import { Builder } from "./builder";
 import { displayError, errorCode } from '../../errors';
 
+import path from "path";
 import * as fs from 'fs';
-import { build } from 'esbuild';
-import { entrypoint } from "../../entrypoint/entrypoints.js";
+import * as esbuild from 'esbuild';
 
-import { spawn } from "child_process";
+import { ENTRYPOINT, WORKER_DIR } from "../../constants";
+import { entrypoint } from "../../entrypoint/entrypoints.js";
+import { BootstrapUtils } from "../../bootstraps/utils";
 
 class StaticSiteBuilder extends Builder {
+    private entrypointPath: string;
+    private outputPath: string;
+    private outfile: string;
     constructor(targetDir: string) {
         super(targetDir);
+        this.entrypointPath = path.join(this.targetDir,ENTRYPOINT);
+        this.outputPath = path.join(this.targetDir,WORKER_DIR);
+        this.outfile = path.join(this.outputPath,'function.js');
     }
 
-    async build(_params: any): Promise<any> {
-
-        const outputLogs = (data: any) => {
-            const lines: string[] = data.toString().split("\n");
-            lines.map((line) => {
-                if (line.length > 0) console.log(`▲ ${line}`);
-            });
-        };
-
-        const nextBuild = spawn("npx", ["next", "build"]);
-
-        nextBuild.stdout.on("data", (data) => outputLogs(data));
-
-        nextBuild.stderr.on("data", (data) => outputLogs(data));
-
-        await new Promise((resolve, reject) => {
-            nextBuild.on("close", (code) => {
-                if (code === 0) {
-                    resolve(null);
-                } else {
-                    reject();
-                }
-            });
-        });
-
-        const nextExport = spawn("npx", ["next", "export"]);
-
-        nextExport.stdout.on("data", (data) => outputLogs(data));
-
-        nextExport.stderr.on("data", (data) => outputLogs(data));
-
-        await new Promise((resolve, reject) => {
-            nextExport.on("close", (code) => {
-                if (code === 0) {
-                    resolve(null);
-                } else {
-                    reject();
-                }
-            });
-        });
+    async build(params: any): Promise<any> {
+        this.createWorkerDir();
+        this.createEntrypointFunction();
+        await this.buildWorker(params);
     }
 
-    async buildWorker(params: any): Promise<any> {
+    createWorkerDir() {
         try {
-            fs.mkdirSync('azion/worker',{recursive: true});
-            fs.writeFileSync('azion/index.js', entrypoint.defaultEntrypoint);
+            fs.mkdirSync(this.outputPath,{recursive: true});
+        } catch (e) {
+            displayError(e);
+            return errorCode(e);
+        }
+    }
+
+    createEntrypointFunction() {
+        const bootstrapCode = ' self.__PROJECT_TYPE_PATTERN = PROJECT_TYPE_PATTERN_VALUE;';
+
+        try {
+            fs.mkdirSync(this.outputPath,{recursive: true});
+            fs.writeFileSync(this.entrypointPath, entrypoint.defaultEntrypoint.toString() );
+
+
+            const bootstrapUtils = new BootstrapUtils(
+                this.entrypointPath,
+                bootstrapCode
+            );
+            bootstrapUtils.addBootstrap();
         } catch(e) {
             displayError(e);
             return errorCode(e);
         }
+    }
 
+    async buildWorker(params: any): Promise<any> {
         console.log("Initialising build.");
-        await build({
-            entryPoints: ['azion/index.js'],
+        await esbuild.build({
+            entryPoints: [this.entrypointPath],
             bundle: true ,
             define: {
                 self: 'globalThis',
-                VERSION_ID: JSON.stringify(params.versionId)
+                VERSION_ID: JSON.stringify(params.versionId) || "'undefined'",
+                PROJECT_TYPE_PATTERN_VALUE: JSON.stringify("PROJECT_TYPE:STATIC_SITE")
             },
             sourcemap: false,
-            target: "esnext",
+            target: "es2021",
+            platform: "neutral",
             minify: false,
-            outfile: 'azion/worker/function.js'
+            outfile: this.outfile
         }).catch((e) => {
             console.log("Error", e)
             process.exit(1)
         }
-        );
+        ).finally(() => {
+            fs.rmSync(this.entrypointPath,{recursive: true});
+        });
     }
 }
 
