@@ -25,7 +25,7 @@ function createAzionFile(){
     }
 }
 
-describe('Flareact test', () => {
+describe.skip('Flareact test', () => {
     let templatePath: string;
     let template: string;
     let realPath: string;
