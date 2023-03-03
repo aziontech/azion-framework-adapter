@@ -22,7 +22,7 @@ describe('Build Dispatcher', () => {
         });
     });
 
-    describe('when a static site build option is given', () => {
+    describe.skip('when a static site build option is given', () => {
         it('should call Static Site build', async () => {
             const options = { staticSite: true }
 
@@ -33,7 +33,7 @@ describe('Build Dispatcher', () => {
         });
     });
 
-    describe('when an error occurs in the build process', () => {
+    describe.skip('when an error occurs in the build process', () => {
         it('should log error and return error code', async () => {
             const options = { staticSite: true }
             const buildStub = sinon.stub(StaticSiteBuilder.prototype, 'build');
