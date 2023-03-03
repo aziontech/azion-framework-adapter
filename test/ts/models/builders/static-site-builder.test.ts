@@ -1,22 +1,38 @@
 import * as chai from 'chai';
-import * as sinon from 'sinon';
+import * as chaiAsPromised from 'chai-as-promised';
+import * as spies from 'chai-spies';
 
+import path = require('path');
+import * as fs from 'fs';
 import { StaticSiteBuilder } from '../../../../dist/models/builders/static-site-builder';
+import { before } from 'mocha';
 
+chai.should();
+chai.use(spies);
+chai.use(chaiAsPromised);
 
 const { expect } = chai;
 
 describe('Static Site Builder', () => {
+    let functionPath: string;
+    let targetDir: string;
+
+    before(() => {
+        targetDir = 'out/';
+        functionPath = path.join(targetDir, 'azion', 'worker', 'function.js')
+    })
+
+    after(() => {
+        fs.rmSync(path.join(targetDir,'azion'), { recursive: true });
+    })
     it("should throw 'not implemented' error", async () => {
-        const targetDir = process.cwd();
-
-        const buildStub = sinon.stub(StaticSiteBuilder.prototype, 'build');
-        buildStub.throws(Error);
-
         const builder = new StaticSiteBuilder(targetDir);
+        await builder.build({versionId: 'k0mb1'})
+        const functionContent = fs.readFileSync(functionPath, 'utf8');
+        const functionFile = fs.existsSync(functionPath);
 
-        expect(() => { builder.build({}) }).to.throw(
-            Error
-        );
+        expect(functionContent).to.include('k0mb1');
+        expect(functionFile).to.be.true;
+
     });
 });
