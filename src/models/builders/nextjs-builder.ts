@@ -6,6 +6,7 @@ import { build } from "esbuild";
 
 import { Builder } from "./builder";
 import { ErrorCode } from '../../errors';
+import ManifestBuilder from "../../manifest";
 
 
 import util = require('node:util');
@@ -254,7 +255,8 @@ class NextjsBuilder extends Builder {
                 platform: "neutral",
                 define: {
                     __CONFIG__: JSON.stringify(params.config),
-                    __VERSION_ID__: `'${params.versionId}'`
+                    __VERSION_ID__: `'${params.versionId}'`,
+                    __ASSETS_MANIFEST__: JSON.stringify(params.assetsManifest)
                 },
                 outfile: "./out/worker.js",
             });
@@ -291,6 +293,9 @@ class NextjsBuilder extends Builder {
 
             await this.handleMiddleware();
 
+            const assetsDir = join(this.targetDir, ".vercel/output/static")
+            const assetsManifest = ManifestBuilder.assetsPaths(assetsDir);
+
             const functionsFile = join(
                 tmpdir(),
                 `functions-${Math.random().toString(36).slice(2)}.js`
@@ -301,6 +306,7 @@ class NextjsBuilder extends Builder {
                 versionId: params.versionId,
                 functionsFile,
                 config,
+                assetsManifest
             };
             await this.buildWorker(buildParams);
         } catch (error) {

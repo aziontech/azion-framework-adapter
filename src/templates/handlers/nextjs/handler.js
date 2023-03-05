@@ -364,6 +364,15 @@ async function handleRequest(request, env, context) {
   const { pathname } = new URL(request.url);
   const routes = routesMatcher({ request }, __CONFIG__.routes);
 
+  const assetsPaths = __ASSETS_MANIFEST__;
+  const request_path = decodeURI(new URL(request.url).pathname);
+
+  const isAsset = assetsPaths.includes(request_path);
+
+  if (isAsset) {
+    return getStorageAsset(request);
+  }
+
   for (const route of routes) {
     if ("middlewarePath" in route && route.middlewarePath in __MIDDLEWARE__) {
       return await __MIDDLEWARE__[route.middlewarePath].entrypoint.default(
@@ -388,8 +397,6 @@ async function handleRequest(request, env, context) {
       return entrypoint.default(request, context);
     }
   }
-
-  return getStorageAsset(request);
 }
 
 const getStorageAsset = async (request) => {
