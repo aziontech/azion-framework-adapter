@@ -361,13 +361,12 @@ const routesMatcher = (
 };
 
 async function handleRequest(request, env, context) {
-  const { pathname } = new URL(request.url);
+  const pathname = decodeURI(new URL(request.url).pathname);
   const routes = routesMatcher({ request }, __CONFIG__.routes);
 
   const assetsPaths = __ASSETS_MANIFEST__;
-  const request_path = decodeURI(new URL(request.url).pathname);
 
-  const isAsset = assetsPaths.includes(request_path);
+  const isAsset = assetsPaths.includes(pathname);
 
   if (isAsset) {
     return getStorageAsset(request);
@@ -382,7 +381,10 @@ async function handleRequest(request, env, context) {
     }
   }
 
-  for (const { matchers, entrypoint } of Object.values(__FUNCTIONS__)) {
+  const findedRoutes = {};
+  for (functionName of Object.keys(__FUNCTIONS__)) {
+    const { matchers, entrypoint } = __FUNCTIONS__[functionName];
+
     let found = false;
     for (const matcher of matchers) {
       if (matcher.regexp) {
@@ -394,19 +396,33 @@ async function handleRequest(request, env, context) {
     }
 
     if (found) {
-      return entrypoint.default(request, context);
+        // add route with priority based on route type
+        let priority = 1;
+        if (functionName.includes("...")) {
+          priority = 3;
+        } else if(functionName.includes("[")) {
+          priority = 2;
+        }
+
+        findedRoutes[functionName] = { entrypoint, priority }
     }
   }
+
+  // exec finded route based on priority (ASC order)
+  const routeNames = Object.keys(findedRoutes)
+  const orderedRoutes = Object.values(findedRoutes).sort((a,b) => a.priority - b.priority)
+
+  return orderedRoutes[0].entrypoint.default(request, context);
 }
 
 const getStorageAsset = async (request) => {
   const VERSION_ID = __VERSION_ID__;
   try {
-    const request_path = new URL(request.url).pathname;
+    const requestPath = new URL(request.url).pathname;
     const asset_url = new URL(
-      request_path === "/" ?
+      requestPath === "/" ?
         (VERSION_ID + '/index.html') :
-        (VERSION_ID + request_path),
+        (VERSION_ID + requestPath),
       'file://'
     );
 
