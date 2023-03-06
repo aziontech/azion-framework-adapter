@@ -250,6 +250,7 @@ class NextjsBuilder extends Builder {
                     params.functionsFile,
                     join(this.dirname, "../../templates/handlers/nextjs/globals.js"),
                 ],
+                minify: true,
                 target: "es2021",
                 platform: "neutral",
                 define: {
