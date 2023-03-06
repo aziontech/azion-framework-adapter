@@ -249,7 +249,6 @@ class NextjsBuilder extends Builder {
                 inject: [
                     params.functionsFile,
                     join(this.dirname, "../../templates/handlers/nextjs/globals.js"),
-                    join(this.dirname, "../../libs/cookie/index.js")
                 ],
                 target: "es2021",
                 platform: "neutral",
