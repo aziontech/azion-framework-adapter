@@ -26,15 +26,6 @@ class StaticSiteBuilder extends Builder {
         await this.buildWorker(params);
     }
 
-    createWorkerDir() {
-        try {
-            fs.mkdirSync(this.outputPath,{recursive: true});
-        } catch (e) {
-            displayError(e);
-            return errorCode(e);
-        }
-    }
-
     createEntrypointFunction() {
         const bootstrapCode = ' self.__PROJECT_TYPE_PATTERN = PROJECT_TYPE_PATTERN_VALUE;';
 
