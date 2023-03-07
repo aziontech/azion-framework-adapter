@@ -33,7 +33,7 @@ class NextjsBuilder extends Builder {
     }
 
     async createVercelProjectConfig() {
-        console.log("Creating vercel project config file ...");
+        console.log("Creating project config file ...");
 
         try {
             const projectConfigDir = '.vercel';
@@ -55,7 +55,7 @@ class NextjsBuilder extends Builder {
 
     async runVercelBuild() {
         // https://vercel.com/docs/build-output-api/v3
-        console.log("Running Vercel build ...");
+        console.log("Running initial build ...");
 
         try {
             await exec('npx --yes vercel@28.16.11 build --prod');
@@ -67,7 +67,7 @@ class NextjsBuilder extends Builder {
     }
 
     loadVercelConfigs(): any {
-        console.log("Loading vercel configs ...")
+        console.log("Loading configs ...")
 
         try {
             const fileContent = readFileSync(".vercel/output/config.json", "utf8");
@@ -105,8 +105,6 @@ class NextjsBuilder extends Builder {
 
     // function to walk in builded functions dir, detect invalid functions and adapt content
     async dirWalk(dir: string, functionsDir: string) {
-        console.log("Mapping and transforming functions ...")
-
         try {
             const files = await readdir(dir);
 
@@ -289,6 +287,7 @@ class NextjsBuilder extends Builder {
 
             const functionsDir = resolve(".vercel/output/functions");
 
+            console.log("Mapping and transforming functions ...")
             await this.dirWalk(functionsDir, functionsDir);
 
             await this.handleMiddleware();
