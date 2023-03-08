@@ -1,6 +1,5 @@
 import { displayError, errorCode, ErrorCode } from "./errors";
 import { NextjsBuilder } from "./models/builders/nextjs-builder";
-import { StaticSiteBuilder } from "./models/builders/static-site-builder";
 
 
 class BuildDispatcher {
