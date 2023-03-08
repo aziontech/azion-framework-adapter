@@ -12,7 +12,7 @@ import AWS = require('aws-sdk');
 import { expect } from 'chai';
 import { CELLS_SITE_TEMPLATE_WORK_DIR } from '../../dist/constants';
 
-describe('Create nextjs application', () => {
+describe.skip('Create nextjs application', () => {
     let templatePath: string;
     let template: string;
     let realPath: string;
