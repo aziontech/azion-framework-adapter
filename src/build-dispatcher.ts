@@ -8,13 +8,8 @@ class BuildDispatcher {
         try {
             const targetDir: string = process.cwd();
 
-            if (options.staticSite) {
-                const builder = new StaticSiteBuilder(targetDir);
-                await builder.build(options);
-            } else {
-                const builder = new NextjsBuilder(targetDir);
-                await builder.build(options);
-            }
+            const builder = new NextjsBuilder(targetDir);
+            await builder.build(options);
 
             console.log("Completed.");
 
