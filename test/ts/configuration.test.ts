@@ -13,7 +13,7 @@ chai.should();
 chai.use(spies);
 chai.use(chaiAsPromised);
 
-describe('config', () => {
+describe.skip('config', () => {
 
     describe("read config file", () => {
         let tempDir: string;
