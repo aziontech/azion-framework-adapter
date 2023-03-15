@@ -52,8 +52,6 @@
     "webpack-merge": "^5.8.0",
     "webpack-virtual-modules": "^0.4.3",
     "xxhashjs": "^0.2.2",
-    "@esbuild-plugins/node-globals-polyfill": "^0.2.3",
-    "@esbuild-plugins/node-modules-polyfill": "^0.2.2",
     "esbuild": "^0.17.5"
   },
   "devDependencies": {
