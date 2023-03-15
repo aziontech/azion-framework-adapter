@@ -13,10 +13,10 @@ chai.use(chaiAsPromised);
 
 const { expect } = chai;
 
+
 describe('Static Site Builder', () => {
     let functionPath: string;
     let targetDir: string;
-
     before(() => {
         targetDir = 'out/';
         functionPath = path.join(targetDir, 'azion', 'worker', 'function.js')

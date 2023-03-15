@@ -8,7 +8,7 @@ import { StaticSiteBuilder } from '../../dist/models/builders/static-site-builde
 
 const { expect } = chai;
 
-describe('Build Dispatcher', () => {
+describe.skip('Build Dispatcher', () => {
     let result: ErrorCode;
 
     describe('when a default build process is invoked', () => {

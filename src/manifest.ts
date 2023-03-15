@@ -17,6 +17,17 @@ export default class ManifestBuilder {
         this.pagesPath = path.join(rootPath, subDir);
     }
 
+    static assetsPaths(dir: string): string[] {
+        const paths: string[] = [];
+        const filenames = ManifestBuilder.filenamesList(dir);
+
+        filenames.forEach(filename => {
+            paths.push("/" + path.relative(dir, filename))
+        });
+
+        return paths;
+    }
+
     storageManifest(): ManifestMap {
         const manifest: ManifestMap = {};
         const filenames = ManifestBuilder.filenamesList(this.pagesPath);

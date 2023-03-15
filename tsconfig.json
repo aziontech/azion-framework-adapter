@@ -99,6 +99,7 @@
   },
   "include": [
     "src/**/*.ts",
+    "src/**/*.js",
     "src/**/*.json",
     "global.d.ts"
 , "src/entrypoint/*.js"  ]

@@ -9,7 +9,7 @@ import { BuildDispatcher } from './build-dispatcher';
 
 // Disabling the eslint rule is cleaner than other methods for embedding the
 // package version.
-//
+
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { version } = require('../package.json');
 
