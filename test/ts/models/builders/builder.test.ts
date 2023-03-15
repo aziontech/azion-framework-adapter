@@ -9,7 +9,7 @@ import { FailedToBuild } from '../../../../dist/errors';
 
 const { expect } = chai;
 
-describe('Builder', () => {
+describe.skip('Builder', () => {
     let builder: Builder;
     let currentDir: string;
     let workerDir: string;

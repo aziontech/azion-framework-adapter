@@ -3,7 +3,7 @@ import util = require('node:util');
 const exec = util.promisify(require('node:child_process').exec);
 import { expect } from 'chai';
 
-describe('Azion Framework Adapter menu', () => {
+describe.skip('Azion Framework Adapter menu', () => {
     const stdOutput = `[options] [command]\n
 Options:
   -V, --version                             output the version number

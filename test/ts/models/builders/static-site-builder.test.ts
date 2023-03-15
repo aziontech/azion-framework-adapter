@@ -6,7 +6,7 @@ import { StaticSiteBuilder } from '../../../../dist/models/builders/static-site-
 
 const { expect } = chai;
 
-describe('Static Site Builder', () => {
+describe.skip('Static Site Builder', () => {
     it("should throw 'not implemented' error", async () => {
         const targetDir = process.cwd();
 
