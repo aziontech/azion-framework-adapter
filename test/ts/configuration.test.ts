@@ -1,7 +1,7 @@
 import * as chai from 'chai';
 import * as chaiAsPromised from 'chai-as-promised';
 import * as spies from 'chai-spies';
-import * as config from '../../dist/config';
+//import * as config from '../../dist/config';
 
 import * as fs from 'fs';
 import * as os from 'os';
