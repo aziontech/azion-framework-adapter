@@ -7,18 +7,12 @@ import merge from "webpack-merge";
 import { initCellsTemplate } from './init';
 import { BOOTSTRAP_CODE } from "./bootstraps/common";
 import { BootstrapUtils } from "./bootstraps/utils";
-import { clientFlareactConfig } from "./configs/flareact/webpack.client.config";
-import { generateWorkerFlareactConfig } from './configs/flareact/webpack.worker.config';
 import { generateWorkerStaticSiteConfig } from './configs/static-site/webpack.worker.config';
 import { displayError, ErrorCode, errorCode, FailedToBuild } from "./errors";
 
 import { CELLS_SITE_TEMPLATE_REPO, CELLS_SITE_TEMPLATE_WORK_DIR } from './constants';
 
 
-const CLIENT_CFG_PATH =
-  "node_modules/flareact/configs/webpack.client.config.js";
-const WORKER_CFG_PATH =
-  "node_modules/flareact/configs/webpack.worker.config.js";
 const BASIC_CFG_PATH = "webpack.config.js";
 
 export class Builder {
@@ -43,42 +37,6 @@ export class Builder {
         }
     }
 
-    async buildClient(): Promise<webpack.Stats> {
-        const baseConfigPath = path.join(this.targetDir, CLIENT_CFG_PATH);
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
-        const baseConfig = require(baseConfigPath)({});
-        const config = merge(baseConfig, clientFlareactConfig);
-
-        const clientCompiler = webpack(config);
-
-        return new Promise((resolve, reject) => {
-            clientCompiler.run((err: Error, stats: webpack.Stats) => {
-                if (err) {
-                    const error = err as any;
-                    const reason = JSON.stringify(
-                        error.details ?? "webpack execution for the client",
-                        null,
-                        " "
-                    );
-                    reject(new FailedToBuild(this.targetDir, reason));
-                    return;
-                }
-                const info = stats.toJson();
-                if (stats.hasErrors()) {
-                    for (const msg of info.errors) {
-                        console.error(msg);
-                    }
-                    reject(
-                        new FailedToBuild(this.targetDir, "client compilation errors")
-                    );
-                    return;
-                }
-                console.log("Finished client.");
-                resolve(stats);
-            });
-        });
-    }
-
     async buildWorker(
         configPath: string,
         manifest: any,
@@ -94,8 +52,7 @@ export class Builder {
         const outputPath = path.join(this.targetDir, "worker");
         const pluginsList: any[] = [];
 
-        const additionalConfig = staticSite ?
-            generateWorkerStaticSiteConfig(outputPath, pluginsList, versionId) : generateWorkerFlareactConfig(outputPath, pluginsList);
+        const additionalConfig = generateWorkerStaticSiteConfig(outputPath, pluginsList, versionId);
 
         const config = merge(baseConfigObj, additionalConfig);
 
@@ -174,7 +131,7 @@ export class Builder {
             let builder;
             const manifest = {};
 
-            let webpackConfigPath = BASIC_CFG_PATH;
+            const webpackConfigPath = BASIC_CFG_PATH;
             if (options.staticSite) {
                 await initCellsTemplate(targetDir, CELLS_SITE_TEMPLATE_REPO);
                 const staticSiteWorkerDir = path.join(targetDir, CELLS_SITE_TEMPLATE_WORK_DIR);
@@ -185,8 +142,6 @@ export class Builder {
             } else {
                 builder = new Builder(targetDir);
                 builder.createWorkerDir();
-                await builder.buildClient();
-                webpackConfigPath = WORKER_CFG_PATH;
             }
 
             await builder.buildWorker(

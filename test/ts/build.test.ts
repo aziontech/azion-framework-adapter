@@ -6,7 +6,6 @@ import * as os from 'os';
 import * as path from 'path';
 
 import * as chai from 'chai';
-import { expect } from 'chai';
 import * as chaiAsPromised from 'chai-as-promised';
 import * as spies from 'chai-spies';
 import { promisify } from 'util';
@@ -38,49 +37,6 @@ describe('build', () => {
 
     after(() => sandbox.restore());
 
-    describe('success', () => {
-
-        before(async () => {
-            templatePath = fs.mkdtempSync(path.join(os.tmpdir(), 'flareact-project'));
-            await copy(path.join(process.cwd(), 'test', 'project-examples', 'flareact-test'), templatePath);
-            previousPath = process.cwd();
-            process.chdir(templatePath);
-            await exec('npm install', {});
-            builder = new Builder(templatePath);
-            builder.createWorkerDir();
-        });
-
-        after(() => {
-            process.chdir(previousPath);
-            fs.rmSync(templatePath, { recursive: true });
-        });
-
-        it('should properly create directories on init', async () => {
-            const workerDir = fs.existsSync(path.join(templatePath, 'worker'));
-            expect(workerDir).to.be.true;
-        });
-
-        it('should build client', async () => {
-            const clientBuild = builder.buildClient();
-
-            return clientBuild.should.be.fulfilled.then(() => {
-                const clientOutput = fs.existsSync(path.join(templatePath, 'out', '_flareact', 'static', 'pages'));
-                expect(clientOutput).to.be.true;
-            });
-        });
-
-        it('should build worker', async () => {
-            builder.buildClient();
-            const manifest = {};
-
-            const workerBuild = builder.buildWorker('node_modules/flareact/configs/webpack.worker.config.js', manifest,{}, false);
-
-            return workerBuild.should.be.fulfilled.then(() => {
-                const workerDir = fs.existsSync(path.join(process.cwd(), 'worker', 'function.js'));
-                expect(workerDir).to.be.true;
-            });
-        });
-    });
 
     describe('failure', () => {
         before(async () => {
@@ -98,9 +54,5 @@ describe('build', () => {
             fs.rmSync(templatePath, { recursive: true });
         });
 
-        it('should fail build client', async () => {
-            const clientBuild = builder.buildClient();
-            return clientBuild.should.be.rejected;
-        });
     });
 });
