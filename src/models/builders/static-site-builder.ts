@@ -22,7 +22,7 @@ class StaticSiteBuilder extends Builder {
     async buildWorker(params: any): Promise<any> {
         console.log("Initialising build.");
         await esbuild.build({
-            entryPoints: [join(this.dirname, '../../entrypoint/entrypoints-2.js')],
+            entryPoints: [join(this.dirname, '../../entrypoint/entrypoints.js')],
             bundle: true ,
             define: {
                 self: 'globalThis',
