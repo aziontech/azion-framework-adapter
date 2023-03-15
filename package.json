@@ -52,8 +52,7 @@
     "webpack": "^4.46.0",
     "webpack-merge": "^5.8.0",
     "webpack-virtual-modules": "^0.4.3",
-    "xxhashjs": "^0.2.2",
-    "esbuild": "^0.17.5"
+    "xxhashjs": "^0.2.2"
   },
   "devDependencies": {
     "@types/chai": "^4.2.22",
