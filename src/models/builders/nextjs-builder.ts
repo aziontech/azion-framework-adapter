@@ -11,6 +11,7 @@ import ManifestBuilder from "../../manifest";
 
 import util = require('node:util');
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const exec = util.promisify(require('node:child_process').exec);
 
 interface HydratedEntry {
@@ -135,7 +136,9 @@ class NextjsBuilder extends Builder {
                         try {
                             await stat(functionFile);
                             functionFileExists = true;
-                        } catch { }
+                        } catch {
+                            console.log("Error in stat function file")
+                        }
 
                         if (!functionFileExists) {
                             this.invalidFunctions.push(name);
@@ -213,22 +216,22 @@ class NextjsBuilder extends Builder {
                 functionsFile,
                 `
                 export const __FUNCTIONS__ = {${[...this.hydratedFunctions.entries()]
-                    .map(
-                        ([name, { matchers, filepath }]) =>
-                            `"${name}": { matchers: ${JSON.stringify(
-                                matchers
-                            )}, entrypoint: require('${filepath}')}`
-                    )
-                    .join(",")}};
+        .map(
+            ([name, { matchers, filepath }]) =>
+                `"${name}": { matchers: ${JSON.stringify(
+                    matchers
+                )}, entrypoint: require('${filepath}')}`
+        )
+        .join(",")}};
 
                   export const __MIDDLEWARE__ = {${[...this.hydratedMiddleware.entries()]
-                    .map(
-                        ([name, { matchers, filepath }]) =>
-                            `"${name}": { matchers: ${JSON.stringify(
-                                matchers
-                            )}, entrypoint: require('${filepath}')}`
-                    )
-                    .join(",")}};`
+        .map(
+            ([name, { matchers, filepath }]) =>
+                `"${name}": { matchers: ${JSON.stringify(
+                    matchers
+                )}, entrypoint: require('${filepath}')}`
+        )
+        .join(",")}};`
             );
         } catch (error) {
             const message = `Error: ${error}`;
