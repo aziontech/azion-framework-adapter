@@ -1,7 +1,11 @@
 {
   "root": true,
   "parser": "@typescript-eslint/parser",
-  "ignorePatterns": ["test/out/**", "test/project-examples/**"],
+  "ignorePatterns": [
+    "test/out/**",
+    "test/project-examples/**",
+    "src/templates/handlers/nextjs/*.js"
+  ],
   "plugins": [
     "@typescript-eslint"
   ],

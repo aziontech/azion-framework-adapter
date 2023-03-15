@@ -2,13 +2,13 @@
 import { VersionChecker } from './utils/version-checker/version-checker';
 import { program } from 'commander';
 import { exit } from 'process';
-import { Builder } from './build';
 import * as init from './init';
 import { systemError } from "./errors";
+import { BuildDispatcher } from './build-dispatcher';
 
 // Disabling the eslint rule is cleaner than other methods for embedding the
 // package version.
-//
+
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { version } = require('../package.json');
 
@@ -39,7 +39,7 @@ program
     .option('-s, --static-site', 'build static site function')
     .option('-vid, --version-id <id>', 'versionId of storage-api')
     .action(async (options) => {
-        exit(await Builder.exec(options));
+        exit(await BuildDispatcher.exec(options));
     });
 
 program.parse(process.argv);
