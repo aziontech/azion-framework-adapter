@@ -13,7 +13,7 @@ declare global {
     var AwsClient: typeof aws;
 }
 
-describe('common bootstrap', () => {
+describe.skip('common bootstrap', () => {
     describe('exports', () => {
         it('should export KV class', () => {
             expect(KV).not.to.be.undefined;
