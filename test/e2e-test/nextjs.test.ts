@@ -7,7 +7,7 @@ import * as path from 'path';
 
 import { expect } from 'chai';
 
-describe.only('Create nextjs static application', () => {
+describe('Create nextjs static application', () => {
     let templatePath: string;
     let template: string;
     let realPath: string;
@@ -51,7 +51,9 @@ describe.only('Create nextjs static application', () => {
         const functionPath = path.join(template, 'azion', 'worker', 'function.js')
         const expectOutput = `Initialising build.\n`+
         `Completed.\n`
-        const stdout = await execFile(`azion-framework-adapter build --version-id k0mb1 --static-site || exit $? | 2>&1`);
+
+        //npm_config_registry=https://registry.npmjs.org npx xxx
+        const stdout = await execFile(`npm_config_registry=http://0.0.0.0:4873/ npx --yes azion-framework-adapter build -s --version-id k0mb1 || exit $? | 2>&1`);
         const functionContent = fs.readFileSync(functionPath, 'utf8');
         const functionFile = fs.existsSync(functionPath);
 
