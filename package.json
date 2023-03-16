@@ -40,7 +40,6 @@
     "publish"
   ],
   "dependencies": {
-    "aws-sdk": "^2.1031.0",
     "axios": "^0.24.0",
     "commander": "^8.3.0",
     "esbuild": "^0.17.10",

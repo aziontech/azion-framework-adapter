@@ -4,6 +4,8 @@ const execFile = util.promisify(require('node:child_process').exec);
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const copy = require('recursive-copy');
 
 import { expect } from 'chai';
 
@@ -13,6 +15,7 @@ describe('Create nextjs static application', () => {
     let realPath: string;
     let localOutput: string;
 
+
     before(async () => {
         // Creates temporary local template repository
         templatePath = fs.mkdtempSync(path.join(os.tmpdir(), 'nextjs-test'));
@@ -20,7 +23,6 @@ describe('Create nextjs static application', () => {
         const templateName = 'nextjs-template';
         template = path.join(realPath, templateName);
         localOutput = process.cwd();
-
 
         console.log('Creating Next project');
         await execFile(`npx -y create-next-app@latest --example basic-css ${template}`);
