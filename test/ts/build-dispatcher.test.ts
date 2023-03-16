@@ -25,11 +25,11 @@ describe.skip('Build Dispatcher', () => {
     describe('when a static site build option is given', () => {
         it('should call Static Site build', async () => {
             const options = { staticSite: true }
+            const callBuild = sinon.stub(StaticSiteBuilder.prototype, 'build');
 
             result = await BuildDispatcher.exec(options);
-
-            // tmp raise not implemented error
-            expect(result).to.be.equal(ErrorCode.Unknown);
+            sinon.assert.calledOnce(callBuild);
+            callBuild.restore();
         });
     });
 

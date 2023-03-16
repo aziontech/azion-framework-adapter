@@ -8,9 +8,8 @@ import * as path from 'path';
 const copy = require('recursive-copy');
 
 import { expect } from 'chai';
-import { CELLS_SITE_TEMPLATE_WORK_DIR } from '../../dist/constants';
 
-describe.skip('Create nextjs application', () => {
+describe('Create nextjs static application', () => {
     let templatePath: string;
     let template: string;
     let realPath: string;
@@ -29,21 +28,18 @@ describe.skip('Create nextjs application', () => {
         await execFile(`npx -y create-next-app@latest --example basic-css ${template}`);
         process.chdir(template);
         await execFile('npm i -S next@12.2.6');
-        await execFile(`npx next build`);
-        await execFile(`npx next export`);
 
         //creating azion config folder
         if (!fs.existsSync("azion")){
             const azion_project = {
                 "type": "nextjs"
             };
-    
+
             fs.mkdirSync("azion");
             fs.writeFile('./azion/azion.json', JSON.stringify(azion_project), err => {
                 if (err) throw err;
             });
         }
-    
     });
 
     after(() => {
@@ -53,29 +49,18 @@ describe.skip('Create nextjs application', () => {
         }
     });
 
-    it('Init cell site template', async () => {
-
-        const expectOutput =`Cloning template repository\n`+
-        `Installing dependencies.\n`+
-        `All dependencies have been installed!\n`
-
-        process.chdir(template);
-        const { stdout} = await execFile(`azion-framework-adapter init -s`);
-        expect(stdout).to.be.equal(expectOutput);
-    });
-
     it('Build the nextjs project', async () => {
-        const configPath = path.join(template, CELLS_SITE_TEMPLATE_WORK_DIR, 'azion.json');
-        const functionPath = path.join(template, CELLS_SITE_TEMPLATE_WORK_DIR, 'worker', 'function.js')
-        await copy(path.join(localOutput, 'test', 'config-files', 'azion-next.json'), configPath)
-        const expectOutput = `Static site template initialized. Building ...\n`+
-        `Finished worker.\n`+
+        const functionPath = path.join(template, 'azion', 'worker', 'function.js')
+        const expectOutput = `Initialising build.\n`+
         `Completed.\n`
-        const { stdout } = await execFile(`azion-framework-adapter build -c ${configPath} --version-id k0mb1 --static-site --assets-dir ./out || exit $? | 2>&1`);
+
+        //npm_config_registry=https://registry.npmjs.org npx xxx
+        const stdout = await execFile(`npm_config_registry=http://0.0.0.0:4873/ npx --yes azion-framework-adapter build -s --version-id k0mb1 || exit $? | 2>&1`);
         const functionContent = fs.readFileSync(functionPath, 'utf8');
         const functionFile = fs.existsSync(functionPath);
+
         expect(functionContent).to.include('k0mb1');
-        expect(stdout).to.be.equal(expectOutput);
+        expect(stdout.stdout).to.include(expectOutput);
         expect(functionFile).to.be.true;
     });
 })

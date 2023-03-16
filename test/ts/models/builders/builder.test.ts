@@ -4,7 +4,7 @@ import * as chai from 'chai';
 
 import { Builder } from '../../../../dist/models/builders/builder';
 import { StaticSiteBuilder } from '../../../../dist/models/builders/static-site-builder';
-import { FailedToBuild } from '../../../../dist/errors';
+import { error } from 'console';
 
 
 const { expect } = chai;
@@ -15,9 +15,11 @@ describe.skip('Builder', () => {
     let workerDir: string;
 
     before(() => {
-        currentDir = process.cwd();
+        currentDir = './out';
         builder = new StaticSiteBuilder(currentDir);
-        workerDir = path.join(builder.targetDir, "worker");
+
+
+        workerDir = path.join(builder.targetDir,"azion", "worker");
     });
 
     describe('when a new instance is created', () => {
@@ -27,25 +29,26 @@ describe.skip('Builder', () => {
     });
 
     describe('when create a worker dir', () => {
+        beforeEach(() => {
+            chai.spy.restore();
+        })
         afterEach(() => {
-            fs.rmSync(workerDir, { recursive: true });
+            if(fs.existsSync(workerDir)){
+                fs.rmSync(workerDir, { recursive: true });
+            }
         });
 
         describe('that specified path already exists and is NOT a dir', () => {
-            before(() => {
-                fs.writeFileSync(workerDir, 'fileDataMock');
-            });
+            it('should throw an error', async () => {
+                chai.spy.on(fs, "mkdirSync", () => { throw error });
 
-            it('should throw an error', () => {
-                expect(() => builder.createWorkerDir()).to.throw(
-                    FailedToBuild, workerDir, "cannot create 'worker' directory"
-                );
+                expect( () => builder.createWorkerDir()).to.throw("Failed to build project. Directory: out/azion/worker. Because: cannot create 'worker' directory");
+
             });
         });
 
         describe('that specified path already exists and is a dir', () => {
             it('should NOT take actions', () => {
-                chai.spy.restore();
                 chai.spy.on(fs, "mkdirSync");
 
                 builder.createWorkerDir();
@@ -57,7 +60,6 @@ describe.skip('Builder', () => {
         describe('that NOT exists', () => {
             it('should create a new dir', () => {
                 builder.createWorkerDir();
-
                 expect(fs.existsSync(workerDir)).to.be.true;
             });
         });
