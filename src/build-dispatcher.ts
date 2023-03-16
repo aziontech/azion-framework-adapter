@@ -1,5 +1,6 @@
 import { displayError, errorCode, ErrorCode } from "./errors";
 import { NextjsBuilder } from "./models/builders/nextjs-builder";
+import { StaticSiteBuilder } from "./models/builders/static-site-builder";
 
 
 class BuildDispatcher {
@@ -7,8 +8,13 @@ class BuildDispatcher {
         try {
             const targetDir: string = process.cwd();
 
-            const builder = new NextjsBuilder(targetDir);
-            await builder.build(options);
+            if(options.staticSite){
+                const builder = new StaticSiteBuilder(targetDir);
+                await builder.build(options)
+            } else {
+                const builder = new NextjsBuilder(targetDir);
+                await builder.build(options)
+            }
 
             console.log("Completed.");
 

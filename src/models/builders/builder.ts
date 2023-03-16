@@ -1,28 +1,26 @@
-import { existsSync, mkdirSync, statSync } from 'fs';
+import { mkdirSync } from 'fs';
 import path from 'path';
 
 import { ErrorCode, FailedToBuild } from '../../errors';
-
+import { WORKER_DIR } from "../../constants";
 
 abstract class Builder {
     targetDir: string;
+    workerDir: string;
 
     constructor(targetDir: string) {
         this.targetDir = targetDir;
+        this.workerDir = path.join(this.targetDir, WORKER_DIR);
     }
 
     createWorkerDir(): void {
-        const workerDir = path.join(this.targetDir, "worker");
-
-        if (existsSync(workerDir)) {
-            if (!statSync(workerDir).isDirectory()) {
-                throw new FailedToBuild(
-                    workerDir,
-                    "cannot create 'worker' directory"
-                );
-            }
-        } else {
-            mkdirSync(workerDir);
+        try {
+            mkdirSync(this.workerDir, { recursive: true });
+        } catch (error) {
+            throw new FailedToBuild(
+                this.workerDir,
+                "cannot create 'worker' directory"
+            );
         }
     }
 
