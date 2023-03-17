@@ -12,7 +12,6 @@ Options:
 Commands:
   init [options] [target-dir] [repository]  Create a new project from a template.
   build [options]                           Build and upload.
-  publish [options]                         Publish the application.
   help [command]                            display help for command\n`
 
     const azionFrameworkAdapterStdOutput = `Usage: azion-framework-adapter ${stdOutput}`;
@@ -43,18 +42,6 @@ Options:
   -vid, --version-id <id>       versionId of storage-api
   -h, --help                    display help for command\n`
 
-    const publishOutput = `Usage: azion-framework-adapter publish [options]
-
-Publish the application.
-
-Options:
-  -c, --config <config>         path to configuration file [default:
-                                azion.json]
-  -d, --assets-dir <directory>  path to static assets
-  -e, --only-function           skip deploy of assets
-  -s, --only-assets             skip deploy of Edge Function
-  -t, --static-site             publish static site function
-  -h, --help                    display help for command\n`
 
     it('Output of "Help" option', async () => {
         const { stdout } = await exec('azion-framework-adapter --help');
@@ -76,8 +63,4 @@ Options:
         expect(stdout).to.be.equals(buildOutput)
     })
 
-    it('Output of "publish" option', async () => {
-        const { stdout } = await exec('azion-framework-adapter publish --help');
-        expect(stdout).to.be.equals(publishOutput)
-    })
 })
