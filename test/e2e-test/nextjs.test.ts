@@ -50,7 +50,7 @@ describe('Create nextjs static application', () => {
     });
 
     it('Build the nextjs project', async () => {
-        const functionPath = path.join(template, 'azion', 'worker', 'function.js')
+        const functionPath = path.join(template, 'azion', 'worker', 'worker.js')
         const expectOutput = `Initialising build.\n`+
         `Completed.\n`
 
