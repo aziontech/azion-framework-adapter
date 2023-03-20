@@ -19,7 +19,7 @@ describe('Static Site Builder', () => {
     let targetDir: string;
     before(() => {
         targetDir = 'out/';
-        functionPath = path.join(targetDir, 'azion', 'worker', 'function.js')
+        functionPath = path.join(targetDir, 'azion', 'worker', 'worker.js')
     })
 
     after(() => {
