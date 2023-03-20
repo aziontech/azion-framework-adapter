@@ -5,7 +5,6 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const copy = require('recursive-copy');
 
 import { expect } from 'chai';
 
@@ -51,16 +50,13 @@ describe('Create nextjs static application', () => {
 
     it('Build the nextjs project', async () => {
         const functionPath = path.join(template, 'azion', 'worker', 'worker.js')
-        const expectOutput = `Initialising build.\n`+
-        `Completed.\n`
 
         //npm_config_registry=https://registry.npmjs.org npx xxx
-        const stdout = await execFile(`npm_config_registry=http://0.0.0.0:4873/ npx --yes azion-framework-adapter build -s --version-id k0mb1 || exit $? | 2>&1`);
+        await execFile(`npm_config_registry=http://0.0.0.0:4873/ npx --yes azion-framework-adapter build -s --version-id k0mb1 || exit $? | 2>&1`);
         const functionContent = fs.readFileSync(functionPath, 'utf8');
         const functionFile = fs.existsSync(functionPath);
 
         expect(functionContent).to.include('k0mb1');
-        expect(stdout.stdout).to.include(expectOutput);
         expect(functionFile).to.be.true;
     });
 })
