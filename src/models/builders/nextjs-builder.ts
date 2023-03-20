@@ -3,13 +3,12 @@ import { readFileSync, existsSync, mkdirSync } from "fs";
 import { dirname, join, relative, resolve } from "path";
 import { tmpdir } from "os";
 import { build } from "esbuild";
+import util = require('node:util');
 
 import { Builder } from "./builder";
 import { ErrorCode } from '../../errors';
 import ManifestBuilder from "../../manifest";
-
-
-import util = require('node:util');
+import { WORKER_DIR } from "../../constants";
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const exec = util.promisify(require('node:child_process').exec);
@@ -28,9 +27,13 @@ class NextjsBuilder extends Builder {
     hydratedFunctions: Map<string, HydratedEntry> = new Map();
     middlewareEntries: any;
     functionsEntries: any;
+    outputPath: string;
+    outfile: string;
 
     constructor(targetDir: string) {
         super(targetDir);
+        this.outputPath = join(this.targetDir,WORKER_DIR);
+        this.outfile = join(this.outputPath,'worker.js');
     }
 
     async createVercelProjectConfig() {
@@ -259,10 +262,10 @@ class NextjsBuilder extends Builder {
                     __VERSION_ID__: `'${params.versionId}'`,
                     __ASSETS_MANIFEST__: JSON.stringify(params.assetsManifest)
                 },
-                outfile: "./out/worker.js",
+                outfile: this.outfile,
             });
 
-            console.log("Generated './out/worker.js'.");
+            console.log(`Generated ${this.outfile}`);
         } catch (error) {
             const message = `Error: ${error}`;
             console.log(message)

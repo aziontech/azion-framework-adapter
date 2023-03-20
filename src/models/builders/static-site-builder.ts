@@ -11,7 +11,7 @@ class StaticSiteBuilder extends Builder {
     constructor(targetDir: string) {
         super(targetDir);
         this.outputPath = join(this.targetDir,WORKER_DIR);
-        this.outfile = join(this.outputPath,'function.js');
+        this.outfile = join(this.outputPath,'worker.js');
     }
 
     async build(params: any): Promise<any> {
@@ -38,7 +38,7 @@ class StaticSiteBuilder extends Builder {
             console.log("Error", e)
             process.exit(1)
         }
-        );
+        ).finally(() => console.log(`Generated ${this.outfile}`));
     }
 }
 
