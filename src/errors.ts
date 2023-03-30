@@ -16,7 +16,14 @@ export enum ErrorCode {
     S3BucketNotSet = 2020,
     InvalidProject = 2030,
     InvalidNextJsVersion = 2040,
-    InvalidVersion = 2050
+    InvalidVersion = 2050,
+    VercelProjectError = 2060,
+    VercelLoadConfigError  = 2070,
+    CannotWriteFile = 2080,
+    BuildedFunctionsNotFound = 2090,
+    DirWalkError = 3000,
+    MiddlewareManifestHandlerError = 3010
+
 
 }
 

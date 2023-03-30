@@ -43,6 +43,7 @@
     "axios": "^0.24.0",
     "commander": "^8.3.0",
     "esbuild": "^0.17.10",
+    "fast-glob": "^3.2.12",
     "simple-git": "^3.15.0",
     "ts-results": "^3.3.0",
     "tslib": "^2.5.0",

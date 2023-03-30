@@ -39,7 +39,9 @@ program
     .option('-s, --static-site', 'build static site function')
     .option('-vid, --version-id <id>', 'versionId of storage-api')
     .action(async (options) => {
-        exit(await BuildDispatcher.exec(options));
+        exit(await BuildDispatcher.exec(options).catch(error=>{
+            return systemError(error);
+        }));
     });
 
 program.parse(process.argv);

@@ -1,12 +1,21 @@
+import { readFileSync, existsSync, mkdirSync, writeFileSync, statSync } from "fs";
 import { readFile, writeFile, mkdir, stat, readdir } from "fs/promises";
-import { readFileSync, existsSync, mkdirSync } from "fs";
 import { dirname, join, relative, resolve } from "path";
-import { tmpdir } from "os";
 import { build } from "esbuild";
+import { tmpdir } from "os";
 
+import {
+    VercelLoadConfigError, 
+    VercelProjectError,
+    CannotWriteFile,
+    BuildedFunctionsNotFound,
+    DirWalkError,
+    MiddlewareManifestHandlerError
+} from "./errors/errors";
 import { Builder } from "./builder";
 import { ErrorCode } from '../../errors';
 import ManifestBuilder from "../../manifest";
+import { VercelService } from "./services/vercel-service";
 
 
 import util = require('node:util');
@@ -28,12 +37,13 @@ class NextjsBuilder extends Builder {
     hydratedFunctions: Map<string, HydratedEntry> = new Map();
     middlewareEntries: any;
     functionsEntries: any;
+    vercelService:VercelService = new VercelService();
 
     constructor(targetDir: string) {
         super(targetDir);
     }
 
-    async createVercelProjectConfig() {
+    createVercelProjectConfig() {
         console.log("Creating project config file ...");
 
         try {
@@ -45,12 +55,10 @@ class NextjsBuilder extends Builder {
                     mkdirSync(projectConfigDir);
                 }
 
-                await writeFile(projectConfigFilePath, '{"projectId":"_","orgId":"_","settings":{}}');
+                writeFileSync(projectConfigFilePath,'{"projectId":"_","orgId":"_","settings":{}}');
             }
-        } catch (error) {
-            const message = `Error: ${error}`;
-            console.log(message)
-            throw Error(message)
+        } catch (error:any) {
+            throw new CannotWriteFile(error.message);
         }
     }
 
@@ -60,10 +68,8 @@ class NextjsBuilder extends Builder {
 
         try {
             await exec('npx --yes vercel@28.16.11 build --prod');
-        } catch (error) {
-            const message = `Error: ${error}`;
-            console.log(message)
-            throw Error(message)
+        } catch (error:any) {
+            throw new VercelProjectError(error.message);
         }
     }
 
@@ -76,31 +82,30 @@ class NextjsBuilder extends Builder {
 
             return config;
         } catch (error) {
-            const message = `Error: ${error}`;
-            console.log(message)
-            throw Error(message)
+            throw new VercelLoadConfigError(`${error}`);
         }
     }
 
-    async detectBuildedFunctions() {
+    detectBuildedFunctions() {
         console.log("Detecting builded functions ...")
 
-        let functionsExist = false;
+        //let functionsExist = false;
 
         try {
             const functionsDir = resolve(".vercel/output/functions");
 
-            await stat(functionsDir);
-
-            functionsExist = true;
+            //await stat(functionsDir);
+            statSync(functionsDir);
+            //functionsExist = true;
         } catch (error) {
-            if (!functionsExist) {
-                console.log("No functions detected")
-            } else {
-                console.log(error)
-            }
 
-            throw Error("Failed in detect builded functions.")
+            // if (!functionsExist) {
+            //     console.log("No functions detected")
+            // } else {
+            //     console.log(error)
+            // }
+
+            throw new BuildedFunctionsNotFound("Failed in detect builded functions.");
         }
     }
 
@@ -108,7 +113,7 @@ class NextjsBuilder extends Builder {
     async dirWalk(dir: string, functionsDir: string) {
         try {
             const files = await readdir(dir);
-
+            console.log(files);
             await Promise.all(
                 files.map(async (file) => {
                     const filepath = join(dir, file);
@@ -119,22 +124,26 @@ class NextjsBuilder extends Builder {
                         const name = relativePath.replace(/\.func$/, "");
 
                         const functionConfigFile = join(filepath, ".vc-config.json");
+                        console.log(`---functionConfigFile--->${functionConfigFile}<----`);
                         let functionConfig;
                         try {
-                            const contents = await readFile(functionConfigFile, "utf8");
+                            const contents = readFileSync(functionConfigFile, "utf8");
                             functionConfig = JSON.parse(contents);
+                            console.log(`---functions-config--->${Object.keys(functionConfig)}<----`);
                         } catch {
                             this.invalidFunctions.push(file);
                         }
 
                         if (functionConfig.runtime !== "edge") {
                             this.invalidFunctions.push(name);
+                            console.log('---->',this.invalidFunctions,'<----');
                         }
-
+                        console.log(`--file-path--->${filepath}<------|\n${functionConfig.entrypoint}`);
                         const functionFile = join(filepath, functionConfig.entrypoint);
                         let functionFileExists = false;
                         try {
                             await stat(functionFile);
+                            console.log(this.functionsEntries);
                             functionFileExists = true;
                         } catch {
                             console.log("Error in stat function file")
@@ -167,20 +176,19 @@ class NextjsBuilder extends Builder {
                 })
             );
         } catch (error) {
-            const message = `Error: ${error}`;
-            console.log(message)
-            throw Error(message)
+            throw new DirWalkError(dir,functionsDir,error);
         }
     }
 
-    async handleMiddleware() {
+    handleMiddleware() {
         console.log("Handling middleware ...");
 
         try {
             let middlewareManifest: any = {};
 
             middlewareManifest = JSON.parse(
-                await readFile(".next/server/middleware-manifest.json", "utf8")
+                //await readFile(".next/server/middleware-manifest.json", "utf8")
+                readFileSync(".next/server/middleware-manifest.json","utf8")
             );
 
             this.middlewareEntries = Object.values(middlewareManifest.middleware);
@@ -202,9 +210,7 @@ class NextjsBuilder extends Builder {
                 }
             }
         } catch (error) {
-            const message = `Error: ${error}`;
-            console.log(message)
-            throw Error(message)
+            throw new MiddlewareManifestHandlerError(error);
         }
     }
 
@@ -233,6 +239,7 @@ class NextjsBuilder extends Builder {
         )
         .join(",")}};`
             );
+        
         } catch (error) {
             const message = `Error: ${error}`;
             console.log(message)
@@ -288,12 +295,11 @@ class NextjsBuilder extends Builder {
 
             await this.detectBuildedFunctions();
 
-            const functionsDir = resolve(".vercel/output/functions");
+            console.log("Mapping and transforming functions ...");
 
-            console.log("Mapping and transforming functions ...")
-            await this.dirWalk(functionsDir, functionsDir);
+            await this.vercelService.adapt();
 
-            await this.handleMiddleware();
+            this.handleMiddleware();
 
             const assetsDir = join(this.targetDir, ".vercel/output/static")
             const assetsManifest = ManifestBuilder.assetsPaths(assetsDir);
@@ -302,6 +308,7 @@ class NextjsBuilder extends Builder {
                 tmpdir(),
                 `functions-${Math.random().toString(36).slice(2)}.js`
             );
+            
             await this.writeFunctionsReferencesFile(functionsFile);
 
             const buildParams = {
