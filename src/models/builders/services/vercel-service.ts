@@ -1,6 +1,6 @@
 //import { readFile, writeFile, mkdir } from "fs/promises";
-import { readFileSync } from "fs";
-import { join } from "path";
+import { mkdirSync, readFileSync, writeFileSync } from "fs";
+import { dirname, join } from "path";
 import glob from "fast-glob";
 import { tmpdir } from "os";
 
@@ -43,7 +43,6 @@ export class VercelService {
     "shouldAddSourcemapSupport": false
     }
    */
-  
     // alternative B
     // mockLoadConfig() {
     // return ["{runtime:node, entrypoint: index.js}", "{runtime:edge, entrypoint: index.js}"];
@@ -66,34 +65,48 @@ export class VercelService {
     // function to walk in builded functions dir, detect invalid functions and adapt content
     async adapt() {
         const vcConfigPaths: Array<string> = await glob(".vercel/output/functions/**/.vc-config.json");
-        const vcConfigObjects:Array<any> = vcConfigPaths.map(file =>JSON.parse(readFileSync(file, "utf8")));
-        const validVcObjects = vcConfigObjects.filter(vcConfig =>  this.isVcConfigValid(vcConfig));
-        const invalidVcObjects = vcConfigObjects.filter(vcConfig => !this.isVcConfigValid(vcConfig));
+        const vcConfigObjects:Array<any> = vcConfigPaths.map(file =>
+            [
+                JSON.parse(readFileSync(file, "utf8")),
+                file.replace(".vc-config.json","index.js")
+            ]
+        );
+        const validVcObjects:Array<any> = vcConfigObjects.filter(vcConfig =>  this.isVcConfigValid(vcConfig[0]));
+        const invalidVcObjects:Array<any> = vcConfigObjects.filter(vcConfig => !this.isVcConfigValid(vcConfig[0]));
         if (invalidVcObjects.length > 0) {
             console.log("invalidVcObjects:", ...invalidVcObjects);
             throw new Error("invalid objects");
         }
-        validVcObjects.map(vcObject => {
-            const code = readFileSync(vcObject.entrypoint, "utf8").replace(
-                /Object.defineProperty\(globalThis,\s*"__import_unsupported",\s*{[^}]*}\)/gm,
-                "true"
-            );
-            return code;
-            /*
-            const newFilePath = join(this.tmpFunctionsDir, `${relativePath}.js`);
-            await mkdir(dirname(newFilePath), { recursive: true });
-            await writeFile(newFilePath, contents);
-
-            this.functionsMap.set(
-                relative(functionsDir, filepath).slice(0, -".func".length),
-                newFilePath
-            );
-            */
+        const vcEntrypoints:Array<any> = validVcObjects.map(vcObject => {
+            return [
+                vcObject[1],
+                this.readFileWrapper(vcObject[1])
+                    .replace(/Object.defineProperty\(globalThis,\s*"__import_unsupported",\s*{[^}]*}\)/gm,"true")
+            ];
+        }
+        );
+        vcEntrypoints.map(entrypoint=>{
+            mkdirSync(dirname(entrypoint[0]),{recursive:true});
+            writeFileSync(entrypoint[0],entrypoint[1])
         });
     }
     
+    private readFileWrapper(entrypoint: string): string{
+        console.log(`--readFileWrapper-->${entrypoint}`);
+        return readFileSync(entrypoint,"utf8");
+    }
+    /*
+    const newFilePath = join(this.tmpFunctionsDir, `${relativePath}.js`);
+    await mkdir(dirname(newFilePath), { recursive: true });
+    await writeFile(newFilePath, contents);
+
+    this.functionsMap.set(
+        relative(functionsDir, filepath).slice(0, -".func".length),
+        newFilePath
+    );
+    */
     private isVcConfigValid(vcConfig:any):boolean{
-        return vcConfig.runtime === "edge" && vcConfig.entrypoint !== undefined;
+        return (vcConfig.runtime === "edge") && (vcConfig.entrypoint !== undefined);
     }
     
 }
