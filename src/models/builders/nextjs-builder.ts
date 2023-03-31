@@ -1,27 +1,17 @@
-import { readFileSync, existsSync, mkdirSync, writeFileSync, statSync } from "fs";
-import { readFile, writeFile, mkdir, stat, readdir } from "fs/promises";
-import { dirname, join, relative, resolve } from "path";
+import { readFileSync, statSync } from "fs";
+import { writeFile } from "fs/promises";
+import { dirname, join, resolve } from "path";
 import { build } from "esbuild";
 import { tmpdir } from "os";
 
 import {
-    VercelLoadConfigError, 
-    VercelProjectError,
-    CannotWriteFile,
     BuildedFunctionsNotFound,
-    DirWalkError,
     MiddlewareManifestHandlerError
 } from "./errors/errors";
 import { Builder } from "./builder";
 import { ErrorCode } from '../../errors';
 import ManifestBuilder from "../../manifest";
 import { VercelService } from "./services/vercel-service";
-
-
-import util = require('node:util');
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const exec = util.promisify(require('node:child_process').exec);
 
 interface HydratedEntry {
     matchers: string,
@@ -31,7 +21,6 @@ interface HydratedEntry {
 class NextjsBuilder extends Builder {
     dirname: string = dirname(__filename);
     functionsMap: Map<string, string> = new Map();
-    tmpFunctionsDir: string = join(tmpdir(), Math.random().toString(36).slice(2));
     invalidFunctions: string[] = [];
     hydratedMiddleware: Map<string, HydratedEntry> = new Map();
     hydratedFunctions: Map<string, HydratedEntry> = new Map();
@@ -43,140 +32,13 @@ class NextjsBuilder extends Builder {
         super(targetDir);
     }
 
-    createVercelProjectConfig() {
-        console.log("Creating project config file ...");
-
-        try {
-            const projectConfigDir = '.vercel';
-            const projectConfigFilePath = `${projectConfigDir}/project.json`;
-
-            if (!existsSync(projectConfigFilePath)) {
-                if (!existsSync(projectConfigDir)) {
-                    mkdirSync(projectConfigDir);
-                }
-
-                writeFileSync(projectConfigFilePath,'{"projectId":"_","orgId":"_","settings":{}}');
-            }
-        } catch (error:any) {
-            throw new CannotWriteFile(error.message);
-        }
-    }
-
-    async runVercelBuild() {
-        // https://vercel.com/docs/build-output-api/v3
-        console.log("Running initial build ...");
-
-        try {
-            await exec('npx --yes vercel@28.16.11 build --prod');
-        } catch (error:any) {
-            throw new VercelProjectError(error.message);
-        }
-    }
-
-    loadVercelConfigs(): any {
-        console.log("Loading configs ...")
-
-        try {
-            const fileContent = readFileSync(".vercel/output/config.json", "utf8");
-            const config = JSON.parse(fileContent);
-
-            return config;
-        } catch (error) {
-            throw new VercelLoadConfigError(`${error}`);
-        }
-    }
-
     detectBuildedFunctions() {
-        console.log("Detecting builded functions ...")
-
-        //let functionsExist = false;
-
+        console.log("Detecting builded functions ...");
         try {
             const functionsDir = resolve(".vercel/output/functions");
-
-            //await stat(functionsDir);
             statSync(functionsDir);
-            //functionsExist = true;
         } catch (error) {
-
-            // if (!functionsExist) {
-            //     console.log("No functions detected")
-            // } else {
-            //     console.log(error)
-            // }
-
             throw new BuildedFunctionsNotFound("Failed in detect builded functions.");
-        }
-    }
-
-    // function to walk in builded functions dir, detect invalid functions and adapt content
-    async dirWalk(dir: string, functionsDir: string) {
-        try {
-            const files = await readdir(dir);
-            console.log(files);
-            await Promise.all(
-                files.map(async (file) => {
-                    const filepath = join(dir, file);
-                    const isDirectory = (await stat(filepath)).isDirectory();
-                    const relativePath = relative(functionsDir, filepath);
-
-                    if (isDirectory && filepath.endsWith(".func")) {
-                        const name = relativePath.replace(/\.func$/, "");
-
-                        const functionConfigFile = join(filepath, ".vc-config.json");
-                        console.log(`---functionConfigFile--->${functionConfigFile}<----`);
-                        let functionConfig;
-                        try {
-                            const contents = readFileSync(functionConfigFile, "utf8");
-                            functionConfig = JSON.parse(contents);
-                            console.log(`---functions-config--->${Object.keys(functionConfig)}<----`);
-                        } catch {
-                            this.invalidFunctions.push(file);
-                        }
-
-                        if (functionConfig.runtime !== "edge") {
-                            this.invalidFunctions.push(name);
-                            console.log('---->',this.invalidFunctions,'<----');
-                        }
-                        console.log(`--file-path--->${filepath}<------|\n${functionConfig.entrypoint}`);
-                        const functionFile = join(filepath, functionConfig.entrypoint);
-                        let functionFileExists = false;
-                        try {
-                            await stat(functionFile);
-                            console.log(this.functionsEntries);
-                            functionFileExists = true;
-                        } catch {
-                            console.log("Error in stat function file")
-                        }
-
-                        if (!functionFileExists) {
-                            this.invalidFunctions.push(name);
-                        }
-
-                        let contents = await readFile(functionFile, "utf8");
-                        contents = contents.replace(
-                            // TODO: This hack is not good. We should replace this with something less brittle ASAP
-                            /Object.defineProperty\(globalThis,\s*"__import_unsupported",\s*{[^}]*}\)/gm,
-                            ""
-                        );
-
-                        // minify removed !
-
-                        const newFilePath = join(this.tmpFunctionsDir, `${relativePath}.js`);
-                        await mkdir(dirname(newFilePath), { recursive: true });
-                        await writeFile(newFilePath, contents);
-
-                        this.functionsMap.set(
-                            relative(functionsDir, filepath).slice(0, -".func".length),
-                            newFilePath
-                        );
-                    } else if (isDirectory) {
-                        await this.dirWalk(filepath, functionsDir);
-                    }
-                })
-            );
-        } catch (error) {
-            throw new DirWalkError(dir,functionsDir,error);
         }
     }
 
@@ -287,17 +149,22 @@ class NextjsBuilder extends Builder {
         }
 
         try {
-            await this.createVercelProjectConfig();
+            this.vercelService.createVercelProjectConfig();
 
-            await this.runVercelBuild();
+            await this.vercelService.runVercelBuild();
 
-            const config = this.loadVercelConfigs();
+            const config = this.vercelService.loadVercelConfigs();
 
-            await this.detectBuildedFunctions();
+            this.detectBuildedFunctions();
 
             console.log("Mapping and transforming functions ...");
 
             await this.vercelService.adapt();
+            
+            this.functionsMap = this.vercelService.functionsMap;
+            //const functionsDir = resolve(".vercel/output/functions");
+
+            //await this.dirWalk(functionsDir,functionsDir);
 
             this.handleMiddleware();
 
@@ -327,6 +194,131 @@ class NextjsBuilder extends Builder {
 
         return ErrorCode.Ok;
     }
+
+    // createVercelProjectConfig() {
+    //     console.log("Creating project config file ...");
+
+    //     try {
+    //         const projectConfigDir = '.vercel';
+    //         const projectConfigFilePath = `${projectConfigDir}/project.json`;
+
+    //         if (!existsSync(projectConfigFilePath)) {
+    //             if (!existsSync(projectConfigDir)) {
+    //                 mkdirSync(projectConfigDir);
+    //             }
+
+    //             writeFileSync(projectConfigFilePath,'{"projectId":"_","orgId":"_","settings":{}}');
+    //         }
+    //     } catch (error:any) {
+    //         throw new CannotWriteFile(error.message);
+    //     }
+    // }
+
+    // async runVercelBuild() {
+    //     // https://vercel.com/docs/build-output-api/v3
+    //     console.log("Running initial build ...");
+
+    //     try {
+    //         await exec('npx --yes vercel@28.16.11 build --prod');
+    //     } catch (error:any) {
+    //         throw new VercelProjectError(error.message);
+    //     }
+    // }
+
+    // loadVercelConfigs(): any {
+    //     console.log("Loading configs ...")
+
+    //     try {
+    //         const fileContent = readFileSync(".vercel/output/config.json", "utf8");
+    //         const config = JSON.parse(fileContent);
+
+    //         return config;
+    //     } catch (error) {
+    //         throw new VercelLoadConfigError(`${error}`);
+    //     }
+    // }
+
+
+    // function to walk in builded functions dir, detect invalid functions and adapt content
+    // async dirWalk(dir: string, functionsDir: string) {
+    //     try {
+    //         const files = await readdir(dir);
+    //         console.log(files);
+    //         await Promise.all(
+    //             files.map(async (file) => {
+    //                 const filepath = join(dir, file);
+    //                 const isDirectory = (await stat(filepath)).isDirectory();
+    //                 const relativePath = relative(functionsDir, filepath);
+    //                 console.log(`----relative-path ----->>${relativePath}<---`)
+    
+    //                 if (isDirectory && filepath.endsWith(".func")) {
+    //                     const name = relativePath.replace(/\.func$/, "");
+    
+    //                     const functionConfigFile = join(filepath, ".vc-config.json");
+    //                     console.log(`---functionConfigFile--->${functionConfigFile}<----`);
+    //                     let functionConfig;
+    //                     try {
+    //                         const contents = readFileSync(functionConfigFile, "utf8");
+    //                         functionConfig = JSON.parse(contents);
+    //                         console.log(`---functions-config--->${Object.keys(functionConfig)}<----`);
+    //                     } catch {
+    //                         this.invalidFunctions.push(file);
+    //                     }
+    
+    //                     if (functionConfig.runtime !== "edge") {
+    //                         this.invalidFunctions.push(name);
+    //                         console.log('---->',this.invalidFunctions,'<----');
+    //                     }
+    //                     console.log(`--file-path--->${filepath}<------|\n${functionConfig.entrypoint}`);
+    //                     /*
+    //                         --file-path--->/Users/benjamim.neto/Documents/azion/next-samples/sample2/nextjs.store/.vercel/output/functions/[...slug].func<------|
+    // index.js
+    //                         */
+    //                     const functionFile = join(filepath, functionConfig.entrypoint);
+    //                     let functionFileExists = false;
+    //                     try {
+    //                         await stat(functionFile);
+    //                         console.log(this.functionsEntries);
+    //                         functionFileExists = true;
+    //                     } catch {
+    //                         console.log("Error in stat function file")
+    //                     }
+    
+    //                     if (!functionFileExists) {
+    //                         this.invalidFunctions.push(name);
+    //                     }
+    
+    //                     let contents = await readFile(functionFile, "utf8");
+    //                     contents = contents.replace(
+    //                         // TODO: This hack is not good. We should replace this with something less brittle ASAP
+    //                         /Object.defineProperty\(globalThis,\s*"__import_unsupported",\s*{[^}]*}\)/gm,
+    //                         ""
+    //                     );
+    
+    //                     // minify removed !
+    
+    //                     const newFilePath = join(this.tmpFunctionsDir, `${relativePath}.js`);
+    //                     console.log({
+    //                         tmpFunctionsDir:this.tmpFunctionsDir,
+    //                         relativePath:relativePath
+    //                     })
+    //                     await mkdir(dirname(newFilePath), { recursive: true });
+    //                     await writeFile(newFilePath, contents);
+    
+    //                     this.functionsMap.set(
+    //                         relative(functionsDir, filepath).slice(0, -".func".length),
+    //                         newFilePath
+    //                     );
+    //                     console.log("---functions-map---->",this.functionsMap,"<-----");
+    //                 } else if (isDirectory) {
+    //                     await this.dirWalk(filepath, functionsDir);
+    //                 }
+    //             })
+    //         );
+    //     } catch (error) {
+    //         throw new DirWalkError(dir,functionsDir,error);
+    //     }
+    // }
 }
 
 export { NextjsBuilder }
