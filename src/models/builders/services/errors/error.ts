@@ -5,7 +5,7 @@ export class VercelProjectError extends BaseError {
         return ErrorCode.VercelProjectError ;
     }
     constructor(message: string) {
-        super(`Failed while trying to build vercel project: ${message}`);
+        super(message);
     }
 }
 
@@ -14,7 +14,7 @@ export class VercelLoadConfigError extends BaseError{
         return ErrorCode.VercelLoadConfigError;
     }
     constructor(message: string){
-        super(`Failed while trying to load output project configs: ${message}`);
+        super(message);
     }
 }
 
@@ -23,7 +23,7 @@ export class CannotWriteFile extends BaseError{
         return ErrorCode.CannotWriteFile;
     }
     constructor(message: string){
-        super(`Failed while trying to write file: ${message}`);
+        super(message);
     }
 }
 
