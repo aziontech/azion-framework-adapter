@@ -20,14 +20,14 @@ interface HydratedEntry {
 }
 
 class NextjsBuilder extends Builder {
-    dirname: string = dirname(__filename);
-    functionsMap: Map<string, string> = new Map();
     hydratedMiddleware: Map<string, HydratedEntry> = new Map();
     hydratedFunctions: Map<string, HydratedEntry> = new Map();
+    functionsMap: Map<string, string> = new Map();
+    dirname: string = dirname(__filename);
     middlewareEntries: any;
     functionsEntries: any;
-    vercelService = new VercelService();
     manifestBuilderService = new ManifestBuilderService();
+    vercelService = new VercelService();
     esbuild = esbuild;
 
 
