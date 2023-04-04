@@ -1,7 +1,7 @@
 import { dirname, join, resolve } from "path";
 import { readFileSync, statSync } from "fs";
 import { writeFile } from "fs/promises";
-import { build } from "esbuild";
+import * as esbuild from "esbuild";
 import { tmpdir } from "os";
 
 import {
@@ -28,6 +28,7 @@ class NextjsBuilder extends Builder {
     functionsEntries: any;
     vercelService = new VercelService();
     manifestBuilderService = new ManifestBuilderService();
+    esbuild = esbuild;
 
 
     constructor(targetDir: string) {
@@ -90,7 +91,7 @@ class NextjsBuilder extends Builder {
         try {
             await writeFile(functionsFile,this.getFunctionsReferenceFileTemplate());        
         } catch (error:any) {
-            throw new Error(error.message);
+            throw new Error(error.message + '$$aqui$$');
         }
     }
 
@@ -112,7 +113,7 @@ class NextjsBuilder extends Builder {
         console.log("Building azion worker ...")
 
         try {
-            await build({
+            await this.esbuild.build({
                 entryPoints: [join(this.dirname, "../../templates/handlers/nextjs/handler.js")],
                 bundle: true,
                 inject: [
@@ -131,7 +132,7 @@ class NextjsBuilder extends Builder {
             });
 
             console.log("Generated './out/worker.js'.");
-        } catch (error:any) {
+        } catch (error: any) {
             throw new Error(error.message);
         }
     }
