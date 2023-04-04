@@ -11,7 +11,7 @@ import { ManifestBuilderService } from '../../../../dist/models/builders/service
 const { expect } = chai;
 
 
-describe.only('NexjsBuilder',()=>{
+describe('NexjsBuilder',()=>{
 
     afterEach(()=>{
         chai.spy.restore();
