@@ -18,15 +18,15 @@ describe('Vercel Service', () => {
         
         it('should throw an error when readfilesync fails',()=>{
             const vercelSerivice = new VercelService();
-            chai.spy.on(fs, "readFileSync", (p1,p2) => { throw new Error('failed while trying to read file') });
+            chai.spy.on(fs, "readFileSync", () => { throw new Error('failed while trying to read file') });
 
             expect(()=>vercelSerivice.loadVercelConfigs()).to.throw('failed while trying to read file');
         });
 
         it('should throw an error when JSON parse fails',()=>{
             const vercelSerivice = new VercelService();
-            chai.spy.on(fs, "readFileSync", (p1,p2) => { return '{"runtime":"node", "entrypoint":"index.js"}'; });
-            chai.spy.on(JSON,"parse",(p1)=>{throw new Error('failed while trying to parse data')});
+            chai.spy.on(fs, "readFileSync", () => { return '{"runtime":"node", "entrypoint":"index.js"}'; });
+            chai.spy.on(JSON,"parse",()=>{throw new Error('failed while trying to parse data')});
 
             expect(()=>vercelSerivice.loadVercelConfigs()).to.throw('failed while trying to parse data');
         });

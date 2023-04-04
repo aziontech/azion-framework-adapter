@@ -32,7 +32,7 @@ describe('NexjsBuilder',()=>{
     describe('method handleMiddleware',()=>{
 
         it('should throw an error if a invalid middleware manifest was given',()=>{
-            chai.spy.on(fs,'readFileSync',(p1)=>{
+            chai.spy.on(fs,'readFileSync',()=>{
                 return '{"runtime":"node", "entrypoint":"index.js"}';
             });
 
@@ -43,7 +43,7 @@ describe('NexjsBuilder',()=>{
         });
 
         it('should throw an error if a no function in functions map was provided',()=>{
-            chai.spy.on(fs,'readFileSync',(p1)=>{return '{"middleware":["node"], "functions":["index.js"]}';});
+            chai.spy.on(fs,'readFileSync',()=>{return '{"middleware":["node"], "functions":["index.js"]}';});
             const nextjsBuilder = new NextjsBuilder('/fake/path');
 
             expect(()=>nextjsBuilder.handleMiddleware()).to.throw('No functions was provided');
