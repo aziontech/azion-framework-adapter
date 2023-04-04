@@ -2,6 +2,7 @@
 import * as path from 'path';
 import * as chai from 'chai';
 import * as fs from 'fs';
+import * as esbuild from "esbuild";
 
 import { NextjsBuilder } from '../../../../dist/models/builders/nextjs-builder';
 import { VercelService } from '../../../../dist/models/builders/services/vercel-service';
@@ -198,6 +199,7 @@ describe.only('NexjsBuilder',()=>{
             chai.spy.on(fs,'statSync',()=>{
                 return true;
             });
+ 
             chai.spy.on(path,'join',()=>{
                 return true;
             });
@@ -220,7 +222,58 @@ describe.only('NexjsBuilder',()=>{
 
             expect(error.message).to.equal('manifest builder service error');
         });
+
+        it('should build project with success',async()=>{
+            const manifestBuilderService = new ManifestBuilderService();
+            const vercelService = new VercelService();
+            
+            chai.spy.on(esbuild,'build',()=>{true});
+            chai.spy.on(manifestBuilderService,'assetsPaths',()=>{
+                return true;
+            });
+            chai.spy.on(vercelService,'createVercelProjectConfig',()=>{
+                return true;
+            });
+            chai.spy.on(vercelService,'runVercelBuild',()=>{
+                return true;
+            });
+            chai.spy.on(vercelService,'loadVercelConfigs',()=>{
+                return {path:'fake/path'};
+            });
+            chai.spy.on(vercelService,'adapt',()=>{
+                return true;
+            });
+            chai.spy.on(fs,'statSync',()=>{
+                return true;
+            });
+            chai.spy.on(fs,'writeFile',()=>{throw new Error('consegui!!!');});
+
+            const nextjsBuilder = new NextjsBuilder('/fake/path');
+            nextjsBuilder.manifestBuilderService = manifestBuilderService;
+            nextjsBuilder.vercelService = vercelService;
+            chai.spy.on(nextjsBuilder,'handleMiddleware',()=>{
+                return true;
+            });
+            chai.spy.on(nextjsBuilder,'getFunctionsReferenceFileTemplate',()=>{
+                return 'string; here;';
+            });
+
+            const error = await (async()=>{
+                try{
+                    await nextjsBuilder.build({versionId:'fakeId'});
+                    return {message:true};
+                }catch(error:any){
+                    return error;
+                }
+            })();
+
+            expect(error.message).to.equal(true);
+
+            
+        });
+        
     });
+
 
 
 });
