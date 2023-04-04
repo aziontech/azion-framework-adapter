@@ -45,7 +45,79 @@ class NextjsBuilder extends Builder {
         }
     }
 
+<<<<<<< HEAD
     handleMiddleware() {
+=======
+    // function to walk in builded functions dir, detect invalid functions and adapt content
+    async dirWalk(dir: string, functionsDir: string) {
+        try {
+            const files = await readdir(dir);
+
+            await Promise.all(
+                files.map(async (file) => {
+                    const filepath = join(dir, file);
+                    const isDirectory = (await stat(filepath)).isDirectory();
+                    const relativePath = relative(functionsDir, filepath);
+
+                    if (isDirectory && filepath.endsWith(".func")) {
+                        const name = relativePath.replace(/\.func$/, "");
+
+                        const functionConfigFile = join(filepath, ".vc-config.json");
+                        let functionConfig;
+                        try {
+                            const contents = await readFile(functionConfigFile, "utf8");
+                            functionConfig = JSON.parse(contents);
+                        } catch {
+                            this.invalidFunctions.push(file);
+                        }
+
+                        if (functionConfig.runtime !== "edge") {
+                            this.invalidFunctions.push(name);
+                        }
+
+                        const functionFile = join(filepath, functionConfig.entrypoint);
+                        let functionFileExists = false;
+                        try {
+                            await stat(functionFile);
+                            functionFileExists = true;
+                        } catch {
+                            console.log("Error in stat function file")
+                        }
+
+                        if (!functionFileExists) {
+                            this.invalidFunctions.push(name);
+                        }
+
+                        let contents = await readFile(functionFile, "utf8");
+                        contents = contents.replace(
+                            /Object.defineProperty\(globalThis,\s*"__import_unsupported",\s*{[^}]*}\)/gm,
+                            "true"
+                        );
+
+                        // minify removed !
+
+                        const newFilePath = join(this.tmpFunctionsDir, `${relativePath}.js`);
+                        await mkdir(dirname(newFilePath), { recursive: true });
+                        await writeFile(newFilePath, contents);
+
+                        this.functionsMap.set(
+                            relative(functionsDir, filepath).slice(0, -".func".length),
+                            newFilePath
+                        );
+                    } else if (isDirectory) {
+                        await this.dirWalk(filepath, functionsDir);
+                    }
+                })
+            );
+        } catch (error) {
+            const message = `Error: ${error}`;
+            console.log(message)
+            throw Error(message)
+        }
+    }
+
+    async handleMiddleware() {
+>>>>>>> 241446efb5a944e3595760c30e79745004d084bf
         console.log("Handling middleware ...");
 
         try {
