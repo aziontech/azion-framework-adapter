@@ -36,16 +36,6 @@ export class BuildedFunctionsNotFound extends BaseError{
     }
 }
 
-export class DirWalkError extends BaseError{
-    get errorCode():ErrorCode{
-        return ErrorCode.DirWalkError;
-    }
-
-    constructor(dir: string,functionsDir:string, error: any){
-        super(`Failed while trying to handle dir :${dir} \nfunctionsDir: ${functionsDir} \nerror: ${error}`);
-    }
-}
-
 export class MiddlewareManifestHandlerError extends BaseError{
     get errorCode():ErrorCode{
         return ErrorCode.MiddlewareManifestHandlerError;
