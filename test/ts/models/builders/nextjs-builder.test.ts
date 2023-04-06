@@ -17,22 +17,10 @@ describe.only('NexjsBuilder',()=>{
         chai.spy.restore();
     });
 
-    describe('method detectBuildedFunctions',()=>{
-
-        it('should throw an error when statSync fails',()=>{
-            const nextjsBuilder = new NextjsBuilder('./fake/path');
-            chai.spy.on(fs,'mkdirSync',()=>{return true});
-            chai.spy.on(fs,'statSync',()=>{throw new Error('could not find information about this path')});
-    
-            expect(()=>nextjsBuilder.detectBuildedFunctions()).to.throw('could not find information about this path');
-        });
-
-    });
-
     describe('method handleMiddleware',()=>{
 
         it('should throw an error if a invalid middleware manifest was given',()=>{
-            chai.spy.on(fs,'readFileSync',(p1)=>{
+            chai.spy.on(fs,'readFileSync',()=>{
                 return '{"runtime":"node", "entrypoint":"index.js"}';
             });
 
@@ -43,10 +31,17 @@ describe.only('NexjsBuilder',()=>{
         });
 
         it('should throw an error if a no function in functions map was provided',()=>{
-            chai.spy.on(fs,'readFileSync',(p1)=>{return '{"middleware":["node"], "functions":["index.js"]}';});
-            const nextjsBuilder = new NextjsBuilder('/fake/path');
+            chai.spy.on(fs,'readFileSync',()=>{return '{"middleware":["node"]}';});
+            const nextjsBuilder = new NextjsBuilder('/fake/path'); 
+            const errorMessage = (()=>{
+                try{
+                    nextjsBuilder.handleMiddleware();
+                }catch(error:any){
+                    return error.message
+                }
+            })();
 
-            expect(()=>nextjsBuilder.handleMiddleware()).to.throw('No functions was provided');
+            expect(errorMessage).to.equal('Missing properties in middleware-manifest.json');
         });
     });
 
@@ -117,33 +112,6 @@ describe.only('NexjsBuilder',()=>{
             })();
 
             expect(error.message).to.equal('fail while trying to run loadVercelConfigs');
-        });
-
-        it('should throw an error if this.detectBuildedFunctions fails',async()=>{
-            const vercelService = new VercelService();
-            chai.spy.on(vercelService,'createVercelProjectConfig',()=>{
-                return true;
-            });
-            chai.spy.on(vercelService,'runVercelBuild',()=>{
-                return true;
-            });
-            chai.spy.on(vercelService,'loadVercelConfigs',()=>{
-                return true;
-            });
-            chai.spy.on(fs,'statSync',()=>{
-                throw new Error('fs statSync error');
-            });
-            const nextjsBuilder = new NextjsBuilder('/fake/path');
-            nextjsBuilder.vercelService = vercelService;
-            const error = await (async()=>{
-                try{
-                    await nextjsBuilder.build({versionId:'fakeId'});
-                }catch(error:any){
-                    return error;
-                }
-            })();
-
-            expect(error.message).to.equal('fs statSync error');
         });
 
         it('should throw an error if vercelService.adapt fails',async ()=>{
