@@ -57,6 +57,47 @@ describe('Vercel Service', () => {
 
     describe('method adapt',()=>{
 
+        it('should pass if a valid object was returned by the glob.sync method',()=>{
+            const vercelService = new VercelService();
+            chai.spy.on(glob,"sync",()=>{
+                return [ 
+                    ".vercel/output/functions/a/.vc-config.json", 
+                    ".vercel/output/functions/b/.vc-config.json"
+                ]
+            });
+            chai.spy.on(fs,"readFileSync", () => { return '{"runtime":"edge", "entrypoint":"index.js"}'; });
+            chai.spy.on(fs,"writeFileSync",()=>{return true});
+            chai.spy.on(fs,"mkdirSync",()=>{return true});
+
+            const errorContent = (()=>{
+                try{
+                    vercelService.adapt();
+                    return 'no error';
+                }catch(error: any){
+                    return error.message;
+                }
+            })();
+
+            expect(errorContent).to.equal('no error');
+        });
+
+        it('should raise invalid objects if a vc-config::entrypoint was undefined',()=>{
+            const vercelService = new VercelService();
+            chai.spy.on(glob,"sync",()=>{
+                return [ 
+                    ".vercel/output/functions/a/.vc-config.json", 
+                    ".vercel/output/functions/b/.vc-config.json"
+                ]
+            });
+            const expectedErrorMessage = `
+Invalid objects:
+ a invalid runtime: node
+ b invalid runtime: node`;
+            chai.spy.on(fs,"readFileSync", () => { return '{"runtime":"node"}'; });
+            
+            expect(()=>vercelService.adapt()).to.throw(expectedErrorMessage);
+        });
+
         it('should raise invalid objects if a vc-config::runtime is different to edge',()=>{
             const vercelService = new VercelService();
             chai.spy.on(glob,"sync",()=>{
