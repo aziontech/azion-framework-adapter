@@ -1,12 +1,10 @@
-import { dirname, join, resolve } from "path";
-import { readFileSync, statSync } from "fs";
-import { writeFile } from "fs/promises";
+import { dirname, join } from "path";
+import { readFileSync, writeFileSync } from "fs";
 import * as esbuild from "esbuild";
 import { tmpdir } from "os";
 
 import {
     FailedToBuild,
-    BuildedFunctionsNotFound,
     MiddlewareManifestHandlerError
 } from "./errors/errors";
 import { Builder } from "./builder";
@@ -75,7 +73,7 @@ class NextjsBuilder extends Builder {
     async writeFunctionsReferencesFile(functionsFile: string) {
         console.log("writing references file ...");
         try {
-            await writeFile(functionsFile,this.getFunctionsReferenceFileTemplate());        
+            await writeFileSync(functionsFile,this.getFunctionsReferenceFileTemplate());        
         } catch (error:any) {
             throw new Error(error.message + '$$aqui$$');
         }
@@ -144,7 +142,7 @@ class NextjsBuilder extends Builder {
             console.log("Mapping and transforming functions ...");
 
             this.functionsMap = this.vercelService.adapt();
-            
+
             if(this.functionsMap.size <= 0){
                 throw new MiddlewareManifestHandlerError('No functions was provided');
             }
