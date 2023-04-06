@@ -52,10 +52,6 @@ class NextjsBuilder extends Builder {
             this.middlewareEntries = Object.values(middlewareManifest.middleware);
             this.functionsEntries = Object.values(middlewareManifest.functions);
 
-            if(this.functionsMap.size <= 0){
-                throw new MiddlewareManifestHandlerError('No functions was provided');
-            }
-
             for (const [name, filepath] of this.functionsMap) {
                 if (name === "middleware" && this.middlewareEntries.length > 0) {
                     for (const entry of this.middlewareEntries) {
@@ -148,6 +144,10 @@ class NextjsBuilder extends Builder {
             console.log("Mapping and transforming functions ...");
 
             this.functionsMap = this.vercelService.adapt();
+            
+            if(this.functionsMap.size <= 0){
+                throw new MiddlewareManifestHandlerError('No functions was provided');
+            }
 
             this.handleMiddleware();
 
