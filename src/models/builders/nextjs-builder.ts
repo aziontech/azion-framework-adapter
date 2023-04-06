@@ -35,16 +35,6 @@ class NextjsBuilder extends Builder {
         super(targetDir);
     }
 
-    detectBuildedFunctions() {
-        console.log("Detecting builded functions ...");
-        try {
-            const functionsDir = resolve(".vercel/output/functions");
-            statSync(functionsDir);
-        } catch (error:any) {
-            throw new BuildedFunctionsNotFound(error.message);
-        }
-    }
-
     handleMiddleware() {
         console.log("Handling middleware ...");
 
@@ -153,7 +143,7 @@ class NextjsBuilder extends Builder {
 
             const config = this.vercelService.loadVercelConfigs();
 
-            this.detectBuildedFunctions();
+            this.vercelService.detectBuildedFunctions();
 
             console.log("Mapping and transforming functions ...");
 

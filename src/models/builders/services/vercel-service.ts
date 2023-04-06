@@ -1,5 +1,5 @@
-import { CannotWriteFile, VercelProjectError, VercelLoadConfigError} from "./errors/error";
-import { mkdirSync, readFileSync, writeFileSync, existsSync} from "fs";
+import { CannotWriteFile, VercelProjectError, VercelLoadConfigError, BuildedFunctionsNotFound} from "./errors/error";
+import { mkdirSync, readFileSync, writeFileSync, existsSync, statSync} from "fs";
 import { dirname, join, relative, resolve } from "path";
 import glob from "fast-glob";
 import { tmpdir } from "os";
@@ -10,6 +10,16 @@ const exec = util.promisify(require('node:child_process').exec);
 
 export class VercelService {
     tmpFunctionsDir: string = join(tmpdir(), Math.random().toString(36).slice(2));
+
+    detectBuildedFunctions() {
+        console.log("Detecting builded functions ...");
+        try {
+            const functionsDir = resolve(".vercel/output/functions");
+            statSync(functionsDir);
+        } catch (error:any) {
+            throw new BuildedFunctionsNotFound(error.message);
+        }
+    }
 
     createVercelProjectConfig() {
         console.log("Creating project config file ...");
