@@ -66,8 +66,6 @@ export class VercelService {
     // function to walk in builded functions dir, detect invalid functions and adapt content
     adapt() {
         try{
-            // eslint-disable-next-line prefer-const
-
             const vcConfigPaths: Array<string> = glob.sync(".vercel/output/functions/**/.vc-config.json");
             const vcConfigObjects:Array<any> = vcConfigPaths.map(file => {
                 return {
@@ -75,17 +73,22 @@ export class VercelService {
                     content: JSON.parse(readFileSync(file, "utf8")),
                 }
             });
-            const validVcObjects:Array<any> = vcConfigObjects.filter(vcConfig =>  this.isVcConfigValid(vcConfig.content));
-            const invalidVcObjects:Array<any> = vcConfigObjects.filter(vcConfig => !this.isVcConfigValid(vcConfig.content));
-            if (invalidVcObjects.length > 0) {
+
+            const vcObjects = {
+                invalid: vcConfigObjects.filter(vcConfig =>  !this.isVcConfigValid(vcConfig.content)),
+                valid: vcConfigObjects.filter(vcConfig =>  this.isVcConfigValid(vcConfig.content)),
+            }
+
+            if (vcObjects.invalid.length > 0) {
                 let invalidObjectsErrorMessage = "\nInvalid objects:\n"; 
-                invalidVcObjects.map(item=>{
+                vcObjects.invalid.map(item=>{
                     const pathName = dirname(item.path).split('/');
                     invalidObjectsErrorMessage +=` ${pathName[pathName.length-1]} invalid runtime: ${item.content.runtime}\n`;
                 });
                 throw new Error(invalidObjectsErrorMessage);
             }
-            const vcEntrypoints:Array<any> = validVcObjects.map(vcObject => {
+
+            const vcEntrypoints:Array<any> = vcObjects.valid.map(vcObject => {
                 const path = vcObject.path.replace("/.vc-config.json","");
                 const codePath = join(path, vcObject.content.entrypoint);
                 const codeTmpDir = join(this.tmpFunctionsDir,path);
