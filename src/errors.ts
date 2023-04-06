@@ -21,7 +21,6 @@ export enum ErrorCode {
     VercelLoadConfigError  = 2070,
     CannotWriteFile = 2080,
     BuildedFunctionsNotFound = 2090,
-    DirWalkError = 3000,
     MiddlewareManifestHandlerError = 3010
 
 
