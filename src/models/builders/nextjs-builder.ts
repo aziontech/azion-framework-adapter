@@ -75,7 +75,7 @@ class NextjsBuilder extends Builder {
         try {
             await writeFileSync(functionsFile,this.getFunctionsReferenceFileTemplate());        
         } catch (error:any) {
-            throw new Error(error.message + '$$aqui$$');
+            throw new Error(error.message);
         }
     }
 
