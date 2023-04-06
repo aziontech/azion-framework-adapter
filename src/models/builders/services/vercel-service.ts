@@ -118,6 +118,6 @@ export class VercelService {
     }
     
     private isVcConfigValid(vcConfig:any):boolean{
-        return (vcConfig.runtime === "edge") && (vcConfig.entrypoint !== undefined);
+        return (vcConfig.runtime === "edge") && vcConfig["entrypoint"] !== undefined;
     }
 }
