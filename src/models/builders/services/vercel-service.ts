@@ -78,8 +78,12 @@ export class VercelService {
             const validVcObjects:Array<any> = vcConfigObjects.filter(vcConfig =>  this.isVcConfigValid(vcConfig.content));
             const invalidVcObjects:Array<any> = vcConfigObjects.filter(vcConfig => !this.isVcConfigValid(vcConfig.content));
             if (invalidVcObjects.length > 0) {
-                console.log("invalidVcObjects:", ...invalidVcObjects);
-                throw new Error("invalid objects");
+                let invalidObjectsErrorMessage = "\nInvalid objects:\n"; 
+                invalidVcObjects.map(item=>{
+                    const pathName = dirname(item.path).split('/');
+                    invalidObjectsErrorMessage +=` ${pathName[pathName.length-1]} invalid runtime: ${item.content.runtime}\n`;
+                });
+                throw new Error(invalidObjectsErrorMessage);
             }
             const vcEntrypoints:Array<any> = validVcObjects.map(vcObject => {
                 const path = vcObject.path.replace("/.vc-config.json","");

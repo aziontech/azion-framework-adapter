@@ -18,15 +18,15 @@ describe('Vercel Service', () => {
         
         it('should throw an error when readfilesync fails',()=>{
             const vercelSerivice = new VercelService();
-            chai.spy.on(fs, "readFileSync", (p1,p2) => { throw new Error('failed while trying to read file') });
+            chai.spy.on(fs, "readFileSync", () => { throw new Error('failed while trying to read file') });
 
             expect(()=>vercelSerivice.loadVercelConfigs()).to.throw('failed while trying to read file');
         });
 
         it('should throw an error when JSON parse fails',()=>{
             const vercelSerivice = new VercelService();
-            chai.spy.on(fs, "readFileSync", (p1,p2) => { return '{"runtime":"node", "entrypoint":"index.js"}'; });
-            chai.spy.on(JSON,"parse",(p1)=>{throw new Error('failed while trying to parse data')});
+            chai.spy.on(fs, "readFileSync", () => { return '{"runtime":"node", "entrypoint":"index.js"}'; });
+            chai.spy.on(JSON,"parse",()=>{throw new Error('failed while trying to parse data')});
 
             expect(()=>vercelSerivice.loadVercelConfigs()).to.throw('failed while trying to parse data');
         });
@@ -57,19 +57,23 @@ describe('Vercel Service', () => {
 
     describe('method adapt',()=>{
 
-        it('should rize invalid objects if a vc-config::runtime is different to edge',()=>{
+        it('should raise invalid objects if a vc-config::runtime is different to edge',()=>{
             const vercelService = new VercelService();
             chai.spy.on(glob,"sync",()=>{
                 return [ 
                     ".vercel/output/functions/a/.vc-config.json", 
                     ".vercel/output/functions/b/.vc-config.json"
                 ]
-            })
+            });
+            const expectedErrorMessage = `
+Invalid objects:
+ a invalid runtime: node
+ b invalid runtime: node`;
             chai.spy.on(fs, "readFileSync", () => { return '{"runtime":"node", "entrypoint":"index.js"}'; });
-            expect(()=> vercelService.adapt()).to.throw('invalid objects');
+            expect(()=> vercelService.adapt()).to.throw(expectedErrorMessage);
         });
 
-        it('should rize an error if .vc-config path doesnt exists',()=>{
+        it('should raise an error if .vc-config path doesnt exists',()=>{
             const vercelService = new VercelService();
             chai.spy.on(glob,"sync",()=>{
                 throw new Error(".vc-config.json not found");

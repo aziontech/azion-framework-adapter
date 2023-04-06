@@ -1,6 +1,6 @@
 {
   "name": "azion-framework-adapter",
-  "version": "0.3.0-alpha.1",
+  "version": "0.3.0-alpha.2",
   "description": "Command line tool that builds Jamstack projects targeting Azion's Edge Functions.",
   "main": "dist/main.js",
   "bin": {
@@ -40,14 +40,12 @@
     "publish"
   ],
   "dependencies": {
-    "axios": "^0.24.0",
     "commander": "^8.3.0",
     "esbuild": "^0.17.10",
     "fast-glob": "^3.2.12",
     "simple-git": "^3.15.0",
     "ts-results": "^3.3.0",
     "tslib": "^2.5.0",
-    "webpack": "^4.46.0",
     "xxhashjs": "^0.2.2"
   },
   "devDependencies": {
@@ -58,11 +56,9 @@
     "@types/node": "^16.11.9",
     "@types/rewire": "^2.5.28",
     "@types/sinon": "^10.0.13",
-    "@types/webpack": "^4.41.32",
     "@types/xxhashjs": "^0.2.2",
     "@typescript-eslint/eslint-plugin": "^5.26.0",
     "@typescript-eslint/parser": "^5.26.0",
-    "axios-mock-adapter": "^1.20.0",
     "chai": "^4.3.4",
     "chai-as-promised": "^7.1.1",
     "chai-spies": "^1.0.0",
