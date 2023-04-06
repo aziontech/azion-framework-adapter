@@ -3,10 +3,9 @@ import { mkdirSync, readFileSync, writeFileSync, existsSync, statSync} from "fs"
 import { dirname, join, relative, resolve } from "path";
 import glob from "fast-glob";
 import { tmpdir } from "os";
+import { execSync } from "child_process";
 
-import util = require('node:util');
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const exec = util.promisify(require('node:child_process').exec);
+
 
 export class VercelService {
     tmpFunctionsDir: string = join(tmpdir(), Math.random().toString(36).slice(2));
@@ -45,7 +44,7 @@ export class VercelService {
         console.log("Running initial build ...");
 
         try {
-            await exec('npx --yes vercel@28.16.11 build --prod');
+            execSync('npx --yes vercel@28.16.11 build --prod');
         } catch (error:any) {
             throw new VercelProjectError(error.message);
         }

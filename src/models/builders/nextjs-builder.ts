@@ -73,7 +73,7 @@ class NextjsBuilder extends Builder {
     async writeFunctionsReferencesFile(functionsFile: string) {
         console.log("writing references file ...");
         try {
-            await writeFileSync(functionsFile,this.getFunctionsReferenceFileTemplate());        
+            writeFileSync(functionsFile,this.getFunctionsReferenceFileTemplate());        
         } catch (error:any) {
             throw new Error(error.message);
         }
@@ -93,11 +93,11 @@ class NextjsBuilder extends Builder {
         `;
     }
 
-    async buildWorker(params: any): Promise<any> {
+    buildWorker(params: any): any {
         console.log("Building azion worker ...")
 
         try {
-            await this.esbuild.build({
+            this.esbuild.buildSync({
                 entryPoints: [join(this.dirname, "../../templates/handlers/nextjs/handler.js")],
                 bundle: true,
                 inject: [
