@@ -67,7 +67,7 @@ export class VercelService {
     adapt() {
         try{
             // eslint-disable-next-line prefer-const
-            let functionsMap: Map<string, string> = new Map();
+
             const vcConfigPaths: Array<string> = glob.sync(".vercel/output/functions/**/.vc-config.json");
             const vcConfigObjects:Array<any> = vcConfigPaths.map(file => {
                 return {
@@ -83,14 +83,16 @@ export class VercelService {
             }
             const vcEntrypoints:Array<any> = validVcObjects.map(vcObject => {
                 const path = vcObject.path.replace("/.vc-config.json","");
-                const codePath = join(dirname(vcObject.path).replace("/.vc-config.json",""), vcObject.content.entrypoint);
-                const codeTmpDir = join(this.tmpFunctionsDir,vcObject.path).replace("/.vc-config.json","")
+                const codePath = join(path, vcObject.content.entrypoint);
+                const codeTmpDir = join(this.tmpFunctionsDir,path);
                 return {
                     path:path,
                     codeTmpDir: codeTmpDir,
                     code: readFileSync(codePath,"utf8").replace(/Object.defineProperty\(globalThis,\s*"__import_unsupported",\s*{[^}]*}\)/gm,"true")
                 };
             });
+
+            const functionsMap: Map<string, string> = new Map();
             vcEntrypoints.forEach(item=>{
                 const functionsDir = resolve(".vercel/output/functions");
                 const relativePath = relative(functionsDir, item.path);
