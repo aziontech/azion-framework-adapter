@@ -19,9 +19,9 @@ describe('NexjsBuilder',()=>{
 
     describe('method handleMiddleware',()=>{
 
-        it('should throw an error if a invalid middleware manifest was given',()=>{
+        it('should throw an error if middleware field is missing on manifest',()=>{
             chai.spy.on(fs,'readFileSync',()=>{
-                return '{"runtime":"node", "entrypoint":"index.js"}';
+                return '{"functions":[]}';
             });
 
             const nextjsBuilder = new NextjsBuilder('/fake/path');
@@ -30,8 +30,8 @@ describe('NexjsBuilder',()=>{
                 .to.throw('Missing properties in middleware-manifest.json');
         });
 
-        it('should throw an error if a no function in functions map was provided',()=>{
-            chai.spy.on(fs,'readFileSync',()=>{return '{"middleware":["node"]}';});
+        it('should throw an error if functions field is missing on manifest',()=>{
+            chai.spy.on(fs,'readFileSync',()=>{return '{"middleware":[]}';});
             const nextjsBuilder = new NextjsBuilder('/fake/path'); 
             const errorMessage = (()=>{
                 try{
