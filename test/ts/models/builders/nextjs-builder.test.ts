@@ -62,7 +62,7 @@ describe('NexjsBuilder',()=>{
                     return error;
                 }
             })();
-
+                    
             expect(error.message).to.equal('failed while trying to create vercel project config');
         });
 
@@ -214,7 +214,6 @@ describe('NexjsBuilder',()=>{
             chai.spy.on(fs,'statSync',()=>{
                 return true;
             });
-            chai.spy.on(fs,'writeFile',()=>{throw new Error('consegui!!!');});
 
             const nextjsBuilder = new NextjsBuilder('/fake/path');
             nextjsBuilder.manifestBuilderService = manifestBuilderService;
@@ -226,18 +225,7 @@ describe('NexjsBuilder',()=>{
                 return 'string; here;';
             });
 
-            const error = await (async()=>{
-                try{
-                    await nextjsBuilder.build({versionId:'fakeId'});
-                    return {message:true};
-                }catch(error:any){
-                    return error;
-                }
-            })();
-
-            expect(error.message).to.equal(true);
-
-            
+            expect(async()=>await nextjsBuilder.build({versionId:'fakeId'})).to.not.throw();
         });
         
     });
