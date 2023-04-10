@@ -43,7 +43,7 @@ class NextjsBuilder extends Builder {
                 readFileSync(".next/server/middleware-manifest.json","utf8")
             );
 
-            if(!middlewareManifest.middleware || !middlewareManifest.functions){
+            if(!middlewareManifest.middleware|| !middlewareManifest.functions){
                 throw new MiddlewareManifestHandlerError('Missing properties in middleware-manifest.json');
             }
 
