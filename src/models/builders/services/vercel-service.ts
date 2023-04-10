@@ -1,4 +1,4 @@
-import { CannotWriteFile, VercelProjectError, VercelLoadConfigError, BuildedFunctionsNotFound} from "./errors/error";
+import { CannotWriteFile, VercelProjectError, VercelLoadConfigError, BuildedFunctionsNotFound,VcConfigError} from "./errors/error";
 import { mkdirSync, readFileSync, writeFileSync, existsSync, statSync} from "fs";
 import { dirname, join, relative, resolve } from "path";
 import glob from "fast-glob";
@@ -79,13 +79,9 @@ export class VercelService {
             }
 
             if (vcObjects.invalid.length > 0) {
-                let invalidObjectsErrorMessage = "\nInvalid objects:\n"; 
-                vcObjects.invalid.map(item=>{
-                    const pathName = dirname(item.path).split('/');
-                    invalidObjectsErrorMessage +=` ${pathName[pathName.length-1]} invalid runtime: ${item.content.runtime}\n`;
-                });
-                throw new Error(invalidObjectsErrorMessage);
+                throw new VcConfigError();
             }
+            
             const vcEntrypoints:Array<any> = vcObjects.valid.map(vcObject => {
                 const path = vcObject.path.replace("/.vc-config.json","");
                 const codePath = join(path, vcObject.content.entrypoint);

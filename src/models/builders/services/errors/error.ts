@@ -45,3 +45,15 @@ export class MiddlewareManifestHandlerError extends BaseError{
         super(`Middleware handler got an error while parsing manifest: ${error} `);
     }
 }
+
+
+export class VcConfigError extends BaseError{
+    get errorCode():ErrorCode{
+        return ErrorCode.Unknown;
+    }
+
+    constructor(){
+        super("This project is not an edge project\nMake sure that next.config.js file are using 'runtime: experimental-edge'");
+        
+    }
+}
