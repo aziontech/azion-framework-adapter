@@ -90,32 +90,34 @@ describe('Vercel Service', () => {
             const vercelService = new VercelService();
             chai.spy.on(glob,"sync",()=>{
                 return [ 
-                    ".vercel/output/functions/a/.vc-config.json", 
-                    ".vercel/output/functions/b/.vc-config.json"
+                    ".vercel/output/functions/a.func/.vc-config.json", 
+                    ".vercel/output/functions/b.func/.vc-config.json"
                 ]
             });
-            const expectedErrorMessage = `
-Invalid objects:
- a invalid runtime: node
- b invalid runtime: node`;
-            chai.spy.on(fs,"readFileSync", () => { return '{"runtime":"node"}'; });
+            const expectedErrorMessage = "This project is not an edge project\nMake sure that next.config.js file are using 'runtime: experimental-edge'";
+            chai.spy.on(fs,"readFileSync", () => { return '{"runtime":"edge"}'; });
             
             expect(()=>vercelService.adapt()).to.throw(expectedErrorMessage);
         });
 
         it('should raise invalid objects if a vc-config::runtime is different to edge',()=>{
             const vercelService = new VercelService();
+            const vcConfig:any = {
+                '.vercel/output/functions/a.func/.vc-config.json':'{"runtime":"node", "entrypoint":"index.js"}', 
+                '.vercel/output/functions/b.func/.vc-config.json':'{"runtime":"edge", "entrypoint":"index.js"}'
+
+            }
             chai.spy.on(glob,"sync",()=>{
                 return [ 
-                    ".vercel/output/functions/a/.vc-config.json", 
-                    ".vercel/output/functions/b/.vc-config.json"
+                    ".vercel/output/functions/a.func/.vc-config.json", 
+                    ".vercel/output/functions/b.func/.vc-config.json"
                 ]
             });
-            const expectedErrorMessage = `
-Invalid objects:
- a invalid runtime: node
- b invalid runtime: node`;
-            chai.spy.on(fs, "readFileSync", () => { return '{"runtime":"node", "entrypoint":"index.js"}'; });
+            const expectedErrorMessage = "This project is not an edge project\nMake sure that next.config.js file are using 'runtime: experimental-edge'";
+            chai.spy.on(fs, "readFileSync", (path:string) => {
+                return vcConfig[path]; 
+            });
+
             expect(()=> vercelService.adapt()).to.throw(expectedErrorMessage);
         });
 
