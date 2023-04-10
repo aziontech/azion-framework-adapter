@@ -133,7 +133,7 @@ class NextjsBuilder extends Builder {
         try {
             this.vercelService.createVercelProjectConfig();
 
-            await this.vercelService.runVercelBuild();
+            this.vercelService.runVercelBuild();
 
             const config = this.vercelService.loadVercelConfigs();
 
@@ -157,7 +157,7 @@ class NextjsBuilder extends Builder {
                 `functions-${Math.random().toString(36).slice(2)}.js`
             );
             
-            await this.writeFunctionsReferencesFile(functionsFile);
+            this.writeFunctionsReferencesFile(functionsFile);
 
             const buildParams = {
                 versionId: params.versionId,
@@ -165,13 +165,12 @@ class NextjsBuilder extends Builder {
                 config,
                 assetsManifest
             };
-            await this.buildWorker(buildParams);
+            this.buildWorker(buildParams);
+            return ErrorCode.Ok;
         } catch (error:any) {
             console.log("Error in nextjs build process");
             throw new FailedToBuild(error.message);
         }
-
-        return ErrorCode.Ok;
     }
 }
 
