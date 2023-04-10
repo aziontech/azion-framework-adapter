@@ -48,7 +48,7 @@ describe('Vercel Service', () => {
         it('should return an error if writeFileSync fails',()=>{
             const vercelSerivice = new VercelService();
             chai.spy.on(fs,'existsSync',()=>{return false});
-            chai.spy.on(fs,'mkdirSync',()=>{return true});
+            chai.spy.on(fs,'mkdirSync',()=>{return ''});
             chai.spy.on(fs,'writeFileSync',()=>{throw new Error('failed while trying to write file')});
 
             expect(()=>vercelSerivice.createVercelProjectConfig()).to.throw('failed while trying to write file');
