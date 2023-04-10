@@ -4,6 +4,7 @@ import * as chai from 'chai';
 import * as fs from 'fs';
 
 import { VercelService } from '../../../../../dist/models/builders/services/vercel-service';
+import { basename } from "path";
 
 const { expect } = chai;
 
@@ -61,25 +62,29 @@ describe('Vercel Service', () => {
             const vercelService = new VercelService();
             chai.spy.on(glob,"sync",()=>{
                 return [ 
-                    ".vercel/output/functions/a/.vc-config.json", 
-                    ".vercel/output/functions/b/.vc-config.json"
+                    ".vercel/output/functions/a.func/.vc-config.json", 
+                    ".vercel/output/functions/b.func/.vc-config.json"
                 ]
             });
-            chai.spy.on(fs,"readFileSync", () => { return '{"runtime":"edge", "entrypoint":"index.js"}'; });
-            chai.spy.on(fs,"writeFileSync",()=>{return true});
-            chai.spy.on(fs,"mkdirSync",()=>{return true});
+            chai.spy.on(fs,"readFileSync", () => {
+                return '{"runtime":"edge", "entrypoint":"index.js"}';
+            });
+            chai.spy.on(fs,"writeFileSync",() => {return true});
+            chai.spy.on(fs,"mkdirSync",() => {return undefined});
 
-            const errorContent = (()=>{
-                try{
-                    vercelService.adapt();
-                    return 'no error';
-                }catch(error: any){
-                    return error.message;
-                }
-            })();
+            const functionsMap = vercelService.adapt();
+            expect(functionsMap).to.be.instanceOf(Map<string,string>);
 
-            expect(errorContent).to.equal('no error');
+            const tempFilePathA = functionsMap.get('a');
+            expect(tempFilePathA).to.not.equal(undefined);
+            expect(basename(`${tempFilePathA}`)).to.equal('a.func.js');
+
+            const tempFilePathB = functionsMap.get('b');
+            expect(tempFilePathB).to.not.equal(undefined);
+            expect(basename(`${tempFilePathB}`)).to.equal('b.func.js');
+    
         });
+
 
         it('should raise invalid objects if a vc-config::entrypoint was undefined',()=>{
             const vercelService = new VercelService();
