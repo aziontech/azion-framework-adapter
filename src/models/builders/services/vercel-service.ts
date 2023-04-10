@@ -73,7 +73,6 @@ export class VercelService {
                     content: JSON.parse(readFileSync(file, "utf8")),
                 }
             });
-
             const vcObjects = {
                 invalid: vcConfigObjects.filter(vcConfig =>  !this.isVcConfigValid(vcConfig.content)),
                 valid: vcConfigObjects.filter(vcConfig =>  this.isVcConfigValid(vcConfig.content)),
@@ -87,7 +86,6 @@ export class VercelService {
                 });
                 throw new Error(invalidObjectsErrorMessage);
             }
-
             const vcEntrypoints:Array<any> = vcObjects.valid.map(vcObject => {
                 const path = vcObject.path.replace("/.vc-config.json","");
                 const codePath = join(path, vcObject.content.entrypoint);
