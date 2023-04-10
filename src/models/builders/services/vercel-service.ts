@@ -64,7 +64,7 @@ export class VercelService {
     }
 
     // function to walk in builded functions dir, detect invalid functions and adapt content
-    adapt() {
+    adapt():Map<string,string> {
         try{
             const vcConfigPaths: Array<string> = glob.sync(".vercel/output/functions/**/.vc-config.json");
             const vcConfigObjects:Array<any> = vcConfigPaths.map(file => {
