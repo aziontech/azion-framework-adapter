@@ -1,5 +1,6 @@
 /* eslint-disable prefer-const */
 import * as glob from "fast-glob";
+import * as child_process from 'child_process';
 import * as chai from 'chai';
 import * as fs from 'fs';
 
@@ -14,7 +15,17 @@ describe('Vercel Service', () => {
         chai.spy.restore();
     });
     
-    
+    describe('method runVercelBuild',()=>{
+        it('should throw an error when execSync fail to execute a command',()=>{
+            const vercelSerivice = new VercelService();
+            chai.spy.on(child_process,'execSync',()=>{
+                throw new Error('faild to exec vercel build');
+            });
+
+            expect(()=>{vercelSerivice.runVercelBuild()}).to.throw('faild to exec vercel build');
+        });
+    });
+
     describe('method loadVercelConfigs',()=>{
         
         it('should throw an error when readfilesync fails',()=>{
