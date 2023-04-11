@@ -39,7 +39,7 @@ export class VercelService {
         }
     }
 
-    async runVercelBuild() {
+    runVercelBuild() {
         // https://vercel.com/docs/build-output-api/v3
         console.log("Running initial build ...");
 
