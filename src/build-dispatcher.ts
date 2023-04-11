@@ -1,4 +1,4 @@
-import { displayError, errorCode, ErrorCode } from "./errors";
+import { ErrorCode } from "./errors";
 import { NextjsBuilder } from "./models/builders/nextjs-builder";
 import { StaticSiteBuilder } from "./models/builders/static-site-builder";
 
@@ -13,16 +13,14 @@ class BuildDispatcher {
                 await builder.build(options)
             } else {
                 const builder = new NextjsBuilder(targetDir);
-                await builder.build(options)
+                await builder.build(options);
             }
 
             console.log("Completed.");
 
             return ErrorCode.Ok;
         } catch (err: any) {
-            displayError(err);
-
-            return errorCode(err);
+            throw new Error(err.message);
         }
     }
 }

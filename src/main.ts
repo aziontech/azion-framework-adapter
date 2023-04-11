@@ -8,7 +8,6 @@ import { BuildDispatcher } from './build-dispatcher';
 
 // Disabling the eslint rule is cleaner than other methods for embedding the
 // package version.
-
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { version } = require('../package.json');
 
@@ -39,7 +38,9 @@ program
     .option('-s, --static-site', 'build static site function')
     .option('-vid, --version-id <id>', 'versionId of storage-api')
     .action(async (options) => {
-        exit(await BuildDispatcher.exec(options));
+        exit(await BuildDispatcher.exec(options).catch(error=>{
+            return systemError(error);
+        }));
     });
 
 program.parse(process.argv);
