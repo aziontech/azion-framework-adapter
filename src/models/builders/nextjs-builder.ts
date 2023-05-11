@@ -12,6 +12,8 @@ import { ErrorCode } from '../../errors';
 import { VercelService } from "./services/vercel-service";
 import { ManifestBuilderService } from "./services/manifest-builder-service";
 
+import { WORKER_DIR } from "../../constants";
+
 interface HydratedEntry {
     matchers: string,
     filepath: string
@@ -27,10 +29,14 @@ class NextjsBuilder extends Builder {
     manifestBuilderService = new ManifestBuilderService();
     vercelService = new VercelService();
     esbuild = esbuild;
+    outputPath: string;
+    outfile: string;
 
 
     constructor(targetDir: string) {
         super(targetDir);
+        this.outputPath = join(this.targetDir,WORKER_DIR);
+        this.outfile = join(this.outputPath,'worker.js');
     }
 
     handleMiddleware() {
@@ -112,10 +118,10 @@ class NextjsBuilder extends Builder {
                     __VERSION_ID__: `'${params.versionId}'`,
                     __ASSETS_MANIFEST__: JSON.stringify(params.assetsManifest)
                 },
-                outfile: "./out/worker.js",
+                outfile: this.outfile,
             });
 
-            console.log("Generated './out/worker.js'.");
+            console.log(`Generated ${this.outfile}`);
         } catch (error: any) {
             throw new Error(error.message);
         }
