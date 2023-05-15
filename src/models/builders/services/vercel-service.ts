@@ -79,9 +79,13 @@ export class VercelService {
             }
 
             if (vcObjects.invalid.length > 0) {
-                throw new VcConfigError();
+                const invalidFunctionsList = vcObjects.invalid
+                    .filter( invalidFunction => !invalidFunction.path.includes('_next/data'))
+                    .map( invalidFunction => invalidFunction.path.replace(/^\.vercel\/output\/functions\/|\.\w+\/\.vc-config\.json$/g, ''));
+                const invalidFunctionsString = invalidFunctionsList.join('\n')
+                throw new VcConfigError(invalidFunctionsString);
             }
-            
+
             const vcEntrypoints:Array<any> = vcObjects.valid.map(vcObject => {
                 const path = vcObject.path.replace("/.vc-config.json","");
                 const codePath = join(path, vcObject.content.entrypoint);

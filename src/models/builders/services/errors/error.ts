@@ -52,8 +52,14 @@ export class VcConfigError extends BaseError{
         return ErrorCode.Unknown;
     }
 
-    constructor(){
-        super("This project is not an edge project\nMake sure that next.config.js file are using 'runtime: experimental-edge'");
-        
+    constructor(invalidFunctions: string){
+        super(`This project is not an edge project\nMake sure that following files have a correct configuration about edge runtime\n`+
+        `\n`+
+        `${invalidFunctions}`+
+        `\n`+
+        `\n`+
+        `Maybe this links can help you\n`+
+        `https://nextjs.org/docs/app/building-your-application/rendering/edge-and-nodejs-runtimes#segment-runtime-option\n`+
+        `https://nextjs.org/docs/pages/building-your-application/routing/api-routes#edge-api-routes\n`);
     }
 }

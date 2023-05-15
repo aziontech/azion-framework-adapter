@@ -105,9 +105,16 @@ describe('Vercel Service', () => {
                     ".vercel/output/functions/b.func/.vc-config.json"
                 ]
             });
-            const expectedErrorMessage = "This project is not an edge project\nMake sure that next.config.js file are using 'runtime: experimental-edge'";
+            const expectedErrorMessage = `This project is not an edge project\nMake sure that following files have a correct configuration about edge runtime\n`+
+            `\n`+
+            `a\n`+
+            `b\n`+
+            `\n`+
+            `Maybe this links can help you\n`+
+            `https://nextjs.org/docs/app/building-your-application/rendering/edge-and-nodejs-runtimes#segment-runtime-option\n`+
+            `https://nextjs.org/docs/pages/building-your-application/routing/api-routes#edge-api-routes\n`;
             chai.spy.on(fs,"readFileSync", () => { return '{"runtime":"edge"}'; });
-            
+
             expect(()=>vercelService.adapt()).to.throw(expectedErrorMessage);
         });
 
@@ -119,12 +126,20 @@ describe('Vercel Service', () => {
 
             }
             chai.spy.on(glob,"sync",()=>{
-                return [ 
+                return [
                     ".vercel/output/functions/a.func/.vc-config.json", 
                     ".vercel/output/functions/b.func/.vc-config.json"
                 ]
             });
-            const expectedErrorMessage = "This project is not an edge project\nMake sure that next.config.js file are using 'runtime: experimental-edge'";
+
+            const expectedErrorMessage = `This project is not an edge project\nMake sure that following files have a correct configuration about edge runtime\n`+
+            `\n`+
+            `a\n`+
+            `\n`+
+            `Maybe this links can help you\n`+
+            `https://nextjs.org/docs/app/building-your-application/rendering/edge-and-nodejs-runtimes#segment-runtime-option\n`+
+            `https://nextjs.org/docs/pages/building-your-application/routing/api-routes#edge-api-routes\n`;
+
             chai.spy.on(fs, "readFileSync", (path:string) => {
                 return vcConfig[path]; 
             });
