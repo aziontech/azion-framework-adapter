@@ -411,14 +411,21 @@ async function handleRequest(request, env, context) {
   // exec finded route based on priority (ASC order)
   const routeNames = Object.keys(findedRoutes)
   const orderedRoutes = Object.values(findedRoutes).sort((a,b) => a.priority - b.priority)
+  if (!orderedRoutes[0]) {
+    const page = assetsPaths.find((f) => f.endsWith(".html") && f.includes(pathname) && pathname !== "/");
+    if (pathname === "/" || page) {
+      return getStorageAsset(request, page);
+    }
+    return getStorageAsset(request, "/404.html");
+  }
 
   return orderedRoutes[0].entrypoint.default(request, context);
 }
 
-const getStorageAsset = async (request) => {
+const getStorageAsset = async (request, pages) => {
   const VERSION_ID = __VERSION_ID__;
   try {
-    const requestPath = new URL(request.url).pathname;
+    const requestPath = pages || new URL(request.url).pathname;
     const asset_url = new URL(
       requestPath === "/" ?
         (VERSION_ID + '/index.html') :
