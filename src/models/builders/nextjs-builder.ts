@@ -133,7 +133,7 @@ class NextjsBuilder extends Builder {
         try {
             this.vercelService.createVercelProjectConfig();
 
-            this.vercelService.runVercelBuild();
+            await this.vercelService.runVercelBuild();
 
             const config = this.vercelService.loadVercelConfigs();
 
