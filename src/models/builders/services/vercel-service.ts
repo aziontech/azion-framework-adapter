@@ -1,10 +1,9 @@
-import { CannotWriteFile, VercelProjectError, VercelLoadConfigError, BuildedFunctionsNotFound,VcConfigError} from "./errors/error";
+import { CannotWriteFile, VercelLoadConfigError, BuildedFunctionsNotFound,VcConfigError} from "./errors/error";
 import { mkdirSync, readFileSync, writeFileSync, existsSync, statSync} from "fs";
 import { dirname, join, relative, resolve } from "path";
 import glob from "fast-glob";
 import { tmpdir } from "os";
-import { execSync } from "child_process";
-
+import { spawn } from "child_process";
 
 
 export class VercelService {
@@ -39,15 +38,24 @@ export class VercelService {
         }
     }
 
-    runVercelBuild() {
-        // https://vercel.com/docs/build-output-api/v3
+    async runVercelBuild() {
+        // // https://vercel.com/docs/build-output-api/v3
         console.log("Running initial build ...");
 
-        try {
-            execSync('npx --yes vercel@28.16.11 build --prod');
-        } catch (error:any) {
-            throw new VercelProjectError(error.message);
-        }
+        const vercelBuild = spawn('npx', ['--yes', 'vercel@28.16.11', 'build', '--prod']);
+
+        vercelBuild.stdout.on('data', data => console.log(data.toString().replace('\n', '')));
+        vercelBuild.stderr.on('data', data => console.log(data.toString().replace('\n', '')));
+
+        await new Promise((resolve, reject) => {
+            vercelBuild.on('close', code => {
+                if (code === 0) {
+                    resolve(null);
+                } else {
+                    reject(new Error(`Vercel build failed with exit`));
+                }
+            });
+        });
     }
 
     loadVercelConfigs(): any {
