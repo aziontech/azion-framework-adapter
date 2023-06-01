@@ -1,5 +1,7 @@
 // this code is based on cf build next tool (https://github.com/cloudflare/next-on-pages)
 
+// TODO: extract sections ([START] ----- [END]) to modules ! =D
+
 // [START] COOKIE lib ----------------------------------------------------------------
 /*!
  * cookie
@@ -708,11 +710,13 @@ async function runOrFetchBuildOutputItem(
 		switch (item?.type) {
 			case 'function':
 			case 'middleware': {
+				// TODO: azion adjustment - get from injected FUNCTIONS and MIDDLEWARE
 				const edgeFunction = await import(item.entrypoint);
 				resp = await edgeFunction.default(req, ctx);
 				break;
 			}
 			case 'override': {
+				// TODO: check override actions
 				resp = createMutableResponse(
 					await assetsFetcher.fetch(createRouteRequest(req, item.path ?? path))
 				);
@@ -723,6 +727,7 @@ async function runOrFetchBuildOutputItem(
 				break;
 			}
 			case 'static': {
+				// TODO - Use azion format to get assets
 				resp = await assetsFetcher.fetch(createRouteRequest(req, path));
 				break;
 			}
@@ -1363,7 +1368,7 @@ async function generateResponse(
 
 // [END] handle request --------------------------------------------------------------------
 
-// [START] MAIN --------------------------------------------------------------------
+// [START] get assets ---------------------------------------------------------------
 const getStorageAsset = async (request) => {
 	const VERSION_ID = __VERSION_ID__;
 	try {
@@ -1380,6 +1385,9 @@ const getStorageAsset = async (request) => {
 		return new Response(e.message || e.toString(), { status: 500 })
 	}
 }
+// [END] get assets ---------------------------------------------------------------
+
+// [START] MAIN --------------------------------------------------------------------
 
 async function main(request, env, context) {
 	globalThis.process.env = { ...globalThis.process.env, ...env };
