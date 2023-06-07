@@ -1,5 +1,5 @@
 import { dirname, join } from "path";
-import { readFileSync, writeFileSync } from "fs";
+import { readFileSync, writeFileSync, rmSync } from "fs";
 import * as esbuild from "esbuild";
 import { tmpdir } from "os";
 
@@ -121,6 +121,18 @@ class NextjsBuilder extends Builder {
         }
     }
 
+    deleteTelemetryFiles() {
+        const dirPath = join(
+            '.vercel',
+            'output',
+            'static',
+            '_next',
+            '__private'
+        );
+
+        rmSync(dirPath, { force: true, recursive: true });
+    }
+
     async build(params: any): Promise<ErrorCode> {
         console.log("Running nextjs application build ...");
 
@@ -134,6 +146,9 @@ class NextjsBuilder extends Builder {
             this.vercelService.createVercelProjectConfig();
 
             this.vercelService.runVercelBuild();
+
+            // unnecessary files that must not be accessible
+            this.deleteTelemetryFiles();
 
             const config = this.vercelService.loadVercelConfigs();
 
