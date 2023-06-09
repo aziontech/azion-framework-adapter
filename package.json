@@ -40,6 +40,8 @@
     "publish"
   ],
   "dependencies": {
+    "acorn": "^8.8.2",
+    "ast-types": "^0.14.2",
     "commander": "^8.3.0",
     "esbuild": "^0.17.10",
     "fast-glob": "^3.2.12",
