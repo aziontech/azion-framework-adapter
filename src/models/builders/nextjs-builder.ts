@@ -2,6 +2,7 @@ import { dirname, join } from "path";
 import { writeFileSync, rmSync } from "fs";
 import * as esbuild from "esbuild";
 import { tmpdir } from "os";
+import { NodeModulesPolyfillPlugin } from '@esbuild-plugins/node-modules-polyfill'
 
 import { FailedToBuild, MiddlewareManifestHandlerError } from "./errors/errors";
 import { Builder } from "./builder";
@@ -10,6 +11,7 @@ import { VercelService } from "./services/vercel-service";
 import { ManifestBuilderService } from "./services/manifest-builder-service";
 import { adapt } from "./services/adapt-functions-service";
 import { processVercelOutput } from "./services/process-mapping-service";
+import { nodeBuiltInModulesPlugin } from "./plugins/esbuild-plugins";
 
 class NextjsBuilder extends Builder {
     manifestBuilderService = new ManifestBuilderService();
@@ -75,11 +77,11 @@ class NextjsBuilder extends Builder {
         }
     }
 
-    buildWorker(params: any): any {
+    async buildWorker(params: any) {
         console.log("Building azion worker ...");
 
         try {
-            this.esbuild.buildSync({
+            await this.esbuild.build({
                 entryPoints: [
                     join(this.dirname, "../../templates/handlers/nextjs/handler.js"),
                 ],
@@ -96,6 +98,7 @@ class NextjsBuilder extends Builder {
                     __VERSION_ID__: `'${params.versionId}'`,
                 },
                 outfile: "./out/worker.js",
+                plugins: [nodeBuiltInModulesPlugin, NodeModulesPolyfillPlugin()]
             });
 
             console.log("Generated './out/worker.js'.");
@@ -143,7 +146,7 @@ class NextjsBuilder extends Builder {
 
             const assetsDir = join(this.targetDir, ".vercel/output/static");
             const assetsManifest: string[] =
-        this.manifestBuilderService.assetsPaths(assetsDir);
+            this.manifestBuilderService.assetsPaths(assetsDir);
 
             const processedVercelOutput: ProcessedVercelOutput = processVercelOutput(
                 config,
@@ -168,7 +171,7 @@ class NextjsBuilder extends Builder {
                 assetsManifest,
             };
 
-            this.buildWorker(buildParams);
+            await this.buildWorker(buildParams);
 
             return ErrorCode.Ok;
         } catch (error: any) {
