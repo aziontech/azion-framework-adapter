@@ -1,7 +1,6 @@
 import { join, relative, resolve } from 'path';
 import { readdirSync } from 'fs';
 
-import { PrerenderedFileData, VercelPrerenderConfig } from '../../../types/common';
 import { copyFileWithDir, normalizePath, readJsonFile, validateFile } from '../../../utils/fs';
 import { formatRoutePath, stripIndexRoute } from '../../../utils/routing';
 
@@ -188,7 +187,7 @@ export async function handlePrerenderedRoutes(
     vcConfigPaths: string[], 
     prerenderedRoutes: Map<string, PrerenderedFileData>) {
     // Action to get nested dirs, dirs that are not function dirs.
-    // result example: ['', '/api']
+    // result example: ['', '/api', ...]
     const dirsToHandle = [...new Set(
         vcConfigPaths.map((path) =>
             path.replace("/.vc-config.json", "")
