@@ -431,7 +431,7 @@ createPCRE.prototype = createPCRE.PCRE.prototype;
  * @param source Headers to apply.
  * @param pcreMatch PCRE match result to apply to header values.
  */
-export function applyHeaders(
+function applyHeaders(
 	target, source, pcreMatch
 ) {
 	const entries =
@@ -452,7 +452,7 @@ export function applyHeaders(
  * @param url String to check.
  * @returns Whether the string is an URL.
  */
-export function isUrl(url) {
+function isUrl(url) {
 	return /^https?:\/\//.test(url);
 }
 
@@ -464,7 +464,7 @@ export function isUrl(url) {
  * @param target Target that search params will be applied to.
  * @param source Source search params to apply to the target.
  */
-export function applySearchParams(
+function applySearchParams(
 	target, source
 ) {
 	for (const [key, value] of source.entries()) {
@@ -485,7 +485,7 @@ export function applySearchParams(
  * @param path URL to use for the new Request object.
  * @returns A new Request object with the same body and headers as the original.
  */
-export function createRouteRequest(req, path) {
+function createRouteRequest(req, path) {
 	const newUrl = new URL(path, req.url);
 	applySearchParams(newUrl.searchParams, new URL(req.url).searchParams);
 
@@ -504,17 +504,17 @@ export function createRouteRequest(req, path) {
  * @param resp Response object to re-create.
  * @returns A new Response object with the same body and headers.
  */
-export function createMutableResponse(resp) {
+function createMutableResponse(resp) {
 	return new Response(resp.body, resp);
 }
 
 /**
  * Parses the Accept-Language header value and returns an array of locales sorted by quality.
- *
+ *x
  * @param headerValue Accept-Language header value.
  * @returns Array of locales sorted by quality.
  */
-export function parseAcceptLanguage(headerValue) {
+function parseAcceptLanguage(headerValue) {
 	return headerValue
 		.split(',')
 		.map(val => {
@@ -536,7 +536,7 @@ export function parseAcceptLanguage(headerValue) {
  * @param requestProperties The request properties to check against.
  * @returns Whether the request matches the `has` record conditions.
  */
-export function hasField(
+function hasField(
 	has,
 	{ url, cookies, headers }
 ) {
@@ -584,7 +584,7 @@ export function hasField(
  * @param caseSensitive Whether the regular expression should be case sensitive.
  * @returns The result of the matcher and the named capture group keys.
  */
-export function matchPCRE(
+function matchPCRE(
 	expr,
 	val,
 	caseSensitive
@@ -606,7 +606,7 @@ export function matchPCRE(
  * @param captureGroupKeys Named capture group keys from the PCRE matcher.
  * @returns The processed string with replaced parameters.
  */
-export function applyPCREMatches(
+function applyPCREMatches(
 	rawStr,
 	match,
 	captureGroupKeys
@@ -626,7 +626,7 @@ export function applyPCREMatches(
  * @param request the original request received by the worker
  * @returns the adjusted request to pass to Next
  */
-export function adjustRequestForVercel(request) {
+function adjustRequestForVercel(request) {
 	const adjustedHeaders = new Headers(request.headers);
 
 	if (request.cf) {
@@ -660,7 +660,7 @@ export function adjustRequestForVercel(request) {
  * @param phase Current phase of the routing process.
  * @returns Next phase of the routing process.
  */
-export function getNextPhase(phase) {
+function getNextPhase(phase) {
 	switch (phase) {
 		// `none` applied headers/redirects/middleware/`beforeFiles` rewrites. It checked non-dynamic routes and static assets.
 		case 'none': {
@@ -710,8 +710,8 @@ async function runOrFetchBuildOutputItem(
 		switch (item?.type) {
 			case 'function':
 			case 'middleware': {
-				// TODO: azion adjustment - get from injected FUNCTIONS and MIDDLEWARE
-				const edgeFunction = await import(item.entrypoint);
+				// TODO: check other examples (rsc, app router, ...)
+				const edgeFunction = item.entrypoint;
 				resp = await edgeFunction.default(req, ctx);
 				break;
 			}
@@ -771,6 +771,9 @@ class RoutesMatcher {
 		reqCtx,
 		prevMatch
 	) {
+		this.routes = routes;
+		this.output = output;
+		this.reqCtx = reqCtx;
 		this.url = new URL(reqCtx.request.url);
 		this.cookies = parse(reqCtx.request.headers.get('cookie') || '');
 
@@ -1389,7 +1392,7 @@ const getStorageAsset = async (request) => {
 
 // [START] MAIN --------------------------------------------------------------------
 
-async function main(request, env, context) {
+async function main(request, env, ctx) {
 	globalThis.process.env = { ...globalThis.process.env, ...env };
 
 	const adjustedRequest = adjustRequestForVercel(request);
