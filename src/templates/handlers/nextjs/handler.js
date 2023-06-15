@@ -489,10 +489,6 @@ function createRouteRequest(req, path) {
 	const newUrl = new URL(path, req.url);
 	applySearchParams(newUrl.searchParams, new URL(req.url).searchParams);
 
-	newUrl.pathname = newUrl.pathname
-		.replace(/^\/index.html$/, '/')
-		.replace(/\.html$/, '');
-
 	return new Request(newUrl, req);
 }
 
