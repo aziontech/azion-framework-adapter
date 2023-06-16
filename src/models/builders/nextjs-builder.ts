@@ -1,118 +1,104 @@
 import { dirname, join } from "path";
-import { readFileSync, writeFileSync } from "fs";
+import { writeFileSync, rmSync } from "fs";
 import * as esbuild from "esbuild";
 import { tmpdir } from "os";
+import { NodeModulesPolyfillPlugin } from '@esbuild-plugins/node-modules-polyfill'
 
-import {
-    FailedToBuild,
-    MiddlewareManifestHandlerError
-} from "./errors/errors";
+import { FailedToBuild, MiddlewareManifestHandlerError } from "./errors/errors";
 import { Builder } from "./builder";
-import { ErrorCode } from '../../errors';
+import { ErrorCode } from "../../errors";
 import { VercelService } from "./services/vercel-service";
 import { ManifestBuilderService } from "./services/manifest-builder-service";
-
-interface HydratedEntry {
-    matchers: string,
-    filepath: string
-}
+import { adapt } from "./services/adapt-functions-service";
+import { processVercelOutput } from "./services/process-mapping-service";
+import { nodeBuiltInModulesPlugin } from "./plugins/esbuild-plugins";
 
 class NextjsBuilder extends Builder {
-    hydratedMiddleware: Map<string, HydratedEntry> = new Map();
-    hydratedFunctions: Map<string, HydratedEntry> = new Map();
-    functionsMap: Map<string, string> = new Map();
-    dirname: string = dirname(__filename);
-    middlewareEntries: any;
-    functionsEntries: any;
     manifestBuilderService = new ManifestBuilderService();
+    tmpFunctionsDir: string = join(tmpdir(), Math.random().toString(36).slice(2));
     vercelService = new VercelService();
     esbuild = esbuild;
+    dirname: string = dirname(__filename);
 
+    applicationMapping: ApplicationMapping = {
+        invalidFunctions: new Set<string>(),
+        functionsMap: new Map<string, string>(),
+        webpackChunks: new Map<number, string>(),
+        wasmIdentifiers: new Map<string, WasmModuleInfo>(),
+        prerenderedRoutes: new Map<string, PrerenderedFileData>(),
+    };
 
     constructor(targetDir: string) {
         super(targetDir);
     }
 
-    handleMiddleware() {
-        console.log("Handling middleware ...");
-
-        try {
-            let middlewareManifest: any = {};
-
-            middlewareManifest = JSON.parse(
-                readFileSync(".next/server/middleware-manifest.json","utf8")
-            );
-
-            if(!middlewareManifest.middleware|| !middlewareManifest.functions){
-                throw new MiddlewareManifestHandlerError('Missing properties in middleware-manifest.json');
-            }
-
-            this.middlewareEntries = Object.values(middlewareManifest.middleware);
-            this.functionsEntries = Object.values(middlewareManifest.functions);
-
-            for (const [name, filepath] of this.functionsMap) {
-                if (name === "middleware" && this.middlewareEntries.length > 0) {
-                    for (const entry of this.middlewareEntries) {
-                        if ("middleware" === entry?.name) {
-                            this.hydratedMiddleware.set(name, { matchers: entry.matchers, filepath });
-                        }
-                    }
-                }
-
-                for (const entry of this.functionsEntries) {
-                    if (`pages/${name}` === entry?.name) {
-                        this.hydratedFunctions.set(name, { matchers: entry.matchers, filepath });
-                    }
-                }
-            }
-        } catch (error:any) {
-            throw new MiddlewareManifestHandlerError(error.message);
+    /**
+   * Construct a record for the build output map.
+   *
+   * @param item The build output item to construct a record for.
+   * @returns Record for the build output map.
+   */
+    constructBuildOutputRecord(item: BuildOutputItem) {
+        if (item.type === "static") {
+            return `{ type: ${JSON.stringify(item.type)} }`;
         }
+
+        if (item.type === "override") {
+            return `{
+				type: ${JSON.stringify(item.type)},
+				path: ${item.path ? JSON.stringify(item.path) : undefined},
+				headers: ${item.headers ? JSON.stringify(item.headers) : undefined}
+			}`;
+        }
+
+        return `{
+				type: ${JSON.stringify(item.type)},
+				entrypoint: require('${item.entrypoint}')
+			}`;
     }
 
-    async writeFunctionsReferencesFile(functionsFile: string) {
+    async writeOutputReferencesFile(
+        functionsFile: string,
+        vercelOutput: ProcessedVercelBuildOutput
+    ) {
         console.log("writing references file ...");
         try {
-            writeFileSync(functionsFile,this.getFunctionsReferenceFileTemplate());        
-        } catch (error:any) {
+            writeFileSync(
+                functionsFile,
+                `export const __BUILD_OUTPUT__ = {${[...vercelOutput.entries()]
+                    .map(
+                        ([name, item]) =>
+                            `"${name}": ${this.constructBuildOutputRecord(item)}`
+                    )
+                    .join(",")}};`
+            );
+        } catch (error: any) {
             throw new Error(error.message);
         }
     }
 
-    private getFunctionsReferenceFileTemplate():string{
-        return  `export const __FUNCTIONS__ = {
-                    ${[...this.hydratedFunctions.entries()].map(([name, { matchers, filepath }]) =>`"${name}": { 
-                        matchers: ${JSON.stringify(matchers)},
-                        entrypoint: require('${filepath}')}`).join(",")}
-                };
-                export const __MIDDLEWARE__ = {
-                    ${[...this.hydratedMiddleware.entries()].map(([name, { matchers, filepath }]) =>`"${name}": {
-                        matchers: ${JSON.stringify(matchers)},
-                        entrypoint: require('${filepath}')}`).join(",")}
-                };
-        `;
-    }
-
-    buildWorker(params: any): any {
-        console.log("Building azion worker ...")
+    async buildWorker(params: any) {
+        console.log("Building azion worker ...");
 
         try {
-            this.esbuild.buildSync({
-                entryPoints: [join(this.dirname, "../../templates/handlers/nextjs/handler.js")],
+            await this.esbuild.build({
+                entryPoints: [
+                    join(this.dirname, "../../templates/handlers/nextjs/handler.js"),
+                ],
                 bundle: true,
                 inject: [
-                    params.functionsFile,
+                    params.outputReferencesFilePath,
                     join(this.dirname, "../../templates/handlers/nextjs/globals.js"),
                 ],
                 minify: true,
-                target: "es2021",
+                target: "es2022",
                 platform: "neutral",
                 define: {
                     __CONFIG__: JSON.stringify(params.config),
                     __VERSION_ID__: `'${params.versionId}'`,
-                    __ASSETS_MANIFEST__: JSON.stringify(params.assetsManifest)
                 },
                 outfile: "./out/worker.js",
+                plugins: [nodeBuiltInModulesPlugin, NodeModulesPolyfillPlugin()]
             });
 
             console.log("Generated './out/worker.js'.");
@@ -121,11 +107,18 @@ class NextjsBuilder extends Builder {
         }
     }
 
+    deleteTelemetryFiles() {
+        const dirPath = join(".vercel", "output", "static", "_next", "__private");
+
+        rmSync(dirPath, { force: true, recursive: true });
+    }
+
     async build(params: any): Promise<ErrorCode> {
         console.log("Running nextjs application build ...");
 
         if (!params.versionId) {
-            const errorMessage = "Missing version-id. This arg must be provided to build!";
+            const errorMessage =
+        "Missing version-id. This arg must be provided to build!";
             console.log(errorMessage);
             throw new FailedToBuild(errorMessage);
         }
@@ -135,43 +128,58 @@ class NextjsBuilder extends Builder {
 
             this.vercelService.runVercelBuild();
 
-            const config = this.vercelService.loadVercelConfigs();
+            // unnecessary files that must not be accessible
+            this.deleteTelemetryFiles();
+
+            const config: VercelConfig = this.vercelService.loadVercelConfigs();
 
             this.vercelService.detectBuildedFunctions();
 
             console.log("Mapping and transforming functions ...");
 
-            this.functionsMap = this.vercelService.adapt();
+            // adapt functions and set application mapping
+            await adapt(this.applicationMapping, this.tmpFunctionsDir);
 
-            if(this.functionsMap.size <= 0){
-                throw new MiddlewareManifestHandlerError('No functions was provided');
+            if (this.applicationMapping.functionsMap.size <= 0) {
+                throw new MiddlewareManifestHandlerError("No functions was provided");
             }
 
-            this.handleMiddleware();
-
             const assetsDir = join(this.targetDir, ".vercel/output/static");
-            const assetsManifest = this.manifestBuilderService.assetsPaths(assetsDir);
+            const assetsManifest: string[] =
+            this.manifestBuilderService.assetsPaths(assetsDir);
 
-            const functionsFile = join(
+            const processedVercelOutput: ProcessedVercelOutput = processVercelOutput(
+                config,
+                assetsManifest,
+                this.applicationMapping.prerenderedRoutes,
+                this.applicationMapping.functionsMap
+            );
+
+            const outputReferencesFilePath = join(
                 tmpdir(),
                 `functions-${Math.random().toString(36).slice(2)}.js`
             );
-            
-            this.writeFunctionsReferencesFile(functionsFile);
+            this.writeOutputReferencesFile(
+                outputReferencesFilePath,
+                processedVercelOutput.vercelOutput
+            );
 
             const buildParams = {
                 versionId: params.versionId,
-                functionsFile,
-                config,
-                assetsManifest
+                outputReferencesFilePath,
+                config: processedVercelOutput.vercelConfig,
+                assetsManifest,
             };
-            this.buildWorker(buildParams);
+
+            await this.buildWorker(buildParams);
+
             return ErrorCode.Ok;
-        } catch (error:any) {
+        } catch (error: any) {
             console.log("Error in nextjs build process");
+
             throw new FailedToBuild(error.message);
         }
     }
 }
 
-export { NextjsBuilder }
+export { NextjsBuilder };
