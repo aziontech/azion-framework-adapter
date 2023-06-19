@@ -87,6 +87,7 @@ class NextjsBuilder extends Builder {
                 ],
                 bundle: true,
                 inject: [
+                    join(this.dirname, "../../templates/handlers/nextjs/libs.js"),
                     params.outputReferencesFilePath,
                     join(this.dirname, "../../templates/handlers/nextjs/globals.js"),
                 ],
