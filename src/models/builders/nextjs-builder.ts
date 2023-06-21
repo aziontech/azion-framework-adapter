@@ -7,16 +7,17 @@ import { NodeModulesPolyfillPlugin } from '@esbuild-plugins/node-modules-polyfil
 import { FailedToBuild, MiddlewareManifestHandlerError } from "./errors/errors";
 import { Builder } from "./builder";
 import { ErrorCode } from "../../errors";
-import { VercelService } from "./services/vercel-service";
+import * as vcService from "./services/vercel-service";
+
 import { ManifestBuilderService } from "./services/manifest-builder-service";
-import { adapt } from "./services/adapt-functions-service";
-import { processVercelOutput } from "./services/process-mapping-service";
+//import { adapt } from "./services/adapt-functions-service";
+//import { processVercelOutput } from "./services/process-mapping-service";
 import { nodeBuiltInModulesPlugin } from "./plugins/esbuild-plugins";
 
 class NextjsBuilder extends Builder {
     manifestBuilderService = new ManifestBuilderService();
     tmpFunctionsDir: string = join(tmpdir(), Math.random().toString(36).slice(2));
-    vercelService = new VercelService();
+    vercelService = vcService;
     esbuild = esbuild;
     dirname: string = dirname(__filename);
 
@@ -139,7 +140,7 @@ class NextjsBuilder extends Builder {
             console.log("Mapping and transforming functions ...");
 
             // adapt functions and set application mapping
-            await adapt(this.applicationMapping, this.tmpFunctionsDir);
+            await this.vercelService.adapt(this.applicationMapping, this.tmpFunctionsDir);
 
             if (this.applicationMapping.functionsMap.size <= 0) {
                 throw new MiddlewareManifestHandlerError("No functions was provided");
@@ -149,7 +150,7 @@ class NextjsBuilder extends Builder {
             const assetsManifest: string[] =
             this.manifestBuilderService.assetsPaths(assetsDir);
 
-            const processedVercelOutput: ProcessedVercelOutput = processVercelOutput(
+            const processedVercelOutput: ProcessedVercelOutput = this.vercelService.processVercelOutput(
                 config,
                 assetsManifest,
                 this.applicationMapping.prerenderedRoutes,
