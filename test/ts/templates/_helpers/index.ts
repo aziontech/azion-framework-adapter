@@ -1,17 +1,17 @@
-import mockFs from 'mock-fs';
+import * as mockFs from 'mock-fs';
 import type { DirectoryItems } from 'mock-fs/lib/filesystem';
 import { readFileSync } from 'fs';
 import { join, resolve } from 'path';
 import { generateFunctionsMap } from '../../../../dist/models/builders/services/adapt-functions-service.js';
 import { processVercelOutput } from '../../../../dist/models/builders/services/process-mapping-service';
-import type { VercelPrerenderConfig } from '../../src/buildApplication/fixPrerenderedRoutes';
+// import type { VercelPrerenderConfig } from '../../src/buildApplication/fixPrerenderedRoutes';
 
-import { ManifestBuilderService } from "./services/manifest-builder-service";
+import { ManifestBuilderService } from "../../../../dist/models/builders/services/manifest-builder-service";
 
 export type TestSet = {
 	name: string;
 	files: { functions: DirectoryItems; static?: DirectoryItems };
-	config: VercelConfig;
+	config: any;
 	testCases: TestCase[];
 };
 export type TestCase = {
@@ -62,7 +62,7 @@ export class MockAssetFetcher {
     };
 }
 
-function createMockEntrypoint(file = 'unknown'): EdgeFunction {
+function createMockEntrypoint(file = 'unknown'): any {
     return {
         default: (request: Request) => {
             const params = [...new URL(request.url).searchParams.entries()];
@@ -74,7 +74,7 @@ function createMockEntrypoint(file = 'unknown'): EdgeFunction {
     };
 }
 
-function createMockMiddlewareEntrypoint(file = '/'): EdgeFunction {
+function createMockMiddlewareEntrypoint(file = '/'): any {
     return {
         default: (request: Request) => {
             const url = new URL(request.url);
@@ -147,8 +147,8 @@ function createMockMiddlewareEntrypoint(file = '/'): EdgeFunction {
 }
 
 function constructBuildOutputRecord(
-    item: BuildOutputItem
-): VercelBuildOutputItem {
+    item: any
+): any {
     if (item.type === 'static') {
         return { type: item.type };
     }
@@ -164,20 +164,20 @@ function constructBuildOutputRecord(
     const fileContents = readFileSync(item.entrypoint, 'utf-8');
 
     if (item.type === 'middleware') {
-        vi.doMock(item.entrypoint, () =>
+        chai.spy(item.entrypoint, () =>
             createMockMiddlewareEntrypoint(fileContents)
         );
     } else if (item.type === 'function') {
-        vi.doMock(item.entrypoint, () => createMockEntrypoint(fileContents));
+        chai.spy(item.entrypoint, () => createMockEntrypoint(fileContents));
     }
 
     return item;
 }
 
 type RouterTestData = {
-	vercelConfig: ProcessedVercelConfig;
-	buildOutput: VercelBuildOutput;
-	assetsFetcher: Fetcher;
+	vercelConfig: any;
+	buildOutput: any;
+	assetsFetcher: any;
 	restoreMocks: () => void;
 };
 
@@ -275,7 +275,7 @@ export function mockPrerenderConfigFile(path: string, ext?: string): string {
     const extension = ext || (path.endsWith('.rsc') ? 'rsc' : 'html');
     const fsPath = `${path}.prerender-fallback.${extension}`;
 
-    const config: VercelPrerenderConfig = {
+    const config: any = {
         type: 'Prerender',
         fallback: {
             type: 'FileFsRef',
