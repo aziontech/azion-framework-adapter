@@ -8,7 +8,7 @@ import * as vcService from '../../../../../dist/models/builders/services/vercel-
 const { expect } = chai;
 
 
-describe.only('Vercel Service', () => {
+describe('Vercel Service', () => {
     afterEach(()=>{
         chai.spy.restore();
     });
