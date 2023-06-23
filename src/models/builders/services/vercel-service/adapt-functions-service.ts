@@ -158,7 +158,12 @@ export async function adapt(applicationMapping: ApplicationMapping, tmpFunctions
         }
 
         if (vcObjects.invalid.length > 0) {
-            throw new VcConfigError('');
+            const invalidFunctionsList = vcObjects.invalid
+                .filter( invalidFunction => !invalidFunction.path.includes('_next/data'))
+                .map( invalidFunction => invalidFunction.path.replace(/^\.vercel\/output\/functions\/|\.\w+\/\.vc-config\.json$/g, ''));
+            const invalidFunctionsString = invalidFunctionsList.join('\n')
+            console.log('--->\n',new VcConfigError(invalidFunctionsString).message,'\n<------');
+            throw new VcConfigError(invalidFunctionsString);
         }
 
         const validVcConfigPaths = vcObjects.valid.map(cfg => cfg.path);
