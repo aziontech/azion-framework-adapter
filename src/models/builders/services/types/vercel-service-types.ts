@@ -27,3 +27,18 @@ export type ProcessedVercelOutput = {
 	vercelConfig: ProcessedVercelConfig;
 	vercelOutput: ProcessedVercelBuildOutput;
 };
+
+//adapt-functions-service
+export type ApplicationMapping = {
+    invalidFunctions: Set<string>;
+    functionsMap: Map<string, string>;
+    webpackChunks: Map<number, string>;
+    wasmIdentifiers: Map<string, WasmModuleInfo>;  
+    prerenderedRoutes: Map<string, PrerenderedFileData>;  
+}
+
+export type WasmModuleInfo = {
+	identifier: string;
+	importPath: string;
+	originalFileLocation: string;
+};
