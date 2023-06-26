@@ -22,13 +22,11 @@ export type VercelConfig = {
 	crons?: VercelCronsConfig;
 };
 
-//process-mapping-service
 export type ProcessedVercelOutput = {
 	vercelConfig: ProcessedVercelConfig;
 	vercelOutput: ProcessedVercelBuildOutput;
 };
 
-//adapt-functions-service
 export type ApplicationMapping = {
     invalidFunctions: Set<string>;
     functionsMap: Map<string, string>;
