@@ -1,10 +1,9 @@
 import * as glob from "fast-glob";
-import { basename } from "path";
 import * as chai from 'chai';
 import * as fs from 'fs';
 
 
-import type { PrerenderedFileData, WasmModuleInfo} from '../../../../../../dist/models/builders/services/types/vercel-service-types';
+import type { PrerenderedFileData, WasmModuleInfo } from '../../../../../../dist/models/builders/services/types/vercel-service-types';
 import * as vcService from '../../../../../../dist/models/builders/services/vercel-service';
 
 const { expect } = chai;
@@ -16,8 +15,7 @@ const fakeParams = {
     prerenderedRoutes: new Map<string, PrerenderedFileData>()
 }
 
-
-describe.only('method adapt',()=>{
+describe('method adapt',()=>{
     afterEach(()=>{
         chai.spy.restore();
     });
@@ -104,11 +102,20 @@ describe.only('method adapt',()=>{
         expect(result.includes('fakeFileD')).to.be.true;
     });
 
-    // it('should raise an error if .vc-config path doesnt exists',()=>{
-    //     const vercelService = vcService;
-    //     chai.spy.on(glob,"sync",()=>{
-    //         throw new Error(".vc-config.json not found");
-    //     });
-    //     expect(()=>vercelService.adapt(fakeParams,'')).to.throw(".vc-config.json not found");
-    // });
+    it('should raise an error if .vc-config path doesnt exists',async()=>{
+        const vercelService = vcService;
+        chai.spy.on(glob,"sync",()=>{
+            throw new Error(".vc-config.json not found");
+        });
+        const result = await (async()=>{
+            try{
+                await vercelService.adapt(fakeParams,'fakeDir')
+                return 'ok';
+            }catch(error:any){
+                return error.message;
+            }
+        })();
+
+        expect(result).to.equal(".vc-config.json not found");
+    });
 });
