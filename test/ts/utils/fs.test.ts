@@ -120,3 +120,39 @@ describe('validateDir', () => {
 		expect(await validateDir('invalidPath')).to.equal(false);
 	});
 });
+
+describe.only('readPathsRecursively', () => {
+	beforeEach(() => {
+		mockFs({
+			root: {
+				functions: {
+					'(route-group)': {
+						'page.func': {
+							'index.js': 'page-js-code',
+						},
+					},
+					'index.func': {
+						'index.js': 'index-js-code',
+					},
+					'home.func': {
+						'index.js': 'home-js-code',
+					},
+				},
+			},
+		});
+	});
+	afterEach(() => {
+		mockFs.restore();
+	});
+	it('should read all paths recursively', async () => {
+		const paths = (await readPathsRecursively('root/functions')).map(path =>
+			normalizePath(path)
+		);
+		expect(paths.length).to.equal(3);
+		expect(paths[0]).to.match(
+			/root\/functions\/\(route-group\)\/page\.func\/index\.js$/
+		);
+		expect(paths[1]).to.match(/root\/functions\/home\.func\/index\.js$/);
+		expect(paths[2]).to.match(/root\/functions\/index\.func\/index\.js$/);
+	});
+});
