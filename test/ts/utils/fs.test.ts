@@ -67,7 +67,7 @@ describe('readJsonFile', () => {
 	});
 });
 
-describe.only('validateFile', () => {
+describe('validateFile', () => {
 	beforeEach(() => {
 		mockFs({
 			'functions/index.func': { 'index.js': 'valid-file' },
@@ -90,5 +90,33 @@ describe.only('validateFile', () => {
 		expect(
 			await validateFile('functions/invalid-index.func/index.js')
 		).to.equal(false);
+	});
+});
+
+describe('validateDir', () => {
+	beforeEach(() => {
+		mockFs({
+			'functions/index.func': { 'index.js': 'valid-file' },
+		});
+	});
+	afterEach(() => {
+		mockFs.restore();
+	});
+	it('valid directory returns true', async () => {
+		mockFs({
+			'functions/index.func': { 'index.js': 'valid-file' },
+		});
+		expect(await validateDir('functions/index.func')).to.equal(true);
+		mockFs.restore();
+	});
+
+	it('valid file returns false', async () => {
+		expect(await validateDir('functions/index.func/index.js')).to.equal(
+			false
+		);
+	});
+
+	it('invalid path returns false', async () => {
+		expect(await validateDir('invalidPath')).to.equal(false);
 	});
 });
