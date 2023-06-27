@@ -121,7 +121,7 @@ describe('validateDir', () => {
 	});
 });
 
-describe.only('readPathsRecursively', () => {
+describe('readPathsRecursively', () => {
 	beforeEach(() => {
 		mockFs({
 			root: {
@@ -154,5 +154,36 @@ describe.only('readPathsRecursively', () => {
 		);
 		expect(paths[1]).to.match(/root\/functions\/home\.func\/index\.js$/);
 		expect(paths[2]).to.match(/root\/functions\/index\.func\/index\.js$/);
+	});
+});
+
+describe('copyFileWithDir', () => {
+	it('should copy file to missing directory', async () => {
+		mockFs({
+			folder: {
+				'index.js': 'valid-file',
+			},
+		});
+
+		expect(await validateDir('new-folder')).to.equal(false);
+		await copyFileWithDir('folder/index.js', 'new-folder/index.js');
+		expect(await validateFile('new-folder/index.js')).to.equal(true);
+
+		mockFs.restore();
+	});
+
+	it('should copy file to existing directory', async () => {
+		mockFs({
+			folder: {
+				'index.js': 'valid-file',
+			},
+			'new-folder': {},
+		});
+
+		expect(await validateDir('new-folder')).to.equal(true);
+		await copyFileWithDir('folder/index.js', 'new-folder/index.js');
+		expect(await validateFile('new-folder/index.js')).to.equal(true);
+
+		mockFs.restore();
 	});
 });
