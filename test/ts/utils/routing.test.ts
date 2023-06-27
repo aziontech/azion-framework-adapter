@@ -10,7 +10,7 @@ import {
 
 const { expect } = chai;
 
-describe.only('routing', () => {
+describe('routing', () => {
 	it('stripRouteGroups', () => {
 		expect(stripRouteGroups('/path/name')).to.equal('/path/name');
 		expect(stripRouteGroups('/path/(route-group)/name')).to.equal('/path/name');
