@@ -1,10 +1,8 @@
-// import * as mockFs from 'mock-fs';
-// import type { DirectoryItems } from 'mock-fs/lib/filesystem';
-// import { readFileSync } from 'fs';
-// import { join, resolve } from 'path';
-// // import { generateFunctionsMap } from '../../../../dist/models/builders/services/adapt-functions-service.js';
-// import { processVercelOutput } from '../../../../dist/models/builders/services/process-mapping-service';
-// // import type { VercelPrerenderConfig } from '../../src/buildApplication/fixPrerenderedRoutes';
+import * as mockFs from 'mock-fs';
+import type { DirectoryItems } from 'mock-fs/lib/filesystem';
+import { readFileSync } from 'fs';
+import { join, resolve } from 'path';
+import { processVercelOutput } from '../../../../dist/models/builders/services/vercel-service';
 
 // import { ManifestBuilderService } from "../../../../dist/models/builders/services/manifest-builder-service";
 
@@ -181,29 +179,29 @@
 // 	restoreMocks: () => void;
 // };
 
-// export async function createRouterTestData(
-//     rawVercelConfig: any,
-//     files: DirectoryItems
-// ): Promise<RouterTestData> {
-//     mockFs({ '.vercel': { output: files } });
+export async function createRouterTestData(
+    rawVercelConfig: any,
+    files: DirectoryItems
+): Promise<RouterTestData> {
+    mockFs({ '.vercel': { output: files } });
 
-//     const { functionsMap, prerenderedRoutes } = await generateFunctionsMap(
-//         join('.vercel', 'output', 'functions'),
-//         true
-//     );
+    const { functionsMap, prerenderedRoutes } = await generateFunctionsMap(
+        join('.vercel', 'output', 'functions'),
+        true
+    );
 
-//     // const staticAssets = await getVercelStaticAssets();
-//     const assetsDir = join(process.cwd(), ".vercel/output/static");
-//     const manifestBuilderService = new ManifestBuilderService();
-//     const staticAssets: string[] =
-//             manifestBuilderService.assetsPaths(assetsDir);
+    // const staticAssets = await getVercelStaticAssets();
+    const assetsDir = join(process.cwd(), ".vercel/output/static");
+    const manifestBuilderService = new ManifestBuilderService();
+    const staticAssets: string[] =
+            manifestBuilderService.assetsPaths(assetsDir);
 
-//     const { vercelConfig, vercelOutput } = processVercelOutput(
-//         rawVercelConfig,
-//         staticAssets,
-//         prerenderedRoutes,
-//         functionsMap
-//     );
+    const { vercelConfig, vercelOutput } = processVercelOutput(
+        rawVercelConfig,
+        staticAssets,
+        prerenderedRoutes,
+        functionsMap
+    );
 
 //     const buildOutput = [...vercelOutput.entries()].reduce(
 //         (prev, [name, item]) => {

@@ -54,7 +54,7 @@ describe('applyHeaders', () => {
         // @ts-ignore
         applyHeaders(headers, { 'set-cookie': 'second-value' });
         expect([...headers.entries()]).to.deep.equal([
-            [ 'set-cookie', 'first-value, second-value' ]
+					[ 'set-cookie', 'first-value, second-value' ]
         ]);
     });
 });

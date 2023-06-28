@@ -53,7 +53,8 @@ export class VcConfigError extends BaseError{
     }
 
     constructor(invalidFunctions: string){
-        super(`This project is not an edge project\nMake sure that following files have a correct configuration about edge runtime\n`+
+        super(
+            `This project is not an edge project\nMake sure that following files have a correct configuration about edge runtime\n`+
         `\n`+
         `${invalidFunctions}`+
         `\n`+
