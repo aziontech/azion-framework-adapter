@@ -49,7 +49,7 @@ describe('applyHeaders', () => {
         });
     });
 
-    test.only('appends `set-cookie` headers instead of overriding', () => {
+    test('appends `set-cookie` headers instead of overriding', () => {
         const headers = new Headers({ 'set-cookie': 'first-value' });
         // @ts-ignore
         applyHeaders(headers, { 'set-cookie': 'second-value' });
