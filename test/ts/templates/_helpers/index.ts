@@ -179,22 +179,22 @@ import { processVercelOutput } from '../../../../dist/models/builders/services/v
 // 	restoreMocks: () => void;
 // };
 
-export async function createRouterTestData(
-    rawVercelConfig: any,
-    files: DirectoryItems
-): Promise<RouterTestData> {
-    mockFs({ '.vercel': { output: files } });
-    const assetsDir = join(process.cwd(), ".vercel/output/static");
-    const manifestBuilderService = new ManifestBuilderService();
-    const staticAssets: string[] =
-            manifestBuilderService.assetsPaths(assetsDir);
+// export async function createRouterTestData(
+//     rawVercelConfig: any,
+//     files: DirectoryItems
+// ): Promise<RouterTestData> {
+//     mockFs({ '.vercel': { output: files } });
+//     const assetsDir = join(process.cwd(), ".vercel/output/static");
+//     const manifestBuilderService = new ManifestBuilderService();
+//     const staticAssets: string[] =
+//             manifestBuilderService.assetsPaths(assetsDir);
 
-    const { vercelConfig, vercelOutput } = processVercelOutput(
-        rawVercelConfig,
-        staticAssets,
-        //prerenderedRoutes,
-        //functionsMap
-    );
+//     const { vercelConfig, vercelOutput } = processVercelOutput(
+//         rawVercelConfig,
+//         staticAssets,
+//         //prerenderedRoutes,
+//         //functionsMap
+//     );
 
 //     const buildOutput = [...vercelOutput.entries()].reduce(
 //         (prev, [name, item]) => {
