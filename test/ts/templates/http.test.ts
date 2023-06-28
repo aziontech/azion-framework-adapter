@@ -53,8 +53,8 @@ describe('applyHeaders', () => {
         const headers = new Headers({ 'set-cookie': 'first-value' });
         // @ts-ignore
         applyHeaders(headers, { 'set-cookie': 'second-value' });
-        expect([...headers.entries()]).to.deep.equal([
-					[ 'set-cookie', 'first-value, second-value' ]
+        expect([...headers.entries()]).to.deep.equal([ 
+            [ 'set-cookie', 'first-value' ], [ 'set-cookie', 'second-value' ] 
         ]);
     });
 });

@@ -184,13 +184,6 @@ export async function createRouterTestData(
     files: DirectoryItems
 ): Promise<RouterTestData> {
     mockFs({ '.vercel': { output: files } });
-
-    const { functionsMap, prerenderedRoutes } = await generateFunctionsMap(
-        join('.vercel', 'output', 'functions'),
-        true
-    );
-
-    // const staticAssets = await getVercelStaticAssets();
     const assetsDir = join(process.cwd(), ".vercel/output/static");
     const manifestBuilderService = new ManifestBuilderService();
     const staticAssets: string[] =
@@ -199,8 +192,8 @@ export async function createRouterTestData(
     const { vercelConfig, vercelOutput } = processVercelOutput(
         rawVercelConfig,
         staticAssets,
-        prerenderedRoutes,
-        functionsMap
+        //prerenderedRoutes,
+        //functionsMap
     );
 
 //     const buildOutput = [...vercelOutput.entries()].reduce(
