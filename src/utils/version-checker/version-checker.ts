@@ -21,6 +21,12 @@ export class VersionChecker{
         return NextJsChecker.check(package_json);
     }
 
+    public static nextjs_project_type():void{
+        if(fs.existsSync('/app') || fs.existsSync('/src/app')){
+            throw new InvalidProject('Invalid app dir project structure');
+        }
+    }
+
     private static project_type(target_dir:string):string{
         try{
             const azion_json = JSON.parse(
