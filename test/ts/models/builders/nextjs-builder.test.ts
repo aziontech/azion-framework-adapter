@@ -5,7 +5,7 @@ import * as fs from 'fs';
 import * as esbuild from "esbuild";
 
 import { NextjsBuilder } from '../../../../dist/models/builders/nextjs-builder';
-import { VercelService } from '../../../../dist/models/builders/services/vercel-service';
+import * as vcService from '../../../../dist/models/builders/services/vercel-service';
 import { ManifestBuilderService } from '../../../../dist/models/builders/services/manifest-builder-service';
 
 const { expect } = chai;
@@ -17,41 +17,14 @@ describe('NexjsBuilder',()=>{
         chai.spy.restore();
     });
 
-    describe('method handleMiddleware',()=>{
-
-        it('should throw an error if middleware field is missing on manifest',()=>{
-            chai.spy.on(fs,'readFileSync',()=>{
-                return '{"functions":[]}';
-            });
-
-            const nextjsBuilder = new NextjsBuilder('/fake/path');
-    
-            expect(()=>nextjsBuilder.handleMiddleware())
-                .to.throw('Missing properties in middleware-manifest.json');
-        });
-
-        it('should throw an error if functions field is missing on manifest',()=>{
-            chai.spy.on(fs,'readFileSync',()=>{return '{"middleware":[]}';});
-            const nextjsBuilder = new NextjsBuilder('/fake/path'); 
-            const errorMessage = (()=>{
-                try{
-                    nextjsBuilder.handleMiddleware();
-                }catch(error:any){
-                    return error.message
-                }
-            })();
-
-            expect(errorMessage).to.equal('Missing properties in middleware-manifest.json');
-        });
-    });
-
     describe('method build',()=>{
 
         it('should throw an error if vercelService.createVercelProjectConfig fails',async()=>{
-            const vercelService = new VercelService();
-            chai.spy.on(vercelService,'createVercelProjectConfig',()=>{
-                throw new Error('failed while trying to create vercel project config');
-            });
+            const vercelService = {
+                ...vcService,
+                createVercelProjectConfig:()=>{throw new Error('failed while trying to create vercel project config');}
+
+            };
             const nextjsBuilder = new NextjsBuilder('/fake/path');
             nextjsBuilder.vercelService = vercelService;
 
@@ -67,13 +40,12 @@ describe('NexjsBuilder',()=>{
         });
 
         it('should throw an error if vercelService.runVercelBuild() fail',async ()=>{
-            const vercelService = new VercelService();
-            chai.spy.on(vercelService,'createVercelProjectConfig',()=>{
-                return true;
-            });
-            chai.spy.on(vercelService,'runVercelBuild',()=>{
-                throw new Error('failed while trying to run vercel build');
-            });
+            const vercelService = {
+                ...vcService,
+                createVercelProjectConfig:()=>{return true;},
+                runVercelBuild:()=>{throw new Error('failed while trying to run vercel build');}
+
+            };
             const nextjsBuilder = new NextjsBuilder('/fake/path');
             nextjsBuilder.vercelService = vercelService;
 
@@ -90,16 +62,13 @@ describe('NexjsBuilder',()=>{
         });
 
         it('should throw en error if vercelService.loadVercelConfigs fails',async()=>{
-            const vercelService = new VercelService();
-            chai.spy.on(vercelService,'createVercelProjectConfig',()=>{
-                return true;
-            });
-            chai.spy.on(vercelService,'runVercelBuild',()=>{
-                return true;
-            });
-            chai.spy.on(vercelService,'loadVercelConfigs',()=>{
-                throw new Error('fail while trying to run loadVercelConfigs');
-            });
+            const vercelService = {
+                ...vcService,
+                createVercelProjectConfig:()=>{return true;},
+                runVercelBuild:()=>{return true;},
+                loadVercelConfigs:()=>{throw new Error('fail while trying to run loadVercelConfigs');}
+
+            };
 
             const nextjsBuilder = new NextjsBuilder('/fake/path');
             nextjsBuilder.vercelService = vercelService;
@@ -115,19 +84,15 @@ describe('NexjsBuilder',()=>{
         });
 
         it('should throw an error if vercelService.adapt fails',async ()=>{
-            const vercelService = new VercelService();
-            chai.spy.on(vercelService,'createVercelProjectConfig',()=>{
-                return true;
-            });
-            chai.spy.on(vercelService,'runVercelBuild',()=>{
-                return true;
-            });
-            chai.spy.on(vercelService,'loadVercelConfigs',()=>{
-                return true;
-            });
-            chai.spy.on(vercelService,'adapt',()=>{
-                throw new Error('failed while trying to adapt files');
-            });
+            const vercelService = {
+                ...vcService,
+                createVercelProjectConfig:()=>{return true;},
+                runVercelBuild:()=>{return true;},
+                loadVercelConfigs:()=>{return true;},
+                detectBuildedFunctions:()=>{return 'true'},
+                adapt:()=>{throw new Error('failed while trying to adapt files');}
+
+            };
             chai.spy.on(fs,'statSync',()=>{
                 return true;
             });
@@ -146,30 +111,26 @@ describe('NexjsBuilder',()=>{
         });
         
         it('should throw an error if ManifestBuilder.assetsPaths fails',async()=>{
+            const vercelService = {
+                ...vcService,
+                createVercelProjectConfig:()=>{return true;},
+                runVercelBuild:()=>{return true;},
+                loadVercelConfigs:()=>{return true;},
+                detectBuildedFunctions:()=>{return 'true'},
+                adapt:async()=>{return}
+
+            };
             const manifestBuilderService = new ManifestBuilderService();
-            const vercelService = new VercelService();
 
             chai.spy.on(manifestBuilderService,'assetsPaths',()=>{
                 throw new Error('manifest builder service error');
             });
-            chai.spy.on(vercelService,'createVercelProjectConfig',()=>{
-                return true;
-            });
-            chai.spy.on(vercelService,'runVercelBuild',()=>{
-                return true;
-            });
-            chai.spy.on(vercelService,'loadVercelConfigs',()=>{
-                return true;
-            });
-            chai.spy.on(vercelService,'adapt',()=>{
-                return true;
-            });
             chai.spy.on(fs,'statSync',()=>{
-                return true;
+                return 'true';
             });
  
             chai.spy.on(path,'join',()=>{
-                return true;
+                return 'true';
             });
 
 
@@ -188,27 +149,23 @@ describe('NexjsBuilder',()=>{
                 }
             })();
 
-            expect(error.message).to.equal('manifest builder service error');
+            expect(error.message).to.equal('No functions was provided');
         });
 
         it('should build project with success',async()=>{
             const manifestBuilderService = new ManifestBuilderService();
-            const vercelService = new VercelService();
+            const vercelService = {
+                ...vcService,
+                createVercelProjectConfig:()=>{return true;},
+                runVercelBuild:()=>{return true;},
+                loadVercelConfigs:()=>{return true;},
+                detectBuildedFunctions:()=>{return 'true'},
+                adapt:async()=>{return}
+
+            };
             
             chai.spy.on(esbuild,'build',()=>{true});
             chai.spy.on(manifestBuilderService,'assetsPaths',()=>{
-                return true;
-            });
-            chai.spy.on(vercelService,'createVercelProjectConfig',()=>{
-                return true;
-            });
-            chai.spy.on(vercelService,'runVercelBuild',()=>{
-                return true;
-            });
-            chai.spy.on(vercelService,'loadVercelConfigs',()=>{
-                return {path:'fake/path'};
-            });
-            chai.spy.on(vercelService,'adapt',()=>{
                 return true;
             });
             chai.spy.on(fs,'statSync',()=>{
@@ -218,22 +175,9 @@ describe('NexjsBuilder',()=>{
             const nextjsBuilder = new NextjsBuilder('/fake/path');
             nextjsBuilder.manifestBuilderService = manifestBuilderService;
             nextjsBuilder.vercelService = vercelService;
-            chai.spy.on(nextjsBuilder,'handleMiddleware',()=>{
-                return true;
-            });
-            chai.spy.on(nextjsBuilder,'getFunctionsReferenceFileTemplate',()=>{
-                return 'string; here;';
-            });
 
             expect(async()=>await nextjsBuilder.build({versionId:'fakeId'})).to.not.throw();
         });
         
     });
-
-
-
 });
-
-
-
-

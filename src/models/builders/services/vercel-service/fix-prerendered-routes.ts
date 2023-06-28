@@ -1,8 +1,8 @@
 import { join, relative, resolve } from 'path';
 import { readdirSync } from 'fs';
 
-import { copyFileWithDir, normalizePath, readJsonFile, validateFile } from '../../../utils/fs';
-import { formatRoutePath, stripIndexRoute } from '../../../utils/routing';
+import { copyFileWithDir, normalizePath, readJsonFile, validateFile } from '../../../../utils/fs';
+import { formatRoutePath, stripIndexRoute } from '../../../../utils/routing';
 
 /**
  * Retrieves a valid prerendered route config.

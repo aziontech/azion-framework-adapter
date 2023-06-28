@@ -3,10 +3,10 @@ import { dirname, join, relative } from "path";
 
 import glob from "fast-glob";
 
-import { VcConfigError } from "./errors/error";
+import { VcConfigError } from "../errors/error";
 import { handlePrerenderedRoutes } from "./fix-prerendered-routes";
-import { formatRoutePath, stripIndexRoute } from "../../../utils/routing";
-import { normalizePath, validateFile } from "../../../utils/fs";
+import { formatRoutePath, stripIndexRoute } from "../../../../utils/routing";
+import { normalizePath, validateFile } from "../../../../utils/fs";
 
 
 function isVcConfigValid(vcConfig: VercelFunctionConfig): boolean{

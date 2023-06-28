@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { describe, test } from 'mocha';
 import { expect } from 'chai';
 import {
@@ -50,10 +51,10 @@ describe('applyHeaders', () => {
 
     test('appends `set-cookie` headers instead of overriding', () => {
         const headers = new Headers({ 'set-cookie': 'first-value' });
-				// @ts-ignore
+        // @ts-ignore
         applyHeaders(headers, { 'set-cookie': 'second-value' });
-        expect([...headers.entries()]).to.deep.equal([
-					[ 'set-cookie', 'first-value, second-value' ]
+        expect([...headers.entries()]).to.deep.equal([ 
+            [ 'set-cookie', 'first-value' ], [ 'set-cookie', 'second-value' ] 
         ]);
     });
 });
