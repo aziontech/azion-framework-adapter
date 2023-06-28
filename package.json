@@ -55,6 +55,7 @@
     "xxhashjs": "^0.2.2"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^4.20230518.0",
     "@types/chai": "^4.2.22",
     "@types/chai-as-promised": "^7.1.4",
     "@types/chai-spies": "^1.0.3",
