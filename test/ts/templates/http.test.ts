@@ -1,6 +1,5 @@
 import { describe, test } from 'mocha';
 import { expect } from 'chai';
-// import type { MatchPCREResult } from '../../../templates/_worker.js/utils';
 import {
     applyHeaders,
     applySearchParams,
@@ -97,7 +96,7 @@ describe('createRouteRequest', () => {
     });
 });
 
-describe.only('parseAcceptLanguage', () => {
+describe('parseAcceptLanguage', () => {
     test('extract the locales and sort by quality when present', () => {
         [
             { header: '', expected: [] },
