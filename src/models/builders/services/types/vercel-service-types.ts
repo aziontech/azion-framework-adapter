@@ -1,4 +1,4 @@
- // fix-prerendered
+// fix-prerendered
 export type PrerenderedFileData = {
 	headers?: Record<string, string>;
 	overrides?: string[];

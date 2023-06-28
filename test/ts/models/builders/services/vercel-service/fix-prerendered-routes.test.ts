@@ -12,9 +12,9 @@ describe('fix-prerendered-routes', ()=>{
         chai.spy.restore();
     });
 
-	it('should call handlePrerenderedRoutes with success', async() => {
+    it('should call handlePrerenderedRoutes with success', async() => {
 		
-		const inputtedPrerendered = new Map<string, PrerenderedFileData>();
+        const inputtedPrerendered = new Map<string, PrerenderedFileData>();
         chai.spy.on(fs,'readdirSync',()=>{
             return ['fake/path1','fake/path1'];
         });
@@ -27,7 +27,7 @@ describe('fix-prerendered-routes', ()=>{
             }
         })();
 		
-		expect(error).to.equal(undefined);
-	});
+        expect(error).to.equal(undefined);
+    });
 });
 

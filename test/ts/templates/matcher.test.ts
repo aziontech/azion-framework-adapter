@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { describe, test } from 'mocha';
 import { expect } from 'chai';
 import { parse } from 'cookie';
