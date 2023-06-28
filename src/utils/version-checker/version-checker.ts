@@ -22,8 +22,8 @@ export class VersionChecker{
     }
 
     public static nextjs_project_type():void{
-        if(fs.existsSync('/app') || fs.existsSync('/src/app')){
-            throw new InvalidProject('Invalid app dir project structure');
+        if(fs.existsSync('app') || fs.existsSync('src/app')){
+            throw new InvalidProject("Azfa still doesn't support app router structure");
         }
     }
 
