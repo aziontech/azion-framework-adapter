@@ -84,7 +84,7 @@ class NextjsBuilder extends Builder {
         try {
             await this.esbuild.build({
                 entryPoints: [
-                    join(this.dirname, "../../templates/handlers/nextjs/handler.js"),
+                    join(this.dirname, "../../templates/handlers/nextjs/index.js"),
                 ],
                 bundle: true,
                 inject: [
