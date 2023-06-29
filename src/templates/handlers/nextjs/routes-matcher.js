@@ -1,15 +1,13 @@
 import { parse } from 'cookie';
-import { parseAcceptLanguage } from './handler';
-import {
+import { parseAcceptLanguage,
 	applyHeaders,
 	applyPCREMatches,
 	applySearchParams,
 	hasField,
 	isUrl,
-	matchPCRE,
-	runOrFetchBuildOutputItem,
-} from './handler';
-import getNextPhase from './utils/routing';
+	matchPCRE
+ } from './handler';
+import { runOrFetchBuildOutputItem, getNextPhase } from './utils/routing';
 
 
 export class RoutesMatcher {
