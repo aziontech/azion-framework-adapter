@@ -1,460 +1,329 @@
-/*!
- * cookie
- * Copyright(c) 2012-2014 Roman Shtylman
- * Copyright(c) 2015 Douglas Christopher Wilson
- * MIT Licensed
- */
+// this code is based on cf build next tool (https://github.com/cloudflare/next-on-pages)
 
+const { cookie, createPCRE } = require('./libs');
+const { parse } = cookie;
+const { RoutesMatcher } = require('./routes-matcher');
+const { runOrFetchBuildOutputItem } = require('./utils/routing');
+
+// http
 /**
- * Module variables.
- * @private
+ * Applies a set of headers to a response.
+ *
+ * @param target Headers object to apply to.
+ * @param source Headers to apply.
+ * @param pcreMatch PCRE match result to apply to header values.
  */
 
-const __toString = Object.prototype.toString
+export function applyHeaders(
+	target,
+	source,
+	pcreMatch
+) {
+	const entries =
+		source instanceof Headers ? source.entries() : Object.entries(source);
+	for (const [key, value] of entries) {
+		const lowerKey = key.toLowerCase();
+		const newValue = pcreMatch?.match
+			? applyPCREMatches(value, pcreMatch.match, pcreMatch.captureGroupKeys)
+			: value;
 
-/**
- * RegExp to match field-content in RFC 7230 sec 3.2
- *
- * field-content = field-vchar [ 1*( SP / HTAB ) field-vchar ]
- * field-vchar   = VCHAR / obs-text
- * obs-text      = %x80-FF
- */
-
-const fieldContentRegExp = /^[\u0009\u0020-\u007e\u0080-\u00ff]+$/;
-
-/**
- * Parse a cookie header.
- *
- * Parse the given cookie header string into an object
- * The object has the various cookies as keys(names) => values
- *
- * @param {string} str
- * @param {object} [options]
- * @return {object}
- * @public
- */
-
-const parse = (str, options) => {
-  if (typeof str !== 'string') {
-    throw new TypeError('argument str must be a string');
-  }
-
-  var obj = {}
-  var opt = options || {};
-  var dec = opt.decode || decode;
-
-  var index = 0
-  while (index < str.length) {
-    var eqIdx = str.indexOf('=', index)
-
-    // no more cookie pairs
-    if (eqIdx === -1) {
-      break
-    }
-
-    var endIdx = str.indexOf(';', index)
-
-    if (endIdx === -1) {
-      endIdx = str.length
-    } else if (endIdx < eqIdx) {
-      // backtrack on prior semicolon
-      index = str.lastIndexOf(';', eqIdx - 1) + 1
-      continue
-    }
-
-    var key = str.slice(index, eqIdx).trim()
-
-    // only assign once
-    if (undefined === obj[key]) {
-      var val = str.slice(eqIdx + 1, endIdx).trim()
-
-      // quoted values
-      if (val.charCodeAt(0) === 0x22) {
-        val = val.slice(1, -1)
-      }
-
-      obj[key] = tryDecode(val, dec);
-    }
-
-    index = endIdx + 1
-  }
-
-  return obj;
+		if (lowerKey === 'set-cookie') {
+			target.append(lowerKey, newValue);
+		} else {
+			target.set(lowerKey, newValue);
+		}
+	}
 }
 
 /**
- * Serialize data into a cookie header.
+ * Checks if a string is an URL.
  *
- * Serialize the a name value pair into a cookie string suitable for
- * http headers. An optional options object specified cookie parameters.
- *
- * serialize('foo', 'bar', { httpOnly: true })
- *   => "foo=bar; httpOnly"
- *
- * @param {string} name
- * @param {string} val
- * @param {object} [options]
- * @return {string}
- * @public
+ * @param url String to check.
+ * @returns Whether the string is an URL.
  */
-
-const serialize = (name, val, options) => {
-  var opt = options || {};
-  var enc = opt.encode || encode;
-
-  if (typeof enc !== 'function') {
-    throw new TypeError('option encode is invalid');
-  }
-
-  if (!fieldContentRegExp.test(name)) {
-    throw new TypeError('argument name is invalid');
-  }
-
-  var value = enc(val);
-
-  if (value && !fieldContentRegExp.test(value)) {
-    throw new TypeError('argument val is invalid');
-  }
-
-  var str = name + '=' + value;
-
-  if (null != opt.maxAge) {
-    var maxAge = opt.maxAge - 0;
-
-    if (isNaN(maxAge) || !isFinite(maxAge)) {
-      throw new TypeError('option maxAge is invalid')
-    }
-
-    str += '; Max-Age=' + Math.floor(maxAge);
-  }
-
-  if (opt.domain) {
-    if (!fieldContentRegExp.test(opt.domain)) {
-      throw new TypeError('option domain is invalid');
-    }
-
-    str += '; Domain=' + opt.domain;
-  }
-
-  if (opt.path) {
-    if (!fieldContentRegExp.test(opt.path)) {
-      throw new TypeError('option path is invalid');
-    }
-
-    str += '; Path=' + opt.path;
-  }
-
-  if (opt.expires) {
-    var expires = opt.expires
-
-    if (!isDate(expires) || isNaN(expires.valueOf())) {
-      throw new TypeError('option expires is invalid');
-    }
-
-    str += '; Expires=' + expires.toUTCString()
-  }
-
-  if (opt.httpOnly) {
-    str += '; HttpOnly';
-  }
-
-  if (opt.secure) {
-    str += '; Secure';
-  }
-
-  if (opt.priority) {
-    var priority = typeof opt.priority === 'string'
-      ? opt.priority.toLowerCase()
-      : opt.priority
-
-    switch (priority) {
-      case 'low':
-        str += '; Priority=Low'
-        break
-      case 'medium':
-        str += '; Priority=Medium'
-        break
-      case 'high':
-        str += '; Priority=High'
-        break
-      default:
-        throw new TypeError('option priority is invalid')
-    }
-  }
-
-  if (opt.sameSite) {
-    var sameSite = typeof opt.sameSite === 'string'
-      ? opt.sameSite.toLowerCase() : opt.sameSite;
-
-    switch (sameSite) {
-      case true:
-        str += '; SameSite=Strict';
-        break;
-      case 'lax':
-        str += '; SameSite=Lax';
-        break;
-      case 'strict':
-        str += '; SameSite=Strict';
-        break;
-      case 'none':
-        str += '; SameSite=None';
-        break;
-      default:
-        throw new TypeError('option sameSite is invalid');
-    }
-  }
-
-  return str;
+export function isUrl(url) {
+	return /^https?:\/\//.test(url);
 }
 
 /**
- * URL-decode string value. Optimized to skip native call when no %.
+ * Merges search params from one URLSearchParams object to another.
  *
- * @param {string} str
- * @returns {string}
+ * Only updates the a parameter if the target does not contain it, or the source value is not empty.
+ *
+ * @param target Target that search params will be applied to.
+ * @param source Source search params to apply to the target.
  */
-
-const decode = (str) => {
-  return str.indexOf('%') !== -1
-    ? decodeURIComponent(str)
-    : str
+ export function applySearchParams(
+	target, source
+) {
+	for (const [key, value] of source.entries()) {
+		if (!target.has(key) || !!value) {
+			target.set(key, value);
+		}
+	}
 }
 
 /**
- * URL-encode value.
+ * Creates a new Request object with the same body, headers, and search params as the original.
  *
- * @param {string} str
- * @returns {string}
+ * Replaces the URL with the given path, stripping the `.html` extension and `/index.html` for
+ * asset matching.
+ * https://developers.cloudflare.com/pages/platform/serving-pages/#route-matching
+ *
+ * @param req Request object to re-create.
+ * @param path URL to use for the new Request object.
+ * @returns A new Request object with the same body and headers as the original.
  */
+ export function createRouteRequest(req, path) {
+	const newUrl = new URL(path, req.url);
+	applySearchParams(newUrl.searchParams, new URL(req.url).searchParams);
 
-const encode = (val) => {
-  return encodeURIComponent(val)
+	return new Request(newUrl, req);
 }
 
 /**
- * Determine if value is a Date.
+ * Creates a new Response object with the same body and headers as the original.
  *
- * @param {*} val
- * @private
+ * Useful when the response object may be immutable.
+ *
+ * @param resp Response object to re-create.
+ * @returns A new Response object with the same body and headers.
  */
-
-const isDate = (val) => {
-  return __toString.call(val) === '[object Date]' ||
-    val instanceof Date
+export function createMutableResponse(resp) {
+	return new Response(resp.body, resp);
 }
 
 /**
- * Try decoding a string using a decoding function.
- *
- * @param {string} str
- * @param {function} decode
- * @private
+ * Parses the Accept-Language header value and returns an array of locales sorted by quality.
+ *x
+ * @param headerValue Accept-Language header value.
+ * @returns Array of locales sorted by quality.
  */
+export function parseAcceptLanguage(headerValue) {
+	return headerValue
+		.split(',')
+		.map(val => {
+			const [lang, qual] = val.split(';')
+			const quality = parseFloat((qual ?? 'q=1').replace(/q *= */gi, ''));
 
-const tryDecode = (str, decode) => {
-  try {
-    return decode(str);
-  } catch (e) {
-    return str;
-  }
+			return [lang.trim(), isNaN(quality) ? 1 : quality];
+		})
+		.sort((a, b) => b[1] - a[1])
+		.map(([locale]) => (locale === '*' || locale === '' ? [] : locale))
+		.flat();
 }
 
+// matcher
+/**
+ * Checks if a Vercel source route's `has` record conditions match a request.
+ *
+ * @param has The `has` record conditions to check against the request.
+ * @param requestProperties The request properties to check against.
+ * @returns Whether the request matches the `has` record conditions.
+ */
+export function hasField(
+	has,
+	{ url, cookies, headers }
+) {
+	switch (has.type) {
+		case 'host': {
+			return url.hostname === has.value;
+		}
+		case 'header': {
+			if (has.value !== undefined) {
+				return !!headers.get(has.key)?.match(has.value);
+			}
 
-// ^^^^^^^ TEMP INJECT COOKIE LIB ^^^^^^^^^
+			return headers.has(has.key);
+		}
+		case 'cookie': {
+			const cookie = cookies[has.key];
 
+			if (has.value !== undefined) {
+				return !!cookie?.match(has.value);
+			}
 
-const hasField = ({
-  request,
-  url,
-  cookies,
-}, has) => {
-  switch (has.type) {
-    case "host": {
-      return url.host === has.value;
-    }
-    case "header": {
-      if (has.value !== undefined) {
-        return request.headers.get(has.key)?.match(has.value);
-      }
+			return cookie !== undefined;
+		}
+		case 'query': {
+			if (has.value !== undefined) {
+				return !!url.searchParams.get(has.key)?.match(has.value);
+			}
 
-      return request.headers.has(has.key);
-    }
-    case "cookie": {
-      const cookie = cookies[has.key];
-
-      if (has.value !== undefined) {
-        return cookie?.match(has.value);
-      }
-
-      return cookie !== undefined;
-    }
-    case "query": {
-      if (has.value !== undefined) {
-        return url.searchParams.get(has.key)?.match(has.value);
-      }
-
-      return url.searchParams.has(has.key);
-    }
-  }
-};
-
-const routesMatcher = (
-  { request },
-  routes
-) => {
-  const url = new URL(request.url);
-  const cookies = parse(request.headers.get("cookie") || "");
-
-  const matchingRoutes = [];
-
-  for (const route of routes || []) {
-    if ("methods" in route) {
-      const requestMethod = request.method.toLowerCase();
-
-      const foundMatch = route.methods.find(
-        (method) => method.toLowerCase() === requestMethod
-      );
-
-      if (!foundMatch) {
-        continue;
-      }
-    }
-
-    if ("has" in route) {
-      const okay = route.has.every((has) =>
-        hasField({ request, url, cookies }, has)
-      );
-
-      if (!okay) {
-        continue;
-      }
-    }
-
-    if ("missing" in route) {
-      const notOkay = route.missing.find((has) =>
-        hasField({ request, url, cookies }, has)
-      );
-
-      if (notOkay) {
-        continue;
-      }
-    }
-
-    let caseSensitive = false;
-    if ("caseSensitive" in route && route.caseSensitive) {
-      caseSensitive = true;
-    }
-
-    if ("src" in route) {
-      const regExp = new RegExp(route.src, caseSensitive ? undefined : "i");
-      const match = url.pathname.match(regExp);
-
-      if (match) {
-        matchingRoutes.push(route);
-      }
-    } else {
-      matchingRoutes.push(route);
-    }
-  }
-
-  return matchingRoutes;
-};
-
-async function handleRequest(request, env, context) {
-  const pathname = decodeURI(new URL(request.url).pathname);
-  const routes = routesMatcher({ request }, __CONFIG__.routes);
-
-  const assetsPaths = __ASSETS_MANIFEST__;
-
-  const isAsset = assetsPaths.includes(pathname);
-
-  if (isAsset) {
-    return getStorageAsset(request);
-  }
-
-  for (const route of routes) {
-    if ("middlewarePath" in route && route.middlewarePath in __MIDDLEWARE__) {
-      return await __MIDDLEWARE__[route.middlewarePath].entrypoint.default(
-        request,
-        context
-      );
-    }
-  }
-
-  const findedRoutes = {};
-  for (functionName of Object.keys(__FUNCTIONS__)) {
-    const { matchers, entrypoint } = __FUNCTIONS__[functionName];
-
-    let found = false;
-    for (const matcher of matchers) {
-      if (matcher.regexp) {
-        if (pathname.match(new RegExp(matcher?.regexp))) {
-          found = true;
-          break;
-        }
-      }
-    }
-
-    if (found) {
-        // add route with priority based on route type
-        let priority = 1;
-        if (functionName.includes("...")) {
-          priority = 3;
-        } else if(functionName.includes("[")) {
-          priority = 2;
-        }
-
-        findedRoutes[functionName] = { entrypoint, priority }
-    }
-  }
-
-  // exec finded route based on priority (ASC order)
-  const routeNames = Object.keys(findedRoutes)
-  const orderedRoutes = Object.values(findedRoutes).sort((a,b) => a.priority - b.priority)
-  if (!orderedRoutes[0]) {
-    const page = assetsPaths.find((f) => f.endsWith(".html") && f.includes(pathname) && pathname !== "/");
-    if (pathname === "/" || page) {
-      return getStorageAsset(request, page);
-    }
-    return getStorageAsset(request, "/404.html");
-  }
-
-  return orderedRoutes[0].entrypoint.default(request, context);
+			return url.searchParams.has(has.key);
+		}
+	}
 }
 
-const getStorageAsset = async (request, pages) => {
-  const VERSION_ID = __VERSION_ID__;
-  try {
-    const requestPath = pages || new URL(request.url).pathname;
-    const asset_url = new URL(
-      requestPath === "/" ?
-        (VERSION_ID + '/index.html') :
-        (VERSION_ID + requestPath),
-      'file://'
-    );
+// pcre
+// pcre-to-regexp converts a PCRE string to a regular expression. It also extracts the named
+// capture group keys, which is useful for matching and replacing parameters.
+// This is the same library used by Vercel in the build output, and is used here to ensure
+// consistency and proper support.
 
-    return fetch(asset_url);
-  } catch (e) {
-    return new Response(e.message || e.toString(), { status: 500 })
-  }
+/**
+ * Checks if a value matches with a PCRE-compatible string, and extract the capture group keys.
+ *
+ * @param expr PCRE-compatible string.
+ * @param val String to check with the regular expression.
+ * @param caseSensitive Whether the regular expression should be case sensitive.
+ * @returns The result of the matcher and the named capture group keys.
+ */
+export function matchPCRE(
+	expr,
+	val,
+	caseSensitive
+) {
+	const flag = caseSensitive ? '' : 'i';
+	const captureGroupKeys = [];
+
+	const matcher = createPCRE(`%${expr}%${flag}`, captureGroupKeys);
+	const match = matcher.exec(val);
+	return { match, captureGroupKeys };
 }
 
-addEventListener("fetch", (event) => {
-  try {
-    const env = {
-      ASSETS: {
-        fetch: getStorageAsset
-      }
-    };
+/**
+ * Processes the value and replaced any matched parameters (index or named capture groups).
+ *
+ * @param rawStr String to process.
+ * @param match Matches from the PCRE matcher.
+ * @param captureGroupKeys Named capture group keys from the PCRE matcher.
+ * @returns The processed string with replaced parameters.
+ */
+export function applyPCREMatches(
+	rawStr,
+	match,
+	captureGroupKeys
+) {
+	return rawStr.replace(/\$([a-zA-Z0-9]+)/g, (_, key) => {
+		const index = captureGroupKeys.indexOf(key);
+		// If the extracted key does not exist as a named capture group from the matcher, we can
+		// reasonably assume it's a number and return the matched index. Fallback to an empty string.
+		return (index === -1 ? match[parseInt(key, 10)] : match[index + 1]) || '';
+	});
+}
 
-    const context = {
-      waitUntil: event.waitUntil.bind(event),
-      passThroughOnException: () => null
-    };
+// request
+/**
+ * Adjusts the request so that it is formatted as if it were provided by Vercel
+ *
+ * @param request the original request received by the worker
+ * @returns the adjusted request to pass to Next
+ */
+export function adjustRequestForVercel(request) {
+	const adjustedHeaders = new Headers(request.headers);
 
-    event.respondWith(handleRequest(event.request, env, context));
-  } catch (error) {
-    console.log("Error: ")
-    console.log(error)
-  }
-});
+	if (request.cf) {
+		// TODO: replace cf geoip infos with azion metadata
+		adjustedHeaders.append('x-vercel-ip-city', "request.cf.city");
+		adjustedHeaders.append('x-vercel-ip-country', "request.cf.country");
+		adjustedHeaders.append(
+			'x-vercel-ip-country-region',
+			"request.cf.region"
+		);
+		adjustedHeaders.append(
+			'x-vercel-ip-latitude',
+			"request.cf.latitude"
+		);
+		adjustedHeaders.append(
+			'x-vercel-ip-longitude',
+			"request.cf.longitude"
+		);
+	}
+
+	return new Request(request, { headers: adjustedHeaders });
+}
+
+/**
+ * Handles a request by processing and matching it against all the routing phases.
+ *
+ * @param reqCtx Request Context object (contains all we need in to know regarding the request in order to handle it).
+ * @param config The processed Vercel build output config.
+ * @param output Vercel build output.
+ * @returns An instance of the router.
+ */
+export async function handleRequest(
+	reqCtx,
+	config,
+	output
+) {
+	const matcher = new RoutesMatcher(config.routes, output, reqCtx);
+	const match = await findMatch(matcher);
+
+	return generateResponse(reqCtx, match, output);
+}
+
+/**
+ * Finds a match for the request.
+ *
+ * @param matcher Instance of the matcher for the request.
+ * @param phase The phase to run, either `none` or `error`.
+ * @param skipErrorMatch Whether to skip the error match.
+ * @returns The matched set of path, status, headers, and search params.
+ */
+export async function findMatch(
+	matcher,
+	phase = 'none',
+	skipErrorMatch = false
+) {
+	const result = await matcher.run(phase);
+
+	if (
+		result === 'error' ||
+		(!skipErrorMatch && matcher.status && matcher.status >= 400)
+	) {
+		return findMatch(matcher, 'error', true);
+	}
+
+	return {
+		path: matcher.path,
+		status: matcher.status,
+		headers: matcher.headers,
+		searchParams: matcher.searchParams,
+	};
+}
+
+/**
+ * Serves a file from the Vercel build output.
+ *
+ * @param reqCtx Request Context object.
+ * @param match The match from the Vercel build output.
+ * @returns A response object.
+ */
+export async function generateResponse(
+	reqCtx,
+	{ path = '/404', status, headers, searchParams },
+	output
+) {
+	// Redirect user to external URL for redirects.
+	if (headers.normal.has('location')) {
+		// Apply the search params to the location header.
+		const location = headers.normal.get('location') ?? '/';
+		const paramsStr = [...searchParams.keys()].length
+			? `?${searchParams.toString()}`
+			: '';
+		headers.normal.set('location', `${location}${paramsStr}`);
+
+		return new Response(null, { status, headers: headers.normal });
+	}
+
+
+	let resp = await runOrFetchBuildOutputItem(output[path], reqCtx, {
+		path,
+		status,
+		headers,
+		searchParams,
+	});
+
+	const newHeaders = headers.normal;
+	applyHeaders(newHeaders, resp.headers);
+	applyHeaders(newHeaders, headers.important);
+
+	resp = new Response(resp.body, {
+		...resp,
+		status: status || resp.status,
+		headers: newHeaders,
+	});
+
+	return resp;
+}
