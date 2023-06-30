@@ -15,7 +15,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [16.x]
+        node-version: [18.x]
         os: [ubuntu-latest, macos-latest]
 
     name: Test - ${{ matrix.os }} - Node v${{ matrix.node-version }}
@@ -43,7 +43,7 @@ jobs:
     needs: build-and-unit-test
     strategy:
       matrix:
-        node-version: [16.x]
+        node-version: [18.x]
         os: [ubuntu-latest]
 
     name: E2E Test - ${{ matrix.os }} - Node v${{ matrix.node-version }}
@@ -84,7 +84,7 @@ jobs:
       # Setup .npmrc file to publish to npm
       - uses: actions/setup-node@v3
         with:
-          node-version: '16.x'
+          node-version: '18.x'
           registry-url: 'https://registry.npmjs.org'
       - name: Installing dependencies
         run: npm ci
