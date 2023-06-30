@@ -43,7 +43,7 @@ describe('readJsonFile', () => {
             runtime: 'edge',
             entrypoint: 'index.js',
         };
-        chai.spy.on(fs,'readFile',(path,encoding)=>{
+        chai.spy.on(fs,'readFile',()=>{
             return JSON.stringify(vcConfigContent)
         });
 
