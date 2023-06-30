@@ -10,8 +10,6 @@ import { ErrorCode } from "../../errors";
 import * as vcService from "./services/vercel-service";
 
 import { ManifestBuilderService } from "./services/manifest-builder-service";
-//import { adapt } from "./services/adapt-functions-service";
-//import { processVercelOutput } from "./services/process-mapping-service";
 import { nodeBuiltInModulesPlugin } from "./plugins/esbuild-plugins";
 
 class NextjsBuilder extends Builder {
