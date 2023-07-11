@@ -90,7 +90,7 @@ class NextjsBuilder extends Builder {
                     params.outputReferencesFilePath,
                     join(this.dirname, "../../templates/handlers/nextjs/globals.js"),
                 ],
-                minify: true,
+                minify: false,
                 target: "es2022",
                 platform: "neutral",
                 define: {

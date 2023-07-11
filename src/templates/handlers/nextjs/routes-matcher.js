@@ -47,6 +47,7 @@ export class RoutesMatcher {
 		applySearchParams(this.searchParams, this.url.searchParams);
 
 		this.checkPhaseCounter = 0;
+		this.middlewareInvoked = [];
 	}
 
 	/**
@@ -166,6 +167,7 @@ export class RoutesMatcher {
 			headers: this.headers,
 			status: this.status,
 		});
+		this.middlewareInvoked.push(path);
 
 		if (resp.status >= 400) {
 			// The middleware function errored. Set the status and bail out.
@@ -371,6 +373,14 @@ export class RoutesMatcher {
 		// If this route doesn't match, continue to the next one.
 		if (!routeMatch?.match) return 'skip';
 
+		// If this route is a middleware route, check if it has already been invoked.
+		if (
+			route.middlewarePath &&
+			this.middlewareInvoked.includes(route.middlewarePath)
+		) {
+			return 'skip';
+		}
+
 		const { match: srcMatch, captureGroupKeys } = routeMatch;
 
 		// If this route overrides, replace the response headers and status.
@@ -447,6 +457,8 @@ export class RoutesMatcher {
 			return 'error';
 		}
 
+		// Reset the middleware invoked list as this is a new phase.
+		this.middlewareInvoked = [];
 		let shouldContinue = true;
 
 		for (const route of this.routes[phase]) {
@@ -494,6 +506,7 @@ export class RoutesMatcher {
 		if (pathExistsInOutput || phase === 'miss' || phase === 'error') {
 			// If the route exists, enter the `hit` phase. For `miss` and `error` phases, enter the `hit`
 			// phase to update headers (e.g. `x-matched-path`).
+			console.log('pathExistsInOutput X-Matched-Path:', pathExistsInOutput, phase);
 			nextPhase = 'hit';
 		} else if (shouldContinue) {
 			nextPhase = getNextPhase(phase);
