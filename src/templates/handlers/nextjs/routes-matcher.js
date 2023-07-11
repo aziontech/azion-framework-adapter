@@ -19,7 +19,6 @@ export class RoutesMatcher {
 	 * @param routes The processed Vercel build output config routes.
 	 * @param output Vercel build output.
 	 * @param reqCtx Request context object; request object, assets fetcher, and execution context.
-	 * @param prevMatch The previous match from a routing phase to initialize the matcher with.
 	 * @returns The matched set of path, status, headers, and search params.
 	 */
 	constructor(
@@ -28,8 +27,7 @@ export class RoutesMatcher {
 		/** Vercel build output. */
 		output,
 		/** Request Context object for the request to match */
-		reqCtx,
-		prevMatch
+		reqCtx
 	) {
 		this.routes = routes;
 		this.output = output;
@@ -37,13 +35,12 @@ export class RoutesMatcher {
 		this.url = new URL(reqCtx.request.url);
 		this.cookies = parse(reqCtx.request.headers.get('cookie') || '');
 
-		this.path = prevMatch?.path || this.url.pathname || '/';
-		this.status = prevMatch?.status;
-		this.headers = prevMatch?.headers || {
+		this.path = this.url.pathname || '/';
+		this.headers = {
 			normal: new Headers(),
 			important: new Headers(),
 		};
-		this.searchParams = prevMatch?.searchParams || new URLSearchParams();
+		this.searchParams = new URLSearchParams();
 		applySearchParams(this.searchParams, this.url.searchParams);
 
 		this.checkPhaseCounter = 0;
