@@ -60,7 +60,6 @@ export async function runOrFetchBuildOutputItem(
     const url = new URL(request.url);
     applySearchParams(url.searchParams, searchParams);
     const req = new Request(url, request);
-
     try {
         switch (item?.type) {
             case 'function':
