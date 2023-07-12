@@ -138,7 +138,19 @@ export class RoutesMatcher {
 			resp.headers.delete(rewriteKey);
 		}
 
+		const middlewareNextKey = 'x-middleware-next';
+		const middlewareNextHeader = resp.headers.get(middlewareNextKey);
+		if (middlewareNextHeader) {
+			resp.headers.delete(middlewareNextKey);
+		} else if (!rewriteHeader && !resp.headers.has('location')) {
+			// We should set the final response body and status to the middleware's if it does not want
+			// to continue and did not rewrite/redirect the URL.
+			this.body = resp.body;
+			this.status = resp.status;
+		}
+
 		applyHeaders(this.headers.normal, resp.headers);
+		this.headers.middlewareLocation = resp.headers.get('location');
 	}
 
 	/**
@@ -166,8 +178,8 @@ export class RoutesMatcher {
 		});
 		this.middlewareInvoked.push(path);
 
-		if (resp.status >= 400) {
-			// The middleware function errored. Set the status and bail out.
+		if (resp.status === 500) {
+			// The middleware function threw an error. Set the status and bail out.
 			this.status = resp.status;
 			return false;
 		}
@@ -338,19 +350,21 @@ export class RoutesMatcher {
 		route,
 		phase
 	) {
-		if (
-			!this.locales ||
-			phase !== 'miss' ||
-			!/^\//.test(route.src) ||
-			!(route.src.slice(1) in this.locales)
-		) {
+		if (!this.locales || phase !== 'miss') {
 			return route;
 		}
 
-		return {
-			...route,
-			src: `^${route.src}$`,
-		};
+		const isLocaleIndex =
+			/^\//.test(route.src) && route.src.slice(1) in this.locales;
+		if (isLocaleIndex) {
+			return { ...route, src: `^${route.src}$` };
+		}
+
+		if (isLocaleTrailingSlashRegex(route.src, this.locales)) {
+			return { ...route, src: route.src.replace(/\/\(\.\*\)$/, '(?:/(.*))?$') };
+		}
+
+		return route;
 	}
 
 	/**
@@ -389,6 +403,8 @@ export class RoutesMatcher {
 		// Call and process the middleware if this is a middleware route.
 		const success = await this.runRouteMiddleware(route.middlewarePath);
 		if (!success) return 'error';
+		// If the middleware set a response body, we are done.
+		if (this.body !== undefined) return 'done';
 
 		// Update final headers with the ones from this route.
 		this.applyRouteHeaders(route, srcMatch, captureGroupKeys);
@@ -503,7 +519,6 @@ export class RoutesMatcher {
 		if (pathExistsInOutput || phase === 'miss' || phase === 'error') {
 			// If the route exists, enter the `hit` phase. For `miss` and `error` phases, enter the `hit`
 			// phase to update headers (e.g. `x-matched-path`).
-			console.log('pathExistsInOutput X-Matched-Path:', pathExistsInOutput, phase);
 			nextPhase = 'hit';
 		} else if (shouldContinue) {
 			nextPhase = getNextPhase(phase);

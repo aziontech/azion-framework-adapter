@@ -280,6 +280,7 @@ export async function findMatch(
 		status: matcher.status,
 		headers: matcher.headers,
 		searchParams: matcher.searchParams,
+		body: matcher.body,
 	};
 }
 
@@ -292,28 +293,35 @@ export async function findMatch(
  */
 export async function generateResponse(
 	reqCtx,
-	{ path = '/404', status, headers, searchParams },
+	{ path = '/404', status, headers, searchParams, body },
 	output
 ) {
 	// Redirect user to external URL for redirects.
-	if (headers.normal.has('location')) {
-		// Apply the search params to the location header.
-		const location = headers.normal.get('location') ?? '/';
-		const paramsStr = [...searchParams.keys()].length
-			? `?${searchParams.toString()}`
-			: '';
-		headers.normal.set('location', `${location}${paramsStr}`);
+	const locationHeader = headers.normal.get('location');
+	if (locationHeader) {
+		// Apply the search params to the location header if it was not from middleware.
+		// Middleware that returns a redirect will specify the destination, including any search params
+		// that they want to include. Therefore, we should not be appending search params to those.
+		if (locationHeader !== headers.middlewareLocation) {
+			const paramsStr = [...searchParams.keys()].length
+				? `?${searchParams.toString()}`
+				: '';
+			headers.normal.set('location', `${locationHeader ?? '/'}${paramsStr}`);
+		}
 
 		return new Response(null, { status, headers: headers.normal });
 	}
 
-
-	let resp = await runOrFetchBuildOutputItem(output[path], reqCtx, {
-		path,
-		status,
-		headers,
-		searchParams,
-	});
+	let resp =
+		body !== undefined
+			? // If we have a response body from matching, use it instead.
+			  new Response(body, { status })
+			: await runOrFetchBuildOutputItem(output[path], reqCtx, {
+					path,
+					status,
+					headers,
+					searchParams,
+			  });
 
 	const newHeaders = headers.normal;
 	applyHeaders(newHeaders, resp.headers);
