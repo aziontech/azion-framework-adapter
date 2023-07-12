@@ -13,7 +13,7 @@ describe("Version Checker test suite",()=>{
     });
 
     it("should verify if node_version method was called with success",()=>{
-        const stub = sinon.stub(process.versions, "node").value("16.2.3");
+        const stub = sinon.stub(process.versions, "node").value("18.16.1");
         expect(VersionChecker.node_version()).equal(true);
         stub.restore();
     });
