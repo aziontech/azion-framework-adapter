@@ -5,7 +5,8 @@ import { parseAcceptLanguage,
 	applySearchParams,
 	hasField,
 	isUrl,
-	matchPCRE
+	matchPCRE,
+	isLocaleTrailingSlashRegex
  } from './handler';
 import { runOrFetchBuildOutputItem, getNextPhase } from './utils/routing';
 

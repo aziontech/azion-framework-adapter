@@ -47,8 +47,12 @@ addEventListener("fetch", (event) => {
 			waitUntil: event.waitUntil.bind(event),
 			passThroughOnException: () => null
 		};
+	
+    const url = new URL(decodeURI(event.request.url));
+    const request = new Request(url, event.request);
+		
+    event.respondWith(main(request, env, context));
 
-		event.respondWith(main(event.request, env, context));
 	} catch (error) {
 		console.log("Error: ")
 		console.log(error)
