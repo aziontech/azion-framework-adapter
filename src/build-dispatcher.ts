@@ -14,7 +14,6 @@ class BuildDispatcher {
                 await builder.build(options)
             } else {
                 VersionChecker.nextjs_version(targetDir);
-                VersionChecker.nextjs_project_type();
                 const builder = new NextjsBuilder(targetDir);
                 await builder.build(options);
             }
