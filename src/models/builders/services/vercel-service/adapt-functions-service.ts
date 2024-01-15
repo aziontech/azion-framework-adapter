@@ -144,7 +144,7 @@ async function adaptFunction(applicationMapping: ApplicationMapping, tmpFunction
 // function to walk in builded functions dir, detect invalid functions and adapt content
 export async function adapt(applicationMapping: ApplicationMapping, tmpFunctionsDir: string) {
     try{
-        const vcConfigPaths: Array<string> = glob.sync(".vercel/output/functions/**/.vc-config.json");
+        const vcConfigPaths: Array<string> = glob.sync(".vercel/output/functions/**/.vc-config.json", { ignore: ['.vercel/output/functions/favicon.ico.func/.vc-config.json'] });
         const vcConfigObjects: Array<VcConfigObject> = vcConfigPaths.map(file => {
             return {
                 path: file,
