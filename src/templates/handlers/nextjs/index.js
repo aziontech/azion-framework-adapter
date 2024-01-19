@@ -23,17 +23,23 @@ const getStorageAsset = async (request) => {
 async function main(request, env, ctx) {
 	globalThis.process.env = { ...globalThis.process.env, ...env };
 
-	const adjustedRequest = adjustRequestForVercel(request);
-
-	return handleRequest(
-		{
-			request: adjustedRequest,
-			ctx,
-			assetsFetcher: env.ASSETS,
-		},
-		__CONFIG__,
-		__BUILD_OUTPUT__
+	return envAsyncLocalStorage.run(
+		{...env},
+		async () => {
+			const adjustedRequest = adjustRequestForVercel(request);
+			return handleRequest(
+				{
+					request: adjustedRequest,
+					ctx,
+					assetsFetcher: env.ASSETS,
+				},
+				__CONFIG__,
+				__BUILD_OUTPUT__
+			);
+		}
 	);
+
+
 }
 addEventListener("fetch", (event) => {
 	try {
