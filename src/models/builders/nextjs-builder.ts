@@ -11,6 +11,7 @@ import * as vcService from "./services/vercel-service";
 
 import { ManifestBuilderService } from "./services/manifest-builder-service";
 import { nodeBuiltInModulesPlugin } from "./plugins/esbuild-plugins";
+import { globalBanner } from "../../templates/handlers/nextjs/globals";
 
 class NextjsBuilder extends Builder {
     manifestBuilderService = new ManifestBuilderService();
@@ -88,8 +89,8 @@ class NextjsBuilder extends Builder {
                 inject: [
                     join(this.dirname, "../../templates/handlers/nextjs/libs.js"),
                     params.outputReferencesFilePath,
-                    join(this.dirname, "../../templates/handlers/nextjs/globals.js"),
                 ],
+                banner: { js: globalBanner()},
                 minify: true,
                 target: "es2022",
                 platform: "neutral",
